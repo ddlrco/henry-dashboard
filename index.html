@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FINN - AI Command Center</title>
+    <title>HENRY - AI Command Center</title>
     <style>* {
     margin: 0;
     padding: 0;
@@ -616,7 +616,7 @@ header {
     <!-- Password Screen -->
     <div class="password-screen" id="password-screen">
         <div class="password-box">
-            <div class="password-logo">FINN</div>
+            <div class="password-logo">HENRY</div>
             <div class="password-subtitle">AI Command Center</div>
             <div class="password-subtitle">Enter access code</div>
             <form id="password-form">
@@ -643,7 +643,7 @@ header {
         <div class="header-left">
             <div class="logo">
                 <div class="logo-ring"></div>
-                <span class="logo-text">FINN</span>
+                <span class="logo-text">HENRY</span>
             </div>
             <div class="status-indicator">
                 <span class="status-dot online"></span>
@@ -737,7 +737,7 @@ header {
                         <div class="chat-message assistant">
                             <div class="message-avatar">H</div>
                             <div class="message-content">
-                                <div class="message-text">Good evening. FINN AI Command Center online. How can I assist you?</div>
+                                <div class="message-text">Good evening. HENRY AI Command Center online. How can I assist you?</div>
                             </div>
                         </div>
                     </div>
@@ -965,7 +965,7 @@ function sendMessage() {
     addMessage(message, true);
     chatInput.value = '';
     
-    // Simulate FINN's response
+    // Simulate HENRY's response
     setTimeout(() => {
         const responses = [
             "Command acknowledged. Processing your request.",
@@ -1046,13 +1046,13 @@ actionButtons.forEach(btn => {
 });
 
 // Initialize
-console.log('%cFINN AI Command Center', 'color: #00d9ff; font-size: 24px; font-weight: bold;');
+console.log('%cHENRY AI Command Center', 'color: #00d9ff; font-size: 24px; font-weight: bold;');
 console.log('%cSystem online and ready.', 'color: #00ff88; font-size: 14px;');
 addActivity('Dashboard fully initialized');
 
 
 // Password Protection
-const PASSWORD = '@agentfinn123'; // Change this to your desired password
+const PASSWORD = '@agenthenry123'; // Change this to your desired password
 const passwordScreen = document.getElementById('password-screen');
 const passwordForm = document.getElementById('password-form');
 const passwordInput = document.getElementById('password-input');
@@ -1060,7 +1060,7 @@ const passwordError = document.getElementById('password-error');
 const mainContent = document.querySelector('.grid-background');
 
 // Check if already authenticated
-if (sessionStorage.getItem('finnAuth') === 'true') {
+if (sessionStorage.getItem('henryAuth') === 'true') {
     passwordScreen.classList.add('hidden');
 } else {
     document.querySelector('.grid-background').style.display = 'none';
@@ -1073,7 +1073,7 @@ passwordForm.addEventListener('submit', (e) => {
     const entered = passwordInput.value;
     
     if (entered === PASSWORD) {
-        sessionStorage.setItem('finnAuth', 'true');
+        sessionStorage.setItem('henryAuth', 'true');
         passwordScreen.classList.add('hidden');
         document.querySelector('.grid-background').style.display = 'block';
         document.querySelector('header').style.display = 'flex';
