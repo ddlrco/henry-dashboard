@@ -484,9 +484,10 @@ canvas {
 .pw-error{color:rgba(255,80,80,0.7);margin-top:1.5rem;font-size:0.65rem;letter-spacing:0.3em;opacity:0;transition:opacity .3s}
 .pw-error.show{opacity:1}
 .pw-hidden{display:none!important}
-body.inverted { background: #f0f0f5; color: #1a1a2e; }
+body.inverted { background: #eeeef2; color: #1a1a2e; }
 body.inverted canvas { filter: invert(0.85) hue-rotate(180deg); }
-body.inverted .data-node-title { color: rgba(102,126,234,0.8); }
+body.inverted * { color: inherit; }
+body.inverted .data-node-title { color: rgba(80,80,120,0.7); }
 body.inverted .data-node-value { color: #1a1a2e; }
 body.inverted .data-node-value-sm { color: #1a1a2e; }
 body.inverted .data-node-sub { color: rgba(0,0,0,0.5); }
@@ -500,19 +501,23 @@ body.inverted .skill-bar { background: rgba(0,0,0,0.08); }
 body.inverted .agent-name { color: rgba(0,0,0,0.5); }
 body.inverted .agent-status { color: rgba(0,0,0,0.35); }
 body.inverted .agent-dot.active { background: rgba(16,185,129,0.8); box-shadow: 0 0 6px rgba(16,185,129,0.4); }
-body.inverted .control-button { color: rgba(0,0,0,0.5); border-left-color: rgba(102,126,234,0.4); }
+body.inverted .control-button { color: rgba(0,0,0,0.6); border-left-color: rgba(102,126,234,0.4); }
 body.inverted .control-button:hover { color: rgba(102,126,234,0.9); }
-body.inverted #instruction-title { -webkit-text-fill-color: #1a1a2e; }
+body.inverted #instruction-title { -webkit-text-fill-color: #1a1a2e; background: none; }
+body.inverted #model-select { background: rgba(0,0,0,0.05); color: #1a1a2e; border-color: rgba(0,0,0,0.15); }
 body.inverted #model-status { color: #16a34a; }
 body.inverted #token-count { color: rgba(0,0,0,0.4); }
 body.inverted #crypto-expand { color: rgba(102,126,234,0.7); }
-body.inverted .chat-input { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.15); color: #1a1a2e; }
+body.inverted .density-slider { opacity: 0.6; }
+body.inverted .chat-input { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.12); color: #1a1a2e; }
 body.inverted .chat-input::placeholder { color: rgba(0,0,0,0.3); }
-body.inverted .chat-btn { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.15); color: rgba(0,0,0,0.5); }
-body.inverted .chat-msg.user { background: rgba(102,126,234,0.12); border-color: rgba(102,126,234,0.25); color: #1a1a2e; }
-body.inverted .chat-msg.ai { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.1); color: #1a1a2e; }
-body.inverted #invert-btn { border-color: rgba(0,0,0,0.2); color: rgba(0,0,0,0.5); }
+body.inverted .chat-btn { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.12); color: rgba(0,0,0,0.5); }
+body.inverted .chat-msg.user { background: rgba(102,126,234,0.1); border-color: rgba(102,126,234,0.2); color: #1a1a2e; }
+body.inverted .chat-msg.ai { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.08); color: #1a1a2e; }
+body.inverted #invert-btn { border-color: rgba(0,0,0,0.15); color: rgba(0,0,0,0.5); }
 body.inverted #logout-btn { border-color: rgba(220,38,38,0.3); color: rgba(220,38,38,0.6); }
+body.inverted div[style*="color:rgba(255,255,255"] { color: rgba(0,0,0,0.5) !important; }
+body.inverted span[style*="color:rgba(255,255,255"] { color: rgba(0,0,0,0.5) !important; }
 
 /* Iron Man HUD */
 #hud-overlay { display: none; }
