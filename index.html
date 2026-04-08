@@ -1878,6 +1878,12 @@ document.addEventListener("keydown", (e) => {
             
             morphProgress = 0;
             morphing = true;
+            
+            // Hide connections during morph — fade in after
+            if (connectionsMesh) {
+                connectionsMesh.material.opacity = 0;
+                connectionsMesh.material.transparent = true;
+            }
         }
     }
     
@@ -2185,6 +2191,8 @@ document.addEventListener("keydown", (e) => {
             if (morphProgress >= 1.0) {
                 morphProgress = 1.0;
                 morphing = false;
+                // Start fading in connections
+                if (connectionsMesh) window._linesFadeIn = 0;
             }
             // Smooth easing
             const ease = morphProgress < 0.5 
@@ -2216,6 +2224,16 @@ document.addEventListener("keydown", (e) => {
                 const audioScale = 1.0 + smoothAudio * 0.4;
                 nodesMesh.scale.setScalar(audioScale);
             }
+            // Fade in connections after morph
+            if (window._linesFadeIn !== undefined && window._linesFadeIn < 1.0) {
+                window._linesFadeIn += 0.025; // ~0.7s fade in
+                if (connectionsMesh) connectionsMesh.material.opacity = window._linesFadeIn;
+                if (window._linesFadeIn >= 1.0) {
+                    window._linesFadeIn = undefined;
+                    if (connectionsMesh) connectionsMesh.material.opacity = 1;
+                }
+            }
+            
             if (connectionsMesh) {
                 connectionsMesh.material.uniforms.uTime.value = t;
                 connectionsMesh.material.uniforms.uAudioBands.value = frequencyBands;
