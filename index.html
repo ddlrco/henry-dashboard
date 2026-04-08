@@ -1167,7 +1167,12 @@ document.addEventListener("keydown", (e) => {
             
             // Only outer nodes breathe/pulse — inner core stays solid
             float isOuter = smoothstep(0.3, 0.6, nodeType) * smoothstep(3.0, 8.0, distanceFromRoot);
-            float breathe = 1.0 - isOuter * (1.0 - (sin(uTime * 0.7 + distanceFromRoot * 0.15) * 0.08 + 0.92));
+            
+            // Ping pulse — sharp spike then decay, outer nodes only
+            float pingPhase = fract(uTime * 0.4); // ~2.5s cycle
+            float ping = exp(-pingPhase * 8.0) * 0.12 * isOuter;
+            
+            float breathe = 1.0 + ping - isOuter * (1.0 - (sin(uTime * 0.7 + distanceFromRoot * 0.15) * 0.08 + 0.92));
             
             // Audio reactivity only on outer nodes
             vec3 wp = (modelMatrix * vec4(position, 1.0)).xyz;
@@ -1181,8 +1186,8 @@ document.addEventListener("keydown", (e) => {
             else audioReact = uAudioBands[3];
             audioReact *= isOuter; // only outer nodes react
             
-            // Displace outer nodes only
-            float displacement = audioReact * 3.0;
+            // Displace outer nodes only + ping
+            float displacement = audioReact * 3.0 + ping * 2.0;
             vec3 displaceDir = normalize(position);
             
             float sizeBoost = 1.0 + audioReact * 1.5 + uAudioIntensity * 0.5 * isOuter;
@@ -2147,10 +2152,8 @@ document.addEventListener("keydown", (e) => {
                 nodesMesh.material.uniforms.uAudioIntensity.value = audioIntensity;
                 nodesMesh.rotation.y = Math.sin(t * 0.04) * 0.05;
                 
-                // Ping pulse — sharp spike then decay
-                const pingPhase = (t * 0.4) % 1.0; // ~2.5 second cycle
-                const heartbeat = Math.exp(-pingPhase * 8) * 0.08; // sharp spike, exponential decay
-                const audioScale = 1.0 + smoothAudio * 0.4 + heartbeat;
+                // Audio only scaling (ping is in shader now)
+                const audioScale = 1.0 + smoothAudio * 0.4;
                 nodesMesh.scale.setScalar(audioScale);
             }
             if (connectionsMesh) {
@@ -2159,9 +2162,7 @@ document.addEventListener("keydown", (e) => {
                 connectionsMesh.material.uniforms.uAudioIntensity.value = audioIntensity;
                 connectionsMesh.rotation.y = Math.sin(t * 0.04) * 0.05;
                 
-                const pingPhase = (t * 0.4) % 1.0;
-                const heartbeat = Math.exp(-pingPhase * 8) * 0.08;
-                const audioScale = 1.0 + smoothAudio * 0.4 + heartbeat;
+                const audioScale = 1.0 + smoothAudio * 0.4;
                 connectionsMesh.scale.setScalar(audioScale);
             }
             
