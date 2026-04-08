@@ -421,6 +421,44 @@ canvas {
 .skill-row.thinking .skill-bar {
     height: 3px;
 }
+.agent-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    font-size: 10px;
+}
+.agent-row:last-child { margin-bottom: 0; }
+.agent-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    flex-shrink: 0;
+}
+.agent-dot.active {
+    background: rgba(0,255,65,0.6);
+    box-shadow: 0 0 6px rgba(0,255,65,0.4);
+}
+.agent-dot.running {
+    background: rgba(102,126,234,0.8);
+    box-shadow: 0 0 8px rgba(102,126,234,0.6);
+    animation: agentPulse 1s ease-in-out infinite;
+}
+@keyframes agentPulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+.agent-name {
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 1px;
+    flex: 1;
+}
+.agent-status {
+    color: rgba(255,255,255,0.25);
+    font-size: 8px;
+    letter-spacing: 1px;
+}
 .spark-chart {
     width: 100%;
     height: 28px;
@@ -650,6 +688,51 @@ canvas {
         <div class="skill-row">
             <span class="skill-label">AUTOMATE</span>
             <div class="skill-bar"><div class="skill-fill" style="width: 93%;"></div></div>
+        </div>
+    </div>
+    
+    <!-- Sub-Agents Node -->
+    <div class="data-node" id="agents-node">
+        <div class="data-node-title">SUB-AGENTS</div>
+        <div class="agent-row">
+            <span class="agent-dot active"></span>
+            <span class="agent-name">CODEX</span>
+            <span class="agent-status">STANDBY</span>
+        </div>
+        <div class="agent-row">
+            <span class="agent-dot active"></span>
+            <span class="agent-name">CLAUDE CODE</span>
+            <span class="agent-status">STANDBY</span>
+        </div>
+        <div class="agent-row">
+            <span class="agent-dot active"></span>
+            <span class="agent-name">BROWSER</span>
+            <span class="agent-status">STANDBY</span>
+        </div>
+        <div class="agent-row">
+            <span class="agent-dot active"></span>
+            <span class="agent-name">WHISPER</span>
+            <span class="agent-status">STANDBY</span>
+        </div>
+        <div class="agent-row">
+            <span class="agent-dot active"></span>
+            <span class="agent-name">IMAGE GEN</span>
+            <span class="agent-status">STANDBY</span>
+        </div>
+        <div class="agent-row">
+            <span class="agent-dot active"></span>
+            <span class="agent-name">WEB SEARCH</span>
+            <span class="agent-status">STANDBY</span>
+        </div>
+        <div class="agent-row">
+            <span class="agent-dot active"></span>
+            <span class="agent-name">GITHUB</span>
+            <span class="agent-status">STANDBY</span>
+        </div>
+        <div class="agent-row">
+            <span class="agent-dot active"></span>
+            <span class="agent-name">EMAIL</span>
+            <span class="agent-status">STANDBY</span>
         </div>
     </div>
 </div>
