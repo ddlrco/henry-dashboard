@@ -4,615 +4,439 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HENRY - AI Command Center</title>
-    <style>* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-:root {
-    --primary-cyan: #00d9ff;
-    --primary-blue: #0066ff;
-    --dark-bg: #0a0e27;
-    --panel-bg: rgba(15, 23, 42, 0.8);
-    --panel-border: rgba(0, 217, 255, 0.3);
-    --text-primary: #e2e8f0;
-    --text-secondary: #94a3b8;
-    --success: #00ff88;
-    --warning: #ffaa00;
-    --danger: #ff4444;
-}
-
-body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: var(--dark-bg);
-    color: var(--text-primary);
-    overflow-x: hidden;
-    min-height: 100vh;
-}
-
-.grid-background {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: 
-        linear-gradient(rgba(0, 217, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 217, 255, 0.05) 1px, transparent 1px);
-    background-size: 50px 50px;
-    pointer-events: none;
-    z-index: 0;
-}
-
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.5rem 2rem;
-    background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--panel-border);
-    position: relative;
-    z-index: 10;
-}
-
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.logo-ring {
-    width: 40px;
-    height: 40px;
-    border: 2px solid var(--primary-cyan);
-    border-radius: 50%;
-    position: relative;
-    animation: pulse 2s ease-in-out infinite;
-}
-
-.logo-ring::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 20px;
-    height: 20px;
-    background: var(--primary-cyan);
-    border-radius: 50%;
-    box-shadow: 0 0 20px var(--primary-cyan);
-}
-
-@keyframes pulse {
-    0%, 100% { box-shadow: 0 0 10px var(--primary-cyan); }
-    50% { box-shadow: 0 0 25px var(--primary-cyan); }
-}
-
-.logo-text {
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: var(--primary-cyan);
-    text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
-}
-
-.status-indicator {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.status-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    animation: blink 2s ease-in-out infinite;
-}
-
-.status-dot.online {
-    background: var(--success);
-    box-shadow: 0 0 10px var(--success);
-}
-
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-}
-
-.status-text {
-    font-size: 0.875rem;
-    color: var(--success);
-    font-weight: 600;
-}
-
-.header-center {
-    text-align: center;
-}
-
-.time {
-    font-size: 2rem;
-    font-weight: 300;
-    letter-spacing: 0.05em;
-    color: var(--primary-cyan);
-}
-
-.date {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    margin-top: 0.25rem;
-}
-
-.header-right .location {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-}
-
-.dashboard {
-    display: grid;
-    grid-template-columns: 300px 1fr 300px;
-    gap: 1.5rem;
-    padding: 1.5rem;
-    position: relative;
-    z-index: 1;
-    max-width: 1920px;
-    margin: 0 auto;
-}
-
-.column {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.panel {
-    background: var(--panel-bg);
-    border: 1px solid var(--panel-border);
-    border-radius: 8px;
-    backdrop-filter: blur(10px);
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
-
-.panel:hover {
-    border-color: var(--primary-cyan);
-    box-shadow: 0 0 20px rgba(0, 217, 255, 0.2);
-}
-
-.panel-header {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--panel-border);
-    background: rgba(0, 217, 255, 0.05);
-}
-
-.panel-header h2 {
-    font-size: 0.875rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    color: var(--primary-cyan);
-}
-
-.panel-content {
-    padding: 1.5rem;
-}
-
-.stat-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.stat-row:last-child {
-    border-bottom: none;
-}
-
-.stat-label {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-}
-
-.stat-value {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.stat-value.positive {
-    color: var(--success);
-}
-
-.stat-value.warning {
-    color: var(--warning);
-}
-
-.crypto-item {
-    padding: 1rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.crypto-item:last-child {
-    border-bottom: none;
-}
-
-.crypto-name {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    margin-bottom: 0.5rem;
-}
-
-.crypto-price {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.crypto-change {
-    font-size: 0.875rem;
-    margin-top: 0.25rem;
-}
-
-.weather-main {
-    text-align: center;
-    padding: 1rem 0;
-}
-
-.weather-temp {
-    font-size: 2.5rem;
-    font-weight: 300;
-    color: var(--primary-cyan);
-}
-
-.weather-condition {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    margin-top: 0.5rem;
-}
-
-.command-panel {
-    height: 500px;
-    display: flex;
-    flex-direction: column;
-}
-
-.command-panel .panel-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-}
-
-.chat-container {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.chat-message {
-    display: flex;
-    gap: 1rem;
-    animation: slideIn 0.3s ease;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.message-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary-cyan), var(--primary-blue));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    flex-shrink: 0;
-}
-
-.message-content {
-    flex: 1;
-}
-
-.message-text {
-    background: rgba(0, 217, 255, 0.1);
-    padding: 1rem;
-    border-radius: 8px;
-    border: 1px solid rgba(0, 217, 255, 0.2);
-    line-height: 1.6;
-}
-
-.chat-input-container {
-    padding: 1.5rem;
-    border-top: 1px solid var(--panel-border);
-    background: rgba(0, 0, 0, 0.2);
-    display: flex;
-    gap: 1rem;
-}
-
-#chat-input {
-    flex: 1;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--panel-border);
-    border-radius: 4px;
-    padding: 0.75rem 1rem;
-    color: var(--text-primary);
-    font-size: 0.875rem;
-}
-
-#chat-input:focus {
-    outline: none;
-    border-color: var(--primary-cyan);
-    box-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
-}
-
-#send-btn {
-    background: linear-gradient(135deg, var(--primary-cyan), var(--primary-blue));
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-#send-btn:hover {
-    box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
-    transform: translateY(-2px);
-}
-
-.activity-panel {
-    flex: 1;
-}
-
-.activity-feed {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.activity-item {
-    display: flex;
-    gap: 1rem;
-    padding: 0.75rem;
-    background: rgba(0, 217, 255, 0.05);
-    border-radius: 4px;
-    border-left: 2px solid var(--primary-cyan);
-}
-
-.activity-time {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    min-width: 50px;
-}
-
-.activity-text {
-    font-size: 0.875rem;
-    color: var(--text-primary);
-}
-
-.location-stats {
-    margin-bottom: 1.5rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.location-stats:last-child {
-    margin-bottom: 0;
-    padding-bottom: 0;
-    border-bottom: none;
-}
-
-.location-stats h3 {
-    font-size: 1rem;
-    color: var(--primary-cyan);
-    margin-bottom: 1rem;
-}
-
-.action-btn {
-    width: 100%;
-    background: rgba(0, 217, 255, 0.1);
-    border: 1px solid var(--panel-border);
-    padding: 0.75rem;
-    border-radius: 4px;
-    color: var(--text-primary);
-    font-size: 0.875rem;
-    font-weight: 600;
-    cursor: pointer;
-    margin-bottom: 0.75rem;
-    transition: all 0.3s ease;
-}
-
-.action-btn:last-child {
-    margin-bottom: 0;
-}
-
-.action-btn:hover {
-    background: rgba(0, 217, 255, 0.2);
-    border-color: var(--primary-cyan);
-    box-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
-}
-
-.voice-control {
-    text-align: center;
-}
-
-.voice-visualizer {
-    margin-bottom: 1.5rem;
-}
-
-.voice-circle {
-    width: 80px;
-    height: 80px;
-    border: 2px solid var(--primary-cyan);
-    border-radius: 50%;
-    margin: 0 auto;
-    position: relative;
-    animation: pulse 2s ease-in-out infinite;
-}
-
-.voice-circle::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 40px;
-    height: 40px;
-    background: var(--primary-cyan);
-    border-radius: 50%;
-    opacity: 0.5;
-}
-
-.voice-btn {
-    background: linear-gradient(135deg, var(--primary-cyan), var(--primary-blue));
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.voice-btn:hover {
-    box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
-    transform: translateY(-2px);
-}
-
-@media (max-width: 1400px) {
-    .dashboard {
-        grid-template-columns: 250px 1fr 250px;
-    }
-}
-
-@media (max-width: 1024px) {
-    .dashboard {
-        grid-template-columns: 1fr;
-    }
-    
-    .column {
-        width: 100%;
-    }
-}
-
-/* Password Screen */
-.password-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: var(--dark-bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-}
-
-.password-box {
-    background: var(--panel-bg);
-    border: 1px solid var(--panel-border);
-    border-radius: 8px;
-    padding: 3rem 2.5rem;
-    text-align: center;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 0 30px rgba(0, 217, 255, 0.2);
-    max-width: 400px;
-    width: 90%;
-}
-
-.password-logo {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--primary-cyan);
-    margin-bottom: 0.5rem;
-    text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
-}
-
-.password-subtitle {
-    color: var(--text-secondary);
-    margin-bottom: 2rem;
-    font-size: 0.875rem;
-}
-
-.password-input-group {
-    margin-bottom: 1.5rem;
-}
-
-.password-input {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--panel-border);
-    border-radius: 4px;
-    padding: 0.75rem 1rem;
-    color: var(--text-primary);
-    font-size: 1rem;
-    text-align: center;
-    letter-spacing: 0.1em;
-}
-
-.password-input:focus {
-    outline: none;
-    border-color: var(--primary-cyan);
-    box-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
-}
-
-.password-submit {
-    width: 100%;
-    background: linear-gradient(135deg, var(--primary-cyan), var(--primary-blue));
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 1rem;
-}
-
-.password-submit:hover {
-    box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
-    transform: translateY(-2px);
-}
-
-.password-error {
-    color: var(--danger);
-    margin-top: 1rem;
-    font-size: 0.875rem;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.password-error.show {
-    opacity: 1;
-}
-
-.hidden {
-    display: none !important;
-}
-
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-cyan: #00d9ff;
+            --primary-blue: #0066ff;
+            --dark-bg: #0a0e27;
+            --panel-bg: rgba(15, 23, 42, 0.8);
+            --panel-border: rgba(0, 217, 255, 0.3);
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --danger: #ff4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .grid-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 217, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 217, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Password Screen */
+        .password-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .password-box {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 3rem 2.5rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 217, 255, 0.2);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .password-logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-cyan);
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+        }
+
+        .password-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 0.875rem;
+        }
+
+        .password-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--panel-border);
+            border-radius: 4px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            text-align: center;
+            letter-spacing: 0.1em;
+            margin-bottom: 1.5rem;
+        }
+
+        .password-input:focus {
+            outline: none;
+            border-color: var(--primary-cyan);
+            box-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+        }
+
+        .password-submit {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary-cyan), var(--primary-blue));
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .password-submit:hover {
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .password-error {
+            color: var(--danger);
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .password-error.show {
+            opacity: 1;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Main Dashboard */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--panel-border);
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-ring {
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--primary-cyan);
+            border-radius: 50%;
+            position: relative;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .logo-ring::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background: var(--primary-cyan);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--primary-cyan);
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 10px var(--primary-cyan); }
+            50% { box-shadow: 0 0 25px var(--primary-cyan); }
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--primary-cyan);
+            text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 10px var(--success);
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-text {
+            font-size: 0.875rem;
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        /* Voice Interface - TikTok Style */
+        .voice-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .voice-status {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+        }
+
+        .voice-visualizer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            height: 120px;
+            margin-bottom: 3rem;
+        }
+
+        .voice-bar {
+            width: 4px;
+            background: var(--primary-cyan);
+            border-radius: 2px;
+            transition: height 0.1s ease;
+            box-shadow: 0 0 10px var(--primary-cyan);
+        }
+
+        .voice-activate-btn {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-cyan), var(--primary-blue));
+            border: none;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 30px rgba(0, 217, 255, 0.5);
+        }
+
+        .voice-activate-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 40px rgba(0, 217, 255, 0.7);
+        }
+
+        .voice-activate-btn.active {
+            animation: pulse-ring 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-ring {
+            0%, 100% { 
+                box-shadow: 0 0 30px rgba(0, 217, 255, 0.5), 0 0 60px rgba(0, 217, 255, 0.3);
+            }
+            50% { 
+                box-shadow: 0 0 50px rgba(0, 217, 255, 0.8), 0 0 100px rgba(0, 217, 255, 0.5);
+            }
+        }
+
+        .voice-activate-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>') center/contain no-repeat;
+        }
+
+        .voice-response {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .voice-response.show {
+            opacity: 1;
+        }
+
+        /* Side Panels */
+        .side-panel {
+            position: fixed;
+            top: 100px;
+            width: 300px;
+            z-index: 4;
+        }
+
+        .side-panel.left {
+            left: 2rem;
+        }
+
+        .side-panel.right {
+            right: 2rem;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .panel-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--panel-border);
+            background: rgba(0, 217, 255, 0.05);
+        }
+
+        .panel-header h2 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            color: var(--primary-cyan);
+        }
+
+        .panel-content {
+            padding: 1.5rem;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .stat-value {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .stat-value.positive {
+            color: var(--success);
+        }
+
+        .crypto-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .crypto-item:last-child {
+            border-bottom: none;
+        }
+
+        .crypto-name {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .crypto-price {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .crypto-change {
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        @media (max-width: 1400px) {
+            .side-panel {
+                width: 250px;
+            }
+            .side-panel.left {
+                left: 1rem;
+            }
+            .side-panel.right {
+                right: 1rem;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .side-panel {
+                display: none;
+            }
+            .voice-container {
+                width: 95%;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="grid-background"></div>
+    
     <!-- Password Screen -->
     <div class="password-screen" id="password-screen">
         <div class="password-box">
@@ -620,490 +444,267 @@ header {
             <div class="password-subtitle">AI Command Center</div>
             <div class="password-subtitle">Enter access code</div>
             <form id="password-form">
-                <div class="password-input-group">
-                    <input 
-                        type="password" 
-                        id="password-input" 
-                        class="password-input" 
-                        placeholder="••••••••" 
-                        autocomplete="off"
-                        autofocus
-                    />
-                </div>
+                <input 
+                    type="password" 
+                    id="password-input" 
+                    class="password-input" 
+                    placeholder="••••••••" 
+                    autocomplete="off"
+                    autofocus
+                />
                 <button type="submit" class="password-submit">ACCESS</button>
                 <div class="password-error" id="password-error">Access denied. Try again.</div>
             </form>
         </div>
     </div>
     
-
-    <div class="grid-background"></div>
-    
+    <!-- Main Dashboard -->
     <header>
-        <div class="header-left">
-            <div class="logo">
-                <div class="logo-ring"></div>
-                <span class="logo-text">HENRY</span>
-            </div>
-            <div class="status-indicator">
-                <span class="status-dot online"></span>
-                <span class="status-text">ONLINE</span>
-            </div>
+        <div class="logo">
+            <div class="logo-ring"></div>
+            <span class="logo-text">HENRY</span>
         </div>
-        <div class="header-center">
-            <div class="time" id="current-time">--:--:--</div>
-            <div class="date" id="current-date">Loading...</div>
-        </div>
-        <div class="header-right">
-            <div class="location">Edmonton, AB</div>
+        <div class="status-indicator">
+            <span class="status-dot"></span>
+            <span class="status-text">ONLINE</span>
         </div>
     </header>
 
-    <main class="dashboard">
-        <!-- Left Column -->
-        <div class="column left">
-            <!-- System Status -->
-            <div class="panel">
-                <div class="panel-header">
-                    <h2>SYSTEM STATUS</h2>
-                </div>
-                <div class="panel-content">
-                    <div class="stat-row">
-                        <span class="stat-label">Model</span>
-                        <span class="stat-value">Claude Sonnet 4.5</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Token Usage</span>
-                        <span class="stat-value">64K / 200K</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Session</span>
-                        <span class="stat-value">Active</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Uptime</span>
-                        <span class="stat-value" id="uptime">--:--:--</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Market Watch -->
-            <div class="panel">
-                <div class="panel-header">
-                    <h2>MARKET WATCH</h2>
-                </div>
-                <div class="panel-content">
-                    <div class="crypto-item">
-                        <div class="crypto-name">BTC/CAD</div>
-                        <div class="crypto-price" id="btc-price">Loading...</div>
-                        <div class="crypto-change" id="btc-change">--</div>
-                    </div>
-                    <div class="crypto-item">
-                        <div class="crypto-name">ETH/CAD</div>
-                        <div class="crypto-price" id="eth-price">Loading...</div>
-                        <div class="crypto-change" id="eth-change">--</div>
-                    </div>
-                    <div class="crypto-item">
-                        <div class="crypto-name">SOL/CAD</div>
-                        <div class="crypto-price" id="sol-price">Loading...</div>
-                        <div class="crypto-change" id="sol-change">--</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Weather -->
-            <div class="panel">
-                <div class="panel-header">
-                    <h2>WEATHER</h2>
-                </div>
-                <div class="panel-content">
-                    <div class="weather-main">
-                        <div class="weather-temp" id="weather-temp">--°C</div>
-                        <div class="weather-condition" id="weather-condition">Loading...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Center Column -->
-        <div class="column center">
-            <!-- Command Interface -->
-            <div class="panel command-panel">
-                <div class="panel-header">
-                    <h2>COMMAND INTERFACE</h2>
-                </div>
-                <div class="panel-content">
-                    <div class="chat-container" id="chat-container">
-                        <div class="chat-message assistant">
-                            <div class="message-avatar">H</div>
-                            <div class="message-content">
-                                <div class="message-text">Good evening. HENRY AI Command Center online. How can I assist you?</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="chat-input-container">
-                        <input type="text" id="chat-input" placeholder="Enter command..." />
-                        <button id="send-btn">SEND</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recent Activity -->
-            <div class="panel activity-panel">
-                <div class="panel-header">
-                    <h2>RECENT ACTIVITY</h2>
-                </div>
-                <div class="panel-content">
-                    <div class="activity-feed" id="activity-feed">
-                        <div class="activity-item">
-                            <span class="activity-time">18:28</span>
-                            <span class="activity-text">Dashboard initialization complete</span>
-                        </div>
-                        <div class="activity-item">
-                            <span class="activity-time">16:41</span>
-                            <span class="activity-text">Generated PDFs for Edmonton & Morinville locations</span>
-                        </div>
-                        <div class="activity-item">
-                            <span class="activity-time">16:34</span>
-                            <span class="activity-text">Processed financial data uploads</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Right Column -->
-        <div class="column right">
-            <!-- Business Metrics -->
-            <div class="panel">
-                <div class="panel-header">
-                    <h2>SAL'S FAMOUS - 2025</h2>
-                </div>
-                <div class="panel-content">
-                    <div class="location-stats">
-                        <h3>Gibbons</h3>
-                        <div class="stat-row">
-                            <span class="stat-label">Annual Sales</span>
-                            <span class="stat-value">$836,487</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Margin</span>
-                            <span class="stat-value positive">97.88%</span>
-                        </div>
-                    </div>
-                    <div class="location-stats">
-                        <h3>Morinville</h3>
-                        <div class="stat-row">
-                            <span class="stat-label">Annual Sales</span>
-                            <span class="stat-value">$528,971</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Margin</span>
-                            <span class="stat-value">25.86%</span>
-                        </div>
-                    </div>
-                    <div class="location-stats">
-                        <h3>Edmonton</h3>
-                        <div class="stat-row">
-                            <span class="stat-label">Annual Sales</span>
-                            <span class="stat-value">$320,089</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Margin</span>
-                            <span class="stat-value warning">6.24%</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="panel">
-                <div class="panel-header">
-                    <h2>QUICK ACTIONS</h2>
-                </div>
-                <div class="panel-content">
-                    <button class="action-btn">Generate Reports</button>
-                    <button class="action-btn">Check Markets</button>
-                    <button class="action-btn">Business Overview</button>
-                    <button class="action-btn">Task Manager</button>
-                </div>
-            </div>
-
-            <!-- Voice Control -->
-            <div class="panel">
-                <div class="panel-header">
-                    <h2>VOICE CONTROL</h2>
-                </div>
-                <div class="panel-content voice-control">
-                    <div class="voice-visualizer">
-                        <div class="voice-circle"></div>
-                    </div>
-                    <button class="voice-btn" id="voice-btn">
-                        <span>ACTIVATE VOICE</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <script>// Time and Date
-function updateTime() {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('en-US', { 
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-    });
-    const dateStr = now.toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-    
-    document.getElementById('current-time').textContent = timeStr;
-    document.getElementById('current-date').textContent = dateStr;
-}
-
-// Uptime
-const startTime = Date.now();
-function updateUptime() {
-    const elapsed = Date.now() - startTime;
-    const hours = Math.floor(elapsed / 3600000);
-    const minutes = Math.floor((elapsed % 3600000) / 60000);
-    const seconds = Math.floor((elapsed % 60000) / 1000);
-    
-    const uptimeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    document.getElementById('uptime').textContent = uptimeStr;
-}
-
-// Update time every second
-setInterval(updateTime, 1000);
-setInterval(updateUptime, 1000);
-updateTime();
-updateUptime();
-
-// Mock crypto prices (in production, you'd fetch real data)
-function updateCryptoPrices() {
-    // Simulated prices in CAD
-    const btcPrice = 125000 + (Math.random() - 0.5) * 1000;
-    const ethPrice = 5200 + (Math.random() - 0.5) * 50;
-    const solPrice = 220 + (Math.random() - 0.5) * 5;
-    
-    const btcChange = ((Math.random() - 0.5) * 4).toFixed(2);
-    const ethChange = ((Math.random() - 0.5) * 4).toFixed(2);
-    const solChange = ((Math.random() - 0.5) * 4).toFixed(2);
-    
-    document.getElementById('btc-price').textContent = `$${btcPrice.toLocaleString('en-CA', {maximumFractionDigits: 0})}`;
-    document.getElementById('eth-price').textContent = `$${ethPrice.toLocaleString('en-CA', {maximumFractionDigits: 0})}`;
-    document.getElementById('sol-price').textContent = `$${solPrice.toLocaleString('en-CA', {maximumFractionDigits: 2})}`;
-    
-    const btcChangeEl = document.getElementById('btc-change');
-    const ethChangeEl = document.getElementById('eth-change');
-    const solChangeEl = document.getElementById('sol-change');
-    
-    btcChangeEl.textContent = `${btcChange > 0 ? '+' : ''}${btcChange}%`;
-    ethChangeEl.textContent = `${ethChange > 0 ? '+' : ''}${ethChange}%`;
-    solChangeEl.textContent = `${solChange > 0 ? '+' : ''}${solChange}%`;
-    
-    btcChangeEl.style.color = btcChange > 0 ? 'var(--success)' : 'var(--danger)';
-    ethChangeEl.style.color = ethChange > 0 ? 'var(--success)' : 'var(--danger)';
-    solChangeEl.style.color = solChange > 0 ? 'var(--success)' : 'var(--danger)';
-}
-
-// Update crypto prices every 5 seconds
-updateCryptoPrices();
-setInterval(updateCryptoPrices, 5000);
-
-// Mock weather (in production, you'd fetch real data)
-function updateWeather() {
-    // Simulated weather for Edmonton
-    const temp = -5 + Math.floor(Math.random() * 10);
-    const conditions = ['Clear', 'Partly Cloudy', 'Cloudy', 'Light Snow'];
-    const condition = conditions[Math.floor(Math.random() * conditions.length)];
-    
-    document.getElementById('weather-temp').textContent = `${temp}°C`;
-    document.getElementById('weather-condition').textContent = condition;
-}
-
-updateWeather();
-setInterval(updateWeather, 60000); // Update every minute
-
-// Chat functionality
-const chatContainer = document.getElementById('chat-container');
-const chatInput = document.getElementById('chat-input');
-const sendBtn = document.getElementById('send-btn');
-
-function addMessage(text, isUser = false) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `chat-message ${isUser ? 'user' : 'assistant'}`;
-    
-    const avatar = document.createElement('div');
-    avatar.className = 'message-avatar';
-    avatar.textContent = isUser ? 'N' : 'H';
-    
-    const content = document.createElement('div');
-    content.className = 'message-content';
-    
-    const messageText = document.createElement('div');
-    messageText.className = 'message-text';
-    messageText.textContent = text;
-    
-    content.appendChild(messageText);
-    messageDiv.appendChild(avatar);
-    messageDiv.appendChild(content);
-    
-    chatContainer.appendChild(messageDiv);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-}
-
-function sendMessage() {
-    const message = chatInput.value.trim();
-    if (!message) return;
-    
-    addMessage(message, true);
-    chatInput.value = '';
-    
-    // Simulate HENRY's response
-    setTimeout(() => {
-        const responses = [
-            "Command acknowledged. Processing your request.",
-            "Understood. Executing task now.",
-            "Roger that. I'm on it.",
-            "Affirmative. Working on it.",
-            "Got it. Let me handle that for you."
-        ];
-        const response = responses[Math.floor(Math.random() * responses.length)];
-        addMessage(response);
-    }, 500);
-}
-
-sendBtn.addEventListener('click', sendMessage);
-chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        sendMessage();
-    }
-});
-
-// Voice control
-const voiceBtn = document.getElementById('voice-btn');
-let voiceActive = false;
-
-voiceBtn.addEventListener('click', () => {
-    voiceActive = !voiceActive;
-    voiceBtn.textContent = voiceActive ? 'LISTENING...' : 'ACTIVATE VOICE';
-    voiceBtn.style.background = voiceActive 
-        ? 'linear-gradient(135deg, var(--success), #00aa66)' 
-        : 'linear-gradient(135deg, var(--primary-cyan), var(--primary-blue))';
-    
-    if (voiceActive) {
-        // In production, you'd initialize speech recognition here
-        addMessage("Voice mode activated. Listening...");
-    }
-});
-
-// Activity feed
-function addActivity(text) {
-    const activityFeed = document.getElementById('activity-feed');
-    const activityItem = document.createElement('div');
-    activityItem.className = 'activity-item';
-    
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('en-US', { 
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-    
-    const time = document.createElement('span');
-    time.className = 'activity-time';
-    time.textContent = timeStr;
-    
-    const activityText = document.createElement('span');
-    activityText.className = 'activity-text';
-    activityText.textContent = text;
-    
-    activityItem.appendChild(time);
-    activityItem.appendChild(activityText);
-    
-    activityFeed.insertBefore(activityItem, activityFeed.firstChild);
-    
-    // Keep only the last 10 activities
-    while (activityFeed.children.length > 10) {
-        activityFeed.removeChild(activityFeed.lastChild);
-    }
-}
-
-// Quick action buttons
-const actionButtons = document.querySelectorAll('.action-btn');
-actionButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-        const action = btn.textContent;
-        addActivity(`Quick action: ${action}`);
-        addMessage(`Executing quick action: ${action}`);
-    });
-});
-
-// Initialize
-console.log('%cHENRY AI Command Center', 'color: #00d9ff; font-size: 24px; font-weight: bold;');
-console.log('%cSystem online and ready.', 'color: #00ff88; font-size: 14px;');
-addActivity('Dashboard fully initialized');
-
-
-// Password Protection
-const PASSWORD = '@agenthenry123'; // Change this to your desired password
-const passwordScreen = document.getElementById('password-screen');
-const passwordForm = document.getElementById('password-form');
-const passwordInput = document.getElementById('password-input');
-const passwordError = document.getElementById('password-error');
-const mainContent = document.querySelector('.grid-background');
-
-// Check if already authenticated
-if (sessionStorage.getItem('henryAuth') === 'true') {
-    passwordScreen.classList.add('hidden');
-} else {
-    document.querySelector('.grid-background').style.display = 'none';
-    document.querySelector('header').style.display = 'none';
-    document.querySelector('.dashboard').style.display = 'none';
-}
-
-passwordForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const entered = passwordInput.value;
-    
-    if (entered === PASSWORD) {
-        sessionStorage.setItem('henryAuth', 'true');
-        passwordScreen.classList.add('hidden');
-        document.querySelector('.grid-background').style.display = 'block';
-        document.querySelector('header').style.display = 'flex';
-        document.querySelector('.dashboard').style.display = 'grid';
-        passwordInput.value = '';
-        passwordError.classList.remove('show');
-    } else {
-        passwordError.classList.add('show');
-        passwordInput.value = '';
-        passwordInput.focus();
+    <!-- Voice Interface (Center) -->
+    <div class="voice-container">
+        <div class="voice-status" id="voice-status">TAP TO SPEAK</div>
         
+        <div class="voice-visualizer" id="visualizer">
+            <!-- Waveform bars will be generated by JavaScript -->
+        </div>
+        
+        <button class="voice-activate-btn" id="voice-btn"></button>
+        
+        <div class="voice-response" id="voice-response">
+            Good evening. HENRY AI Command Center online. How can I assist you?
+        </div>
+    </div>
+
+    <!-- Left Panel -->
+    <div class="side-panel left">
+        <div class="panel">
+            <div class="panel-header">
+                <h2>SYSTEM STATUS</h2>
+            </div>
+            <div class="panel-content">
+                <div class="stat-row">
+                    <span class="stat-label">Model</span>
+                    <span class="stat-value">Claude Sonnet 4.5</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Session</span>
+                    <span class="stat-value">Active</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Uptime</span>
+                    <span class="stat-value" id="uptime">--:--:--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="side-panel right">
+        <div class="panel">
+            <div class="panel-header">
+                <h2>MARKET WATCH</h2>
+            </div>
+            <div class="panel-content">
+                <div class="crypto-item">
+                    <div class="crypto-name">BTC/CAD</div>
+                    <div class="crypto-price" id="btc-price">Loading...</div>
+                    <div class="crypto-change" id="btc-change">--</div>
+                </div>
+                <div class="crypto-item">
+                    <div class="crypto-name">ETH/CAD</div>
+                    <div class="crypto-price" id="eth-price">Loading...</div>
+                    <div class="crypto-change" id="eth-change">--</div>
+                </div>
+                <div class="crypto-item">
+                    <div class="crypto-name">SOL/CAD</div>
+                    <div class="crypto-price" id="sol-price">Loading...</div>
+                    <div class="crypto-change" id="sol-change">--</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Password Protection
+        const PASSWORD = '@agenthenry123';
+        const passwordScreen = document.getElementById('password-screen');
+        const passwordForm = document.getElementById('password-form');
+        const passwordInput = document.getElementById('password-input');
+        const passwordError = document.getElementById('password-error');
+
+        if (sessionStorage.getItem('henryAuth') === 'true') {
+            passwordScreen.classList.add('hidden');
+        } else {
+            document.querySelector('.grid-background').style.display = 'none';
+            document.querySelector('header').style.display = 'none';
+            document.querySelectorAll('.side-panel').forEach(p => p.style.display = 'none');
+            document.querySelector('.voice-container').style.display = 'none';
+        }
+
+        passwordForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const entered = passwordInput.value;
+            
+            if (entered === PASSWORD) {
+                sessionStorage.setItem('henryAuth', 'true');
+                passwordScreen.classList.add('hidden');
+                document.querySelector('.grid-background').style.display = 'block';
+                document.querySelector('header').style.display = 'flex';
+                document.querySelectorAll('.side-panel').forEach(p => p.style.display = 'block');
+                document.querySelector('.voice-container').style.display = 'block';
+                passwordInput.value = '';
+                passwordError.classList.remove('show');
+                initVoiceVisualizer();
+            } else {
+                passwordError.classList.add('show');
+                passwordInput.value = '';
+                passwordInput.focus();
+                passwordForm.style.animation = 'shake 0.5s';
+                setTimeout(() => passwordForm.style.animation = '', 500);
+            }
+        });
+
         // Shake animation
-        passwordForm.style.animation = 'shake 0.5s';
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+                20%, 40%, 60%, 80% { transform: translateX(10px); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Uptime
+        const startTime = Date.now();
+        function updateUptime() {
+            const elapsed = Date.now() - startTime;
+            const hours = Math.floor(elapsed / 3600000);
+            const minutes = Math.floor((elapsed % 3600000) / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            document.getElementById('uptime').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        setInterval(updateUptime, 1000);
+        updateUptime();
+
+        // Mock crypto prices
+        function updateCryptoPrices() {
+            const btcPrice = 125000 + (Math.random() - 0.5) * 1000;
+            const ethPrice = 5200 + (Math.random() - 0.5) * 50;
+            const solPrice = 220 + (Math.random() - 0.5) * 5;
+            
+            const btcChange = ((Math.random() - 0.5) * 4).toFixed(2);
+            const ethChange = ((Math.random() - 0.5) * 4).toFixed(2);
+            const solChange = ((Math.random() - 0.5) * 4).toFixed(2);
+            
+            document.getElementById('btc-price').textContent = `$${btcPrice.toLocaleString('en-CA', {maximumFractionDigits: 0})}`;
+            document.getElementById('eth-price').textContent = `$${ethPrice.toLocaleString('en-CA', {maximumFractionDigits: 0})}`;
+            document.getElementById('sol-price').textContent = `$${solPrice.toLocaleString('en-CA', {maximumFractionDigits: 2})}`;
+            
+            const btcChangeEl = document.getElementById('btc-change');
+            const ethChangeEl = document.getElementById('eth-change');
+            const solChangeEl = document.getElementById('sol-change');
+            
+            btcChangeEl.textContent = `${btcChange > 0 ? '+' : ''}${btcChange}%`;
+            ethChangeEl.textContent = `${ethChange > 0 ? '+' : ''}${ethChange}%`;
+            solChangeEl.textContent = `${solChange > 0 ? '+' : ''}${solChange}%`;
+            
+            btcChangeEl.style.color = btcChange > 0 ? 'var(--success)' : 'var(--danger)';
+            ethChangeEl.style.color = ethChange > 0 ? 'var(--success)' : 'var(--danger)';
+            solChangeEl.style.color = solChange > 0 ? 'var(--success)' : 'var(--danger)';
+        }
+        updateCryptoPrices();
+        setInterval(updateCryptoPrices, 5000);
+
+        // Voice Visualizer - TikTok Style
+        let isListening = false;
+        let animationFrame;
+        const voiceBtn = document.getElementById('voice-btn');
+        const voiceStatus = document.getElementById('voice-status');
+        const voiceResponse = document.getElementById('voice-response');
+        const visualizer = document.getElementById('visualizer');
+
+        function initVoiceVisualizer() {
+            // Create 20 bars for waveform
+            for (let i = 0; i < 20; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'voice-bar';
+                bar.style.height = '20px';
+                visualizer.appendChild(bar);
+            }
+        }
+
+        function animateBars(active = false) {
+            const bars = document.querySelectorAll('.voice-bar');
+            bars.forEach((bar, index) => {
+                if (active) {
+                    const randomHeight = Math.random() * 100 + 20;
+                    bar.style.height = `${randomHeight}px`;
+                } else {
+                    const idleHeight = 20 + Math.sin(Date.now() / 500 + index) * 10;
+                    bar.style.height = `${idleHeight}px`;
+                }
+            });
+            
+            animationFrame = requestAnimationFrame(() => animateBars(active));
+        }
+
+        voiceBtn.addEventListener('click', () => {
+            isListening = !isListening;
+            
+            if (isListening) {
+                voiceBtn.classList.add('active');
+                voiceStatus.textContent = 'LISTENING...';
+                voiceResponse.classList.add('show');
+                voiceResponse.textContent = 'I\'m listening...';
+                animateBars(true);
+                
+                // Simulate response after 3 seconds
+                setTimeout(() => {
+                    isListening = false;
+                    voiceBtn.classList.remove('active');
+                    voiceStatus.textContent = 'PROCESSING...';
+                    
+                    setTimeout(() => {
+                        voiceStatus.textContent = 'TAP TO SPEAK';
+                        const responses = [
+                            "Command acknowledged. Processing your request.",
+                            "Understood. Working on it now.",
+                            "Roger that. I'm on it.",
+                            "Affirmative. Executing task."
+                        ];
+                        voiceResponse.textContent = responses[Math.floor(Math.random() * responses.length)];
+                        animateBars(false);
+                    }, 1000);
+                }, 3000);
+            } else {
+                voiceBtn.classList.remove('active');
+                voiceStatus.textContent = 'TAP TO SPEAK';
+                voiceResponse.classList.remove('show');
+                animateBars(false);
+            }
+        });
+
+        // Start idle animation
         setTimeout(() => {
-            passwordForm.style.animation = '';
+            if (sessionStorage.getItem('henryAuth') === 'true') {
+                animateBars(false);
+            }
         }, 500);
-    }
-});
 
-// Add shake animation
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
-        20%, 40%, 60%, 80% { transform: translateX(10px); }
-    }
-`;
-document.head.appendChild(style);
-
+        console.log('%cHENRY AI Command Center', 'color: #00d9ff; font-size: 24px; font-weight: bold;');
+        console.log('%cSystem online and ready.', 'color: #00ff88; font-size: 14px;');
     </script>
 </body>
 </html>
