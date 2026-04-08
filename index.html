@@ -906,7 +906,7 @@ document.addEventListener("keydown", (e) => {
         paused: false,
         activePaletteIndex: 0,
         currentFormation: 0,
-        numFormations: 4,
+        numFormations: 5,
         densityFactor: 1
     };
     const colorPalettes = [
@@ -1624,11 +1624,81 @@ document.addEventListener("keydown", (e) => {
             }
         }
         
-        switch (formationIndex % 4) {
-            case 0: generateCrystallineSphere(); break;
-            case 1: generateGeodesicSphere(); break;
-            case 2: generateFractalWeb(); break;
-            case 3: generateParticleCloud(); break;
+        function generateWireframeCore() {
+            rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
+            rootNode.size = 2.0;
+            nodes.push(rootNode);
+            
+            // Icosahedron vertices as the core wireframe
+            const phi = (1 + Math.sqrt(5)) / 2;
+            const scale = 6;
+            const icoVerts = [
+                [-1, phi, 0], [1, phi, 0], [-1, -phi, 0], [1, -phi, 0],
+                [0, -1, phi], [0, 1, phi], [0, -1, -phi], [0, 1, -phi],
+                [phi, 0, -1], [phi, 0, 1], [-phi, 0, -1], [-phi, 0, 1]
+            ];
+            
+            // Normalize and create core nodes
+            const coreNodes = [];
+            for (const v of icoVerts) {
+                const len = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+                const pos = new THREE.Vector3(v[0]/len * scale, v[1]/len * scale, v[2]/len * scale);
+                const node = new Node(pos, 1, 0);
+                node.size = 1.8;
+                node.distanceFromRoot = scale;
+                nodes.push(node);
+                coreNodes.push(node);
+                rootNode.addConnection(node, 0.5);
+            }
+            
+            // Connect core nodes (icosahedron edges)
+            for (let i = 0; i < coreNodes.length; i++) {
+                for (let j = i + 1; j < coreNodes.length; j++) {
+                    const d = coreNodes[i].position.distanceTo(coreNodes[j].position);
+                    if (d < scale * 0.75) coreNodes[i].addConnection(coreNodes[j], 0.9);
+                }
+            }
+            
+            // Outer nodes extending from core — like tendrils/constellation
+            const numOuter = Math.floor(120 * densityFactor);
+            for (let i = 0; i < numOuter; i++) {
+                // Pick a random core node to extend from
+                const parent = coreNodes[Math.floor(Math.random() * coreNodes.length)];
+                const dir = parent.position.clone().normalize();
+                
+                // Extend outward with some randomness
+                const distance = scale + 3 + Math.random() * 10;
+                const spread = new THREE.Vector3(
+                    (Math.random() - 0.5) * 8,
+                    (Math.random() - 0.5) * 8,
+                    (Math.random() - 0.5) * 8
+                );
+                const pos = dir.multiplyScalar(distance).add(spread);
+                
+                const layer = Math.floor(pos.length() / 5);
+                const node = new Node(pos, Math.min(layer, 4), 1);
+                node.size = 0.4 + Math.random() * 0.6;
+                node.distanceFromRoot = pos.length();
+                nodes.push(node);
+                
+                // Connect back to parent core node
+                parent.addConnection(node, 0.4);
+                
+                // Connect to nearby outer nodes
+                const nearby = nodes.filter(n => n !== node && n !== rootNode && n.position.distanceTo(pos) < 5);
+                if (nearby.length > 0) {
+                    const closest = nearby.sort((a, b) => a.position.distanceTo(pos) - b.position.distanceTo(pos))[0];
+                    if (!node.isConnectedTo(closest)) node.addConnection(closest, 0.3);
+                }
+            }
+        }
+        
+        switch (formationIndex % 5) {
+            case 0: generateWireframeCore(); break;
+            case 1: generateCrystallineSphere(); break;
+            case 2: generateGeodesicSphere(); break;
+            case 3: generateFractalWeb(); break;
+            case 4: generateParticleCloud(); break;
         }
         if (densityFactor < 1.0) {
             const targetCount = Math.ceil(nodes.length * Math.max(0.3, densityFactor));
