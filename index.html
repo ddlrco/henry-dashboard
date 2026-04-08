@@ -1439,7 +1439,7 @@ function addMsg(text, type) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function sendChat() {
+async function sendChat() {
     const msg = chatInput.value.trim();
     if (!msg && uploadedFiles.length === 0) return;
     if (msg) addMsg(msg, 'user');
@@ -1449,9 +1449,31 @@ function sendChat() {
         fileInfo.textContent = '';
     }
     chatInput.value = '';
-    setTimeout(() => {
-        addMsg('Message received. I\'m processing your request...', 'ai');
-    }, 800);
+    
+    // Call OpenClaw API
+    try {
+        const response = await fetch('http://187.77.212.77:18789/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer cLVJRZ4dM4QEOQxZbBqc94jWevmBEtoI'
+            },
+            body: JSON.stringify({
+                model: 'anthropic/claude-sonnet-4-5',
+                messages: [{ role: 'user', content: msg }],
+                stream: false
+            })
+        });
+        
+        if (!response.ok) throw new Error('API request failed');
+        
+        const data = await response.json();
+        const reply = data.choices[0].message.content;
+        addMsg(reply, 'ai');
+    } catch (error) {
+        addMsg('⚠️ Connection error. Make sure OpenClaw is running.', 'ai');
+        console.error('API Error:', error);
+    }
 }
 
 chatSend.addEventListener('click', sendChat);
