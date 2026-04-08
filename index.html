@@ -1439,7 +1439,7 @@ document.addEventListener("keydown", (e) => {
             rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
             rootNode.size = 2.0;
             nodes.push(rootNode);
-            addWireframeCore(3);
+            addWireframeCore(2);
             const layers = 5;
             const goldenRatio = (1 + Math.sqrt(5)) / 2;
             for (let layer = 1; layer <= layers; layer++) {
@@ -1500,7 +1500,7 @@ document.addEventListener("keydown", (e) => {
             rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
             rootNode.size = 1.8;
             nodes.push(rootNode);
-            addWireframeCore(3);
+            addWireframeCore(2);
             
             // Generate icosahedron vertices and subdivide
             const radius = 13;
@@ -1586,7 +1586,7 @@ document.addEventListener("keydown", (e) => {
             rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
             rootNode.size = 1.6;
             nodes.push(rootNode);
-            addWireframeCore(5);
+            addWireframeCore(3);
             const branches = 6;
             const maxDepth = 4;
             function createBranch(startNode, direction, depth, strength, scale) {
@@ -1660,7 +1660,7 @@ document.addEventListener("keydown", (e) => {
             rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
             rootNode.size = 1.5;
             nodes.push(rootNode);
-            addWireframeCore(3);
+            addWireframeCore(2);
             
             const numParticles = Math.floor(800 * densityFactor);
             const brainShape = (theta, phi) => {
@@ -1788,8 +1788,8 @@ document.addEventListener("keydown", (e) => {
         }
         
         // Post-process: connect outer nodes to nearest core nodes
-        const coreNodesList = nodes.filter(n => n !== rootNode && n.distanceFromRoot <= 6 && n.size >= 1.0);
-        const outerNodes = nodes.filter(n => n !== rootNode && n.distanceFromRoot > 6);
+        const coreNodesList = nodes.filter(n => n !== rootNode && n.distanceFromRoot <= 4 && n.size >= 0.8);
+        const outerNodes = nodes.filter(n => n !== rootNode && n.distanceFromRoot > 4);
         if (coreNodesList.length > 0 && outerNodes.length > 0) {
             for (const outer of outerNodes) {
                 // Find nearest core node
