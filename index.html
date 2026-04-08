@@ -500,8 +500,32 @@ canvas {
 .pw-error{color:#f44;margin-top:1rem;font-size:.875rem;opacity:0;transition:opacity .3s}
 .pw-error.show{opacity:1}
 .pw-hidden{display:none!important}
-body.inverted { filter: invert(1) hue-rotate(180deg); }
-body.inverted canvas { filter: invert(1) hue-rotate(180deg); }
+body.inverted {
+    background: #f0f0f5;
+}
+body.inverted .data-node {
+    border-left-color: rgba(102,126,234,0.5);
+}
+body.inverted .data-node::before {
+    background: linear-gradient(90deg, rgba(102,126,234,0.08), transparent);
+}
+body.inverted .data-node-title { color: rgba(102,126,234,0.7); }
+body.inverted .data-node-value { color: #1a1a2e; }
+body.inverted .data-node-value-sm { color: #1a1a2e; }
+body.inverted .data-node-sub { color: rgba(0,0,0,0.5); }
+body.inverted .data-node-row { color: rgba(0,0,0,0.5); }
+body.inverted .coin-name { color: rgba(0,0,0,0.5); }
+body.inverted .skill-label { color: rgba(0,0,0,0.5); }
+body.inverted .agent-name { color: rgba(0,0,0,0.5); }
+body.inverted .agent-status { color: rgba(0,0,0,0.35); }
+body.inverted .control-button { border-left-color: rgba(102,126,234,0.4); color: rgba(0,0,0,0.5); }
+body.inverted .control-button:hover { color: rgba(102,126,234,0.9); }
+body.inverted .chat-input { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.15); color: #1a1a2e; }
+body.inverted .chat-msg.user { background: rgba(102,126,234,0.15); border-color: rgba(102,126,234,0.3); color: #1a1a2e; }
+body.inverted .chat-msg.ai { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.1); color: #1a1a2e; }
+body.inverted #instruction-title { -webkit-text-fill-color: #1a1a2e; }
+body.inverted #model-status { color: #16a34a; }
+body.inverted #token-count { color: rgba(0,0,0,0.4); }
 
 /* Iron Man HUD */
 #hud-overlay { display: none; }
