@@ -1056,8 +1056,7 @@ document.addEventListener("keydown", (e) => {
         uPulseSpeed: { value: 18.0 },
         uBaseNodeSize: { value: 0.6 },
         uAudioBands: { value: [0.0, 0.0, 0.0, 0.0] },
-        uAudioIntensity: { value: 0.0 },
-        uMouse: { value: new THREE.Vector3(1000, 1000, 1000) }
+        uAudioIntensity: { value: 0.0 }
     };
     const noiseFunctions = `
     vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -1137,7 +1136,6 @@ document.addEventListener("keydown", (e) => {
         uniform float uBaseNodeSize;
         uniform float uAudioBands[4];
         uniform float uAudioIntensity;
-        uniform vec3 uMouse;
         
         varying vec3 vColor;
         varying float vNodeType;
@@ -1202,14 +1200,8 @@ document.addEventListener("keydown", (e) => {
                 float noise = snoise(position * 0.08 + uTime * 0.08);
                 modifiedPosition += normal * noise * 0.15;
             }
-            // Mouse hover proximity glow
-            float mouseDist = distance(modifiedPosition, uMouse);
-            float mouseGlow = smoothstep(8.0, 0.0, mouseDist);
-            float mouseSize = 1.0 + mouseGlow * 0.8;
-            vGlow += mouseGlow * 0.6;
-            
             vec4 mvPosition = modelViewMatrix * vec4(modifiedPosition, 1.0);
-            gl_PointSize = pulseSize * mouseSize * uBaseNodeSize * (1000.0 / -mvPosition.z);
+            gl_PointSize = pulseSize * uBaseNodeSize * (1000.0 / -mvPosition.z);
             gl_Position = projectionMatrix * mvPosition;
         }`,
         fragmentShader: `
@@ -1389,43 +1381,16 @@ document.addEventListener("keydown", (e) => {
                 const len = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
                 const pos = new THREE.Vector3(v[0]/len * coreScale, v[1]/len * coreScale, v[2]/len * coreScale);
                 const node = new Node(pos, 1, 0);
-                node.size = 1.6;
+                node.size = 1.4;
                 node.distanceFromRoot = coreScale;
                 nodes.push(node);
                 coreNodes.push(node);
-                rootNode.addConnection(node, 0.8);
+                rootNode.addConnection(node, 0.6);
             }
-            // Connect all icosahedron edges (wider threshold)
             for (let i = 0; i < coreNodes.length; i++) {
                 for (let j = i + 1; j < coreNodes.length; j++) {
                     const d = coreNodes[i].position.distanceTo(coreNodes[j].position);
-                    if (d < coreScale * 1.2) coreNodes[i].addConnection(coreNodes[j], 0.9);
-                }
-            }
-            // Add midpoint nodes between edges for denser wireframe
-            const midNodes = [];
-            for (let i = 0; i < coreNodes.length; i++) {
-                for (let j = i + 1; j < coreNodes.length; j++) {
-                    if (coreNodes[i].isConnectedTo(coreNodes[j])) {
-                        const mid = new THREE.Vector3().addVectors(coreNodes[i].position, coreNodes[j].position).multiplyScalar(0.5);
-                        mid.normalize().multiplyScalar(coreScale * 0.85);
-                        const midNode = new Node(mid, 1, 0);
-                        midNode.size = 0.8;
-                        midNode.distanceFromRoot = mid.length();
-                        nodes.push(midNode);
-                        midNodes.push(midNode);
-                        coreNodes[i].addConnection(midNode, 0.7);
-                        midNode.addConnection(coreNodes[j], 0.7);
-                    }
-                }
-            }
-            // Cross-connect midpoints that are close
-            for (let i = 0; i < midNodes.length; i++) {
-                for (let j = i + 1; j < midNodes.length; j++) {
-                    const d = midNodes[i].position.distanceTo(midNodes[j].position);
-                    if (d < coreScale * 0.6 && !midNodes[i].isConnectedTo(midNodes[j])) {
-                        midNodes[i].addConnection(midNodes[j], 0.5);
-                    }
+                    if (d < coreScale * 0.75) coreNodes[i].addConnection(coreNodes[j], 0.85);
                 }
             }
             return coreNodes;
@@ -2064,24 +2029,6 @@ document.addEventListener("keydown", (e) => {
             }
         }
     }
-    // Mouse hover effect
-    const raycaster = new THREE.Raycaster();
-    const mouseVec = new THREE.Vector2();
-    renderer.domElement.addEventListener('mousemove', (e) => {
-        mouseVec.x = (e.clientX / window.innerWidth) * 2 - 1;
-        mouseVec.y = -(e.clientY / window.innerHeight) * 2 + 1;
-        raycaster.setFromCamera(mouseVec, camera);
-        // Project a point into the scene at the orb's depth
-        const mouseWorld = new THREE.Vector3(mouseVec.x, mouseVec.y, 0.5).unproject(camera);
-        const dir = mouseWorld.sub(camera.position).normalize();
-        const dist = -camera.position.z / dir.z;
-        const mousePos = camera.position.clone().add(dir.multiplyScalar(dist * 0.8));
-        if (nodesMesh) nodesMesh.material.uniforms.uMouse.value.copy(mousePos);
-    });
-    renderer.domElement.addEventListener('mouseleave', () => {
-        if (nodesMesh) nodesMesh.material.uniforms.uMouse.value.set(1000, 1000, 1000);
-    });
-    
     renderer.domElement.addEventListener('click', (e) => {
         if (e.target.closest('.glass-panel, #control-buttons')) return;
         if (!config.paused) triggerPulse(e.clientX, e.clientY);
