@@ -1756,6 +1756,7 @@ document.addEventListener("keydown", (e) => {
     <div class="chat-messages" id="chat-messages"></div>
     <div class="file-info" id="file-info"></div>
     <div class="chat-input-row">
+        <button class="chat-btn" id="mic-toggle" title="Toggle microphone" style="font-size: 1.4rem;">🎤</button>
         <label class="file-label chat-btn" title="Upload file">📎<input type="file" id="file-input" multiple></label>
         <input type="text" class="chat-input" id="chat-input" placeholder="Message Henry..." autocomplete="off">
         <button class="chat-btn" id="chat-send" title="Send">→</button>
@@ -1771,6 +1772,40 @@ const fileInput = document.getElementById('file-input');
 const fileInfo = document.getElementById('file-info');
 const fileDrop = document.getElementById('file-drop');
 let uploadedFiles = [];
+
+// Mic toggle
+let micActive = false;
+const micToggle = document.getElementById('mic-toggle');
+micToggle.addEventListener('click', () => {
+    micActive = !micActive;
+    if (micActive) {
+        micToggle.style.background = 'rgba(74, 222, 128, 0.3)';
+        micToggle.style.borderColor = 'rgba(74, 222, 128, 0.6)';
+        micToggle.style.color = '#4ade80';
+        micToggle.title = 'Mic ON — click to mute';
+        startMicAnalysis();
+        // Start continuous voice recognition
+        if (window.voiceRecog) {
+            window.voiceRecog.continuous = true;
+            window.voiceRecog.start();
+            window.voiceRecog.onend = () => { if (micActive) window.voiceRecog.start(); };
+        }
+    } else {
+        micToggle.style.background = 'rgba(102, 126, 234, 0.1)';
+        micToggle.style.borderColor = 'rgba(102, 126, 234, 0.4)';
+        micToggle.style.color = '#667eea';
+        micToggle.title = 'Mic OFF — click to unmute';
+        if (window.voiceRecog) {
+            window.voiceRecog.onend = null;
+            window.voiceRecog.abort();
+        }
+        // Stop mic stream for audio reactivity
+        if (micStream) {
+            micStream.mediaStream.getTracks().forEach(t => t.stop());
+            micStream = null;
+        }
+    }
+});
 
 function addMsg(text, type) {
     const div = document.createElement('div');
