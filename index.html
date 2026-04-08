@@ -548,14 +548,9 @@ body.inverted #logout-btn { border-color: rgba(220,38,38,0.3); color: rgba(220,3
 <div class="pw-sub">Neural Command Interface</div>
 <div class="pw-line"></div>
 <form id="pw-form" onsubmit="return false">
-<div id="pw-stage1">
-<button class="pw-btn" type="button" onclick="document.getElementById('pw-stage1').style.display='none';document.getElementById('pw-stage2').style.display='block';document.getElementById('pw-input').focus();">AUTHENTICATE</button>
-</div>
-<div id="pw-stage2" style="display:none;">
-<input type="password" id="pw-input" class="pw-input" placeholder="enter access key" autocomplete="off">
-<button class="pw-btn" type="button" onclick="checkPw()">ENTER</button>
+<input type="password" id="pw-input" class="pw-input" placeholder="" autocomplete="off" style="display:none;" onkeydown="if(event.key==='Enter'){event.preventDefault();checkPw();}">
+<button class="pw-btn" id="pw-auth-btn" type="button" onclick="handleAuth()">AUTHENTICATE</button>
 <div class="pw-error" id="pw-error">UNAUTHORIZED</div>
-</div>
 </form>
 </div>
 </div>
@@ -837,6 +832,19 @@ function henryLogout(){
     // Clear chat
     const msgs = document.getElementById('chat-messages');
     if (msgs) { msgs.innerHTML = ''; msgs.classList.remove('has-messages'); }
+}
+let authStage = 1;
+function handleAuth() {
+    if (authStage === 1) {
+        // Show password field
+        authStage = 2;
+        document.getElementById('pw-input').style.display = '';
+        document.getElementById('pw-input').placeholder = 'enter access key';
+        document.getElementById('pw-input').focus();
+        document.getElementById('pw-auth-btn').textContent = 'ENTER';
+    } else {
+        checkPw();
+    }
 }
 async function checkPw(){
 const pw = document.getElementById("pw-input").value;
