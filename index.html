@@ -382,6 +382,32 @@ canvas {
     transition: width 0.3s;
     box-shadow: 0 0 8px currentColor;
 }
+.skill-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+.skill-row:last-child { margin-bottom: 0; }
+.skill-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.4);
+    width: 48px;
+    flex-shrink: 0;
+}
+.skill-bar {
+    flex: 1;
+    height: 2px;
+    background: rgba(255,255,255,0.06);
+    overflow: hidden;
+}
+.skill-fill {
+    height: 100%;
+    background: linear-gradient(90deg, rgba(102,126,234,0.8), rgba(102,126,234,0.3));
+    box-shadow: 0 0 6px rgba(102,126,234,0.4);
+    transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
 </style>
 <style>
 .password-overlay{position:fixed;inset:0;background:#050508;display:flex;align-items:center;justify-content:center;z-index:9999;font-family:"Outfit",sans-serif}
@@ -517,6 +543,35 @@ canvas {
         <div class="data-node-row">
             <span>SILVER</span>
             <span id="silver-price" class="data-node-value-sm">--</span>
+        </div>
+    </div>
+    
+    <!-- Skills Node -->
+    <div class="data-node" id="skills-node">
+        <div class="data-node-title">CAPABILITIES</div>
+        <div class="skill-row">
+            <span class="skill-label">CODE</span>
+            <div class="skill-bar"><div class="skill-fill" style="width: 95%;"></div></div>
+        </div>
+        <div class="skill-row">
+            <span class="skill-label">VISION</span>
+            <div class="skill-bar"><div class="skill-fill" style="width: 88%;"></div></div>
+        </div>
+        <div class="skill-row">
+            <span class="skill-label">VOICE</span>
+            <div class="skill-bar"><div class="skill-fill" style="width: 82%;"></div></div>
+        </div>
+        <div class="skill-row">
+            <span class="skill-label">DESIGN</span>
+            <div class="skill-bar"><div class="skill-fill" style="width: 90%;"></div></div>
+        </div>
+        <div class="skill-row">
+            <span class="skill-label">DATA</span>
+            <div class="skill-bar"><div class="skill-fill" style="width: 92%;"></div></div>
+        </div>
+        <div class="skill-row">
+            <span class="skill-label">OPS</span>
+            <div class="skill-bar"><div class="skill-fill" style="width: 85%;"></div></div>
         </div>
     </div>
 </div>
