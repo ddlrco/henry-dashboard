@@ -1529,6 +1529,15 @@ async function sendChat() {
         
         const data = await response.json();
         addMsg(data.reply, 'ai');
+        
+        // Speak the reply
+        const utt = new SpeechSynthesisUtterance(data.reply);
+        const voices = window.speechSynthesis.getVoices();
+        const voice = voices.find(v => v.name.includes("Daniel") || v.name.includes("Google UK English Male") || v.name.includes("Samantha") || v.name.includes("Alex"));
+        if (voice) utt.voice = voice;
+        utt.rate = 1.0;
+        utt.pitch = 0.9;
+        window.speechSynthesis.speak(utt);
     } catch (error) {
         addMsg('⚠️ Connection error. Make sure OpenClaw is running.', 'ai');
         console.error('API Error:', error);
