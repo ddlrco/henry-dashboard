@@ -1428,14 +1428,14 @@ document.addEventListener("keydown", (e) => {
                     }
                 }
             }
-            return coreNodes;
+            return [...coreNodes, ...midNodes]; // return all core+mid nodes for outer connection
         }
         
         function generateCrystallineSphere() {
             rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
             rootNode.size = 2.0;
             nodes.push(rootNode);
-            addWireframeCore(4);
+            const coreAllNodes = addWireframeCore(2.5);
             const layers = 5;
             const goldenRatio = (1 + Math.sqrt(5)) / 2;
             for (let layer = 1; layer <= layers; layer++) {
@@ -1464,7 +1464,9 @@ document.addEventListener("keydown", (e) => {
                             node.addConnection(prevLayerNodes[j], Math.max(0.3, strength));
                         }
                     } else {
-                        rootNode.addConnection(node, 0.9);
+                        // Connect first layer to nearest core node
+                        const nearestCore = coreAllNodes.sort((a, b) => pos.distanceTo(a.position) - pos.distanceTo(b.position))[0];
+                        if (nearestCore) nearestCore.addConnection(node, 0.8);
                     }
                 }
                 const layerNodes = nodes.filter(n => n.level === layer && n !== rootNode);
@@ -1496,7 +1498,7 @@ document.addEventListener("keydown", (e) => {
             rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
             rootNode.size = 1.8;
             nodes.push(rootNode);
-            addWireframeCore(4);
+            const coreAllNodes = addWireframeCore(2.5);
             
             // Generate icosahedron vertices and subdivide
             const radius = 13;
@@ -1520,7 +1522,9 @@ document.addEventListener("keydown", (e) => {
                 node.distanceFromRoot = radius;
                 nodes.push(node);
                 mainNodes.push(node);
-                rootNode.addConnection(node, 0.6);
+                // Connect to nearest core node
+                const nearCore = coreAllNodes.sort((a, b) => node.position.distanceTo(a.position) - node.position.distanceTo(b.position))[0];
+                if (nearCore) nearCore.addConnection(node, 0.7);
             }
             
             // Connect nearby main nodes (icosahedron edges)
@@ -1582,7 +1586,7 @@ document.addEventListener("keydown", (e) => {
             rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
             rootNode.size = 1.6;
             nodes.push(rootNode);
-            addWireframeCore(3.5);
+            const coreAllNodes = addWireframeCore(2);
             const branches = 6;
             const maxDepth = 4;
             function createBranch(startNode, direction, depth, strength, scale) {
@@ -1619,7 +1623,13 @@ document.addEventListener("keydown", (e) => {
                     Math.sin(phi) * Math.sin(theta),
                     Math.cos(phi)
                 ).normalize();
-                createBranch(rootNode, direction, 1, 0.9, 1.0);
+                // Start branch from nearest core node
+                const startCore = coreAllNodes.sort((a, b) => {
+                    const da = a.position.clone().normalize().dot(direction);
+                    const db = b.position.clone().normalize().dot(direction);
+                    return db - da;
+                })[0] || rootNode;
+                createBranch(startCore, direction, 1, 0.9, 1.0);
             }
             const leafNodes = nodes.filter(n => n.level >= 2);
             for (let i = 0; i < leafNodes.length; i++) {
@@ -1656,7 +1666,7 @@ document.addEventListener("keydown", (e) => {
             rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
             rootNode.size = 1.5;
             nodes.push(rootNode);
-            addWireframeCore(3);
+            addWireframeCore(2);
             
             const numParticles = Math.floor(800 * densityFactor);
             const brainShape = (theta, phi) => {
