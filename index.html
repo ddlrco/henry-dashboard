@@ -557,7 +557,7 @@ body.inverted canvas { filter: invert(1) hue-rotate(180deg); }
         </select>
         <div id="model-status" style="font-size:11px;color:#4ade80;margin-top:8px;">● Connected</div>
         <div id="token-count" style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px;letter-spacing:1px;">TOKENS: 0</div>
-        <button id="invert-btn" onclick="toggleInvert()" style="margin-top:12px;background:none;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.4);padding:6px 14px;border-radius:4px;font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.3s;">INVERT</button>
+        <button id="invert-btn" onclick="toggleInvert()" style="margin-top:12px;background:none;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.4);padding:6px 14px;border-radius:4px;font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.3s;">PHASE SHIFT</button>
         <button id="logout-btn" onclick="henryLogout()" style="margin-top:8px;background:none;border:1px solid rgba(248,113,113,0.3);color:rgba(248,113,113,0.6);padding:6px 14px;border-radius:4px;font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.3s;">KILL LINK</button>
     </div>
 </div>
@@ -807,7 +807,7 @@ function toggleInvert(){
     inverted = !inverted;
     document.body.classList.toggle('inverted', inverted);
     const btn = document.getElementById('invert-btn');
-    btn.textContent = inverted ? 'REVERT' : 'INVERT';
+    btn.textContent = inverted ? 'PHASE SHIFT ◀' : 'PHASE SHIFT ▶';
 }
 function henryLogout(){
     sessionStorage.removeItem("henryAuth");
