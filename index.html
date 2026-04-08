@@ -712,12 +712,17 @@ async function startMicAnalysis() {
     }
 }
 
-// Auto-start mic on first click
-document.addEventListener('click', () => {
+// Auto-start mic on any user interaction
+function tryStartMic() {
     if (!audioContext) {
-        startMicAnalysis().then(() => console.log('Mic activated on click'));
+        startMicAnalysis().then(() => console.log('Mic activated'));
     }
-}, { once: true });
+}
+document.addEventListener('click', tryStartMic, { once: false });
+document.addEventListener('keydown', tryStartMic, { once: false });
+document.addEventListener('touchstart', tryStartMic, { once: false });
+// Also try on page load (might fail without user gesture but worth trying)
+setTimeout(tryStartMic, 1000);
 
 window.voiceRecog = "webkitSpeechRecognition" in window ? new webkitSpeechRecognition() : ("SpeechRecognition" in window ? new SpeechRecognition() : null);
 if (window.voiceRecog) {
@@ -1860,19 +1865,34 @@ document.addEventListener("keydown", (e) => {
             nodesMesh.geometry.attributes.position.needsUpdate = true;
         }
         
+        // Smooth audio intensity for visual effects
+        const smoothAudio = audioIntensity * 0.3 + (window._prevAudio || 0) * 0.7;
+        window._prevAudio = smoothAudio;
+        
         if (!config.paused) {
             if (nodesMesh) {
                 nodesMesh.material.uniforms.uTime.value = t;
                 nodesMesh.material.uniforms.uAudioBands.value = frequencyBands;
                 nodesMesh.material.uniforms.uAudioIntensity.value = audioIntensity;
                 nodesMesh.rotation.y = Math.sin(t * 0.04) * 0.05;
+                
+                // Direct mesh scaling from audio (guaranteed visible)
+                const audioScale = 1.0 + smoothAudio * 0.4;
+                nodesMesh.scale.setScalar(audioScale);
             }
             if (connectionsMesh) {
                 connectionsMesh.material.uniforms.uTime.value = t;
                 connectionsMesh.material.uniforms.uAudioBands.value = frequencyBands;
                 connectionsMesh.material.uniforms.uAudioIntensity.value = audioIntensity;
                 connectionsMesh.rotation.y = Math.sin(t * 0.04) * 0.05;
+                
+                // Match node scaling
+                const audioScale = 1.0 + smoothAudio * 0.4;
+                connectionsMesh.scale.setScalar(audioScale);
             }
+            
+            // Bloom reacts to audio too
+            bloomPass.strength = 0.35 + smoothAudio * 0.5;
         }
         starField.rotation.y += 0.0002;
         starField.material.uniforms.uTime.value = t;
