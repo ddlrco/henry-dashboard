@@ -405,6 +405,7 @@ canvas {
 
 .hud-ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.6; animation: hudSpin 30s linear infinite; }
 @keyframes hudSpin { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes hudSpinReverse { 0% { transform: translate(-50%, -50%) rotate(360deg); } 100% { transform: translate(-50%, -50%) rotate(0deg); } }
 
 .hud-scanline { position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent 0%, rgba(102,126,234,0.3) 50%, transparent 100%); animation: hudScan 4s ease-in-out infinite; }
 @keyframes hudScan { 0% { top: 10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 90%; opacity: 0; } }
@@ -530,17 +531,24 @@ canvas {
     <div class="hud-corner hud-bl"></div>
     <div class="hud-corner hud-br"></div>
     
-    <!-- Rotating ring -->
-    <div class="hud-ring" id="hud-ring">
+    <!-- Rotating rings -->
+    <div class="hud-ring" style="animation: hudSpin 40s linear infinite;">
         <svg viewBox="0 0 400 400" width="400" height="400">
-            <circle cx="200" cy="200" r="180" fill="none" stroke="rgba(102,126,234,0.15)" stroke-width="1" />
-            <circle cx="200" cy="200" r="160" fill="none" stroke="rgba(102,126,234,0.08)" stroke-width="0.5" stroke-dasharray="4 8" />
-            <circle cx="200" cy="200" r="190" fill="none" stroke="rgba(102,126,234,0.1)" stroke-width="0.5" stroke-dasharray="2 12" />
-            <!-- Tick marks -->
-            <g id="hud-ticks"></g>
-            <!-- Arc segments -->
-            <path d="M200 20 A180 180 0 0 1 380 200" fill="none" stroke="rgba(102,126,234,0.25)" stroke-width="2" stroke-linecap="round" />
-            <path d="M200 380 A180 180 0 0 1 20 200" fill="none" stroke="rgba(102,126,234,0.15)" stroke-width="1" stroke-linecap="round" />
+            <path d="M200 15 A185 185 0 0 1 385 200" fill="none" stroke="rgba(102,126,234,0.2)" stroke-width="1.5" stroke-linecap="round" />
+            <path d="M340 340 A185 185 0 0 1 60 340" fill="none" stroke="rgba(102,126,234,0.1)" stroke-width="1" stroke-linecap="round" />
+        </svg>
+    </div>
+    <div class="hud-ring" style="animation: hudSpinReverse 25s linear infinite;">
+        <svg viewBox="0 0 400 400" width="400" height="400">
+            <path d="M200 25 A175 175 0 0 0 25 200" fill="none" stroke="rgba(102,126,234,0.12)" stroke-width="0.8" stroke-linecap="round" />
+            <path d="M375 200 A175 175 0 0 0 200 375" fill="none" stroke="rgba(102,126,234,0.08)" stroke-width="0.5" stroke-linecap="round" />
+            <circle cx="200" cy="25" r="2" fill="rgba(102,126,234,0.4)" />
+            <circle cx="375" cy="200" r="1.5" fill="rgba(102,126,234,0.3)" />
+        </svg>
+    </div>
+    <div class="hud-ring" style="animation: hudSpin 60s linear infinite;">
+        <svg viewBox="0 0 400 400" width="400" height="400">
+            <circle cx="200" cy="200" r="195" fill="none" stroke="rgba(102,126,234,0.06)" stroke-width="0.5" />
         </svg>
     </div>
     
@@ -659,7 +667,7 @@ document.addEventListener("keydown", (e) => {
         paused: false,
         activePaletteIndex: 0,
         currentFormation: 0,
-        numFormations: 3,
+        numFormations: 4,
         densityFactor: 1
     };
     const colorPalettes = [
@@ -1297,10 +1305,65 @@ document.addEventListener("keydown", (e) => {
                 }
             }
         }
-        switch (formationIndex % 3) {
+        function generateParticleCloud() {
+            rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
+            rootNode.size = 1.5;
+            nodes.push(rootNode);
+            
+            const numParticles = Math.floor(800 * densityFactor);
+            const brainShape = (theta, phi) => {
+                // Brain-like shape: flattened sphere with lobes
+                const r = 12;
+                const lobe = 1 + 0.3 * Math.sin(phi * 2) * Math.cos(theta * 3);
+                const flatten = 0.85 + 0.15 * Math.cos(phi); // slightly flattened top/bottom
+                return r * lobe * flatten;
+            };
+            
+            for (let i = 0; i < numParticles; i++) {
+                // Random spherical distribution with brain-like shaping
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                const baseRadius = brainShape(theta, phi);
+                const r = baseRadius * (0.3 + Math.random() * 0.7); // fill interior too
+                
+                const pos = new THREE.Vector3(
+                    r * Math.sin(phi) * Math.cos(theta),
+                    r * Math.sin(phi) * Math.sin(theta) * 0.8, // slightly compressed vertically
+                    r * Math.cos(phi)
+                );
+                
+                // Add some noise for organic feel
+                pos.x += (Math.random() - 0.5) * 2;
+                pos.y += (Math.random() - 0.5) * 1.5;
+                pos.z += (Math.random() - 0.5) * 2;
+                
+                const dist = pos.length();
+                const layer = Math.floor(dist / 3);
+                const node = new Node(pos, Math.min(layer, 4), Math.random() < 0.7 ? 1 : 0);
+                node.size = 0.3 + Math.random() * 0.8;
+                node.distanceFromRoot = dist;
+                nodes.push(node);
+                
+                // Very sparse connections — only nearby particles
+                if (Math.random() < 0.15) {
+                    const nearby = nodes.filter(n => n !== node && n !== rootNode)
+                        .sort((a, b) => node.position.distanceTo(a.position) - node.position.distanceTo(b.position))
+                        .slice(0, 2);
+                    for (const n of nearby) {
+                        const d = node.position.distanceTo(n.position);
+                        if (d < 4 && !node.isConnectedTo(n)) {
+                            node.addConnection(n, 0.3);
+                        }
+                    }
+                }
+            }
+        }
+        
+        switch (formationIndex % 4) {
             case 0: generateCrystallineSphere(); break;
             case 1: generateHelixLattice(); break;
             case 2: generateFractalWeb(); break;
+            case 3: generateParticleCloud(); break;
         }
         if (densityFactor < 1.0) {
             const targetCount = Math.ceil(nodes.length * Math.max(0.3, densityFactor));
