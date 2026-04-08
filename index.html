@@ -408,6 +408,22 @@ canvas {
     box-shadow: 0 0 6px rgba(102,126,234,0.4);
     transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
+.skill-fill.thinking {
+    animation: skillPulse 0.6s ease-in-out infinite alternate;
+    box-shadow: 0 0 10px rgba(102,126,234,0.6);
+}
+@keyframes skillPulse {
+    0% { width: var(--base-width); opacity: 0.5; }
+    100% { width: calc(var(--base-width) + 5%); opacity: 1; }
+}
+.skill-row.thinking .skill-fill {
+    animation: skillFreq var(--freq-speed, 0.5s) ease-in-out infinite alternate;
+}
+@keyframes skillFreq {
+    0% { transform: scaleX(0.7); opacity: 0.4; }
+    50% { transform: scaleX(1.1); opacity: 1; }
+    100% { transform: scaleX(0.85); opacity: 0.6; }
+}
 .spark-chart {
     width: 100%;
     height: 28px;
@@ -2194,6 +2210,14 @@ async function sendChat() {
     }
     chatInput.value = '';
     
+    // Activate skill bars thinking animation
+    const skillRows = document.querySelectorAll('.skill-row');
+    const speeds = [0.4, 0.55, 0.35, 0.6, 0.45, 0.5];
+    skillRows.forEach((row, i) => {
+        row.classList.add('thinking');
+        row.style.setProperty('--freq-speed', speeds[i % speeds.length] + 's');
+    });
+    
     // Call Vercel proxy → OpenClaw API
     try {
         const response = await fetch('/api/chat', {
@@ -2227,6 +2251,9 @@ async function sendChat() {
     } catch (error) {
         addMsg('⚠️ Connection error. Make sure OpenClaw is running.', 'ai');
         console.error('API Error:', error);
+    } finally {
+        // Stop skill bars thinking animation
+        document.querySelectorAll('.skill-row').forEach(row => row.classList.remove('thinking'));
     }
 }
 
