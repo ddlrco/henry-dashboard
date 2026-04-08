@@ -486,7 +486,7 @@ canvas {
 .pw-hidden{display:none!important}
 body.inverted { background: #eeeef2; color: #1a1a2e; }
 body.inverted canvas { filter: invert(0.85) hue-rotate(180deg); }
-body.inverted * { color: inherit; }
+body.inverted *:not(canvas) { color: inherit; }
 body.inverted .data-node-title { color: rgba(80,80,120,0.7); }
 body.inverted .data-node-value { color: #1a1a2e; }
 body.inverted .data-node-value-sm { color: #1a1a2e; }
