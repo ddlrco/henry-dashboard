@@ -69,7 +69,7 @@ export default async function handler(req, res) {
 
   // Hash the submitted password and compare to stored hash
   const hash = createHash('sha256').update(password).digest('hex');
-  const correctHash = 'c9a655f7496a3f6700fba83cf3bbaab137b714b7b798be5a4737dc6d014ea871';
+  const correctHash = '927a3aed189d610b2e151c4208913b3ed0cb38f6be613756819b1513c8924d7f'; // 'henry'
 
   if (hash === correctHash) {
     clearRateLimit(ip); // Reset on success

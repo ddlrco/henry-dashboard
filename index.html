@@ -839,6 +839,7 @@ function handleAuth() {
     document.getElementById('pw-input').focus();
     document.getElementById('pw-auth-btn').style.display = 'none';
 }
+let lockoutTimer = null;
 async function checkPw(){
 const pw = document.getElementById("pw-input").value;
 try {
@@ -851,11 +852,31 @@ try {
     if (data.success) {
         sessionStorage.setItem("henryAuth", data.token);
         document.getElementById("pw-screen").classList.add("pw-hidden");
+        if (lockoutTimer) clearInterval(lockoutTimer);
     } else {
         const errEl = document.getElementById("pw-error");
         errEl.textContent = data.error || 'UNAUTHORIZED';
         errEl.classList.add("show");
         document.getElementById("pw-input").value="";
+        
+        // If error contains countdown, start timer
+        if (data.error && data.error.includes('Try again in')) {
+            const match = data.error.match(/(\d+)s/);
+            if (match) {
+                let remaining = parseInt(match[1]);
+                if (lockoutTimer) clearInterval(lockoutTimer);
+                lockoutTimer = setInterval(() => {
+                    remaining--;
+                    if (remaining <= 0) {
+                        clearInterval(lockoutTimer);
+                        errEl.textContent = '';
+                        errEl.classList.remove('show');
+                    } else {
+                        errEl.textContent = `Too many attempts. Try again in ${remaining}s`;
+                    }
+                }, 1000);
+            }
+        }
     }
 } catch(e) {
     document.getElementById("pw-error").classList.add("show");
