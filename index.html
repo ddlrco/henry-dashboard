@@ -1902,8 +1902,8 @@ document.addEventListener("keydown", (e) => {
                 connectionsMesh.scale.setScalar(audioScale);
             }
             
-            // Bloom reacts to audio too
-            bloomPass.strength = 0.35 + smoothAudio * 0.5;
+            // Bloom only pulses when there's audio
+            bloomPass.strength = smoothAudio > 0.05 ? 0.35 + smoothAudio * 0.5 : 0.35;
         }
         starField.rotation.y += 0.0002;
         starField.material.uniforms.uTime.value = t;
