@@ -1786,6 +1786,25 @@ document.addEventListener("keydown", (e) => {
             case 2: generateGeodesicSphere(); break;
             case 3: generateFractalWeb(); break;
         }
+        
+        // Post-process: connect outer nodes to nearest core nodes
+        const coreNodesList = nodes.filter(n => n !== rootNode && n.distanceFromRoot <= 6 && n.size >= 1.0);
+        const outerNodes = nodes.filter(n => n !== rootNode && n.distanceFromRoot > 6);
+        if (coreNodesList.length > 0 && outerNodes.length > 0) {
+            for (const outer of outerNodes) {
+                // Find nearest core node
+                let nearest = null;
+                let nearDist = Infinity;
+                for (const core of coreNodesList) {
+                    const d = outer.position.distanceTo(core.position);
+                    if (d < nearDist) { nearDist = d; nearest = core; }
+                }
+                // Connect if not already connected and within range
+                if (nearest && nearDist < 20 && !outer.isConnectedTo(nearest)) {
+                    outer.addConnection(nearest, Math.max(0.3, 1.0 - nearDist / 20));
+                }
+            }
+        }
         if (densityFactor < 1.0) {
             const targetCount = Math.ceil(nodes.length * Math.max(0.3, densityFactor));
             const toKeep = new Set([rootNode]);
