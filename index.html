@@ -418,29 +418,6 @@ document.addEventListener("keydown", (e) => {
     }
 });
 </script>
-<script>
-const voiceRecog = "webkitSpeechRecognition" in window ? new webkitSpeechRecognition() : ("SpeechRecognition" in window ? new SpeechRecognition() : null);
-if (voiceRecog) {
-    voiceRecog.continuous = false;
-    voiceRecog.lang = "en-US";
-    voiceRecog.onresult = (ev) => {
-        const text = ev.results[0][0].transcript;
-        const utt = new SpeechSynthesisUtterance("You said: " + text);
-        const voices = window.speechSynthesis.getVoices();
-        const jarvis = voices.find(v => v.name.includes("Daniel") || v.name.includes("Google UK English Male") || v.name.includes("Arthur") || v.name.includes("James"));
-        if (jarvis) utt.voice = jarvis;
-        utt.rate = 0.95;
-        utt.pitch = 0.85;
-        window.speechSynthesis.speak(utt);
-    };
-}
-document.addEventListener("keydown", (e) => {
-    if (e.code === "Space" && voiceRecog && !e.target.closest("input,textarea")) {
-        e.preventDefault();
-        voiceRecog.start();
-    }
-});
-</script>
 <script type="importmap">
 {
     "imports": {
