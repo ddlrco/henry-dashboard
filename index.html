@@ -1512,7 +1512,6 @@ document.addEventListener("keydown", (e) => {
             rootNode.size = 1.6;
             nodes.push(rootNode);
             addWireframeCore(3.5);
-            nodes.push(rootNode);
             const branches = 6;
             const maxDepth = 4;
             function createBranch(startNode, direction, depth, strength, scale) {
@@ -2117,8 +2116,9 @@ document.addEventListener("keydown", (e) => {
                 nodesMesh.material.uniforms.uAudioIntensity.value = audioIntensity;
                 nodesMesh.rotation.y = Math.sin(t * 0.04) * 0.05;
                 
-                // Heartbeat + audio scaling
-                const heartbeat = Math.pow(Math.sin(t * 0.8) * 0.5 + 0.5, 3) * 0.06; // sharp pulse, slow rhythm
+                // Ping pulse — sharp spike then decay
+                const pingPhase = (t * 0.4) % 1.0; // ~2.5 second cycle
+                const heartbeat = Math.exp(-pingPhase * 8) * 0.08; // sharp spike, exponential decay
                 const audioScale = 1.0 + smoothAudio * 0.4 + heartbeat;
                 nodesMesh.scale.setScalar(audioScale);
             }
@@ -2128,13 +2128,15 @@ document.addEventListener("keydown", (e) => {
                 connectionsMesh.material.uniforms.uAudioIntensity.value = audioIntensity;
                 connectionsMesh.rotation.y = Math.sin(t * 0.04) * 0.05;
                 
-                const heartbeat = Math.pow(Math.sin(t * 0.8) * 0.5 + 0.5, 3) * 0.06;
+                const pingPhase = (t * 0.4) % 1.0;
+                const heartbeat = Math.exp(-pingPhase * 8) * 0.08;
                 const audioScale = 1.0 + smoothAudio * 0.4 + heartbeat;
                 connectionsMesh.scale.setScalar(audioScale);
             }
             
-            // Bloom pulses with heartbeat + audio
-            const heartGlow = Math.pow(Math.sin(t * 0.8) * 0.5 + 0.5, 3) * 0.1;
+            // Bloom pulses with ping + audio
+            const pingPhaseB = (t * 0.4) % 1.0;
+            const heartGlow = Math.exp(-pingPhaseB * 8) * 0.15;
             bloomPass.strength = 0.35 + heartGlow + (smoothAudio > 0.05 ? smoothAudio * 0.5 : 0);
         }
         starField.rotation.y += 0.0002;
