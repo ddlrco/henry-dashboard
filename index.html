@@ -399,27 +399,23 @@ canvas {
 }
 .skill-bar {
     flex: 1;
-    height: 2px;
-    background: rgba(255,255,255,0.06);
+    height: 6px;
+    background: rgba(255,255,255,0.04);
     overflow: hidden;
+    border-radius: 1px;
 }
 .skill-fill {
     height: 100%;
-    background: linear-gradient(90deg, rgba(0,255,65,0.9), rgba(0,255,65,0.3));
-    box-shadow: 0 0 6px rgba(0,255,65,0.4);
+    background: rgba(0,255,65,0.7);
+    border-radius: 1px;
     transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .skill-row.thinking .skill-fill {
-    animation: skillFreq var(--freq-speed, 0.5s) ease-in-out infinite alternate;
-    transform-origin: left;
+    animation: skillGlow var(--freq-speed, 0.8s) ease-in-out infinite alternate;
 }
-@keyframes skillFreq {
-    0% { transform: scaleX(0.3); opacity: 0.3; box-shadow: 0 0 4px rgba(0,255,65,0.2); }
-    50% { transform: scaleX(1.15); opacity: 1; box-shadow: 0 0 12px rgba(0,255,65,0.8); }
-    100% { transform: scaleX(0.5); opacity: 0.5; box-shadow: 0 0 6px rgba(0,255,65,0.3); }
-}
-.skill-row.thinking .skill-bar {
-    height: 3px;
+@keyframes skillGlow {
+    0% { opacity: 0.3; }
+    100% { opacity: 1; box-shadow: 0 0 8px rgba(0,255,65,0.5); }
 }
 .agent-row {
     display: flex;
