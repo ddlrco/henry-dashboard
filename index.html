@@ -1352,10 +1352,39 @@ document.addEventListener("keydown", (e) => {
     function generateNeuralNetwork(formationIndex, densityFactor = 1.0) {
         let nodes = [];
         let rootNode;
+        // Shared: add a wireframe core to any formation
+        function addWireframeCore(coreScale) {
+            const phi = (1 + Math.sqrt(5)) / 2;
+            const icoVerts = [
+                [-1, phi, 0], [1, phi, 0], [-1, -phi, 0], [1, -phi, 0],
+                [0, -1, phi], [0, 1, phi], [0, -1, -phi], [0, 1, -phi],
+                [phi, 0, -1], [phi, 0, 1], [-phi, 0, -1], [-phi, 0, 1]
+            ];
+            const coreNodes = [];
+            for (const v of icoVerts) {
+                const len = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+                const pos = new THREE.Vector3(v[0]/len * coreScale, v[1]/len * coreScale, v[2]/len * coreScale);
+                const node = new Node(pos, 1, 0);
+                node.size = 1.4;
+                node.distanceFromRoot = coreScale;
+                nodes.push(node);
+                coreNodes.push(node);
+                rootNode.addConnection(node, 0.6);
+            }
+            for (let i = 0; i < coreNodes.length; i++) {
+                for (let j = i + 1; j < coreNodes.length; j++) {
+                    const d = coreNodes[i].position.distanceTo(coreNodes[j].position);
+                    if (d < coreScale * 0.75) coreNodes[i].addConnection(coreNodes[j], 0.85);
+                }
+            }
+            return coreNodes;
+        }
+        
         function generateCrystallineSphere() {
             rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
             rootNode.size = 2.0;
             nodes.push(rootNode);
+            addWireframeCore(4);
             const layers = 5;
             const goldenRatio = (1 + Math.sqrt(5)) / 2;
             for (let layer = 1; layer <= layers; layer++) {
@@ -1416,6 +1445,7 @@ document.addEventListener("keydown", (e) => {
             rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
             rootNode.size = 1.8;
             nodes.push(rootNode);
+            addWireframeCore(4);
             
             // Generate icosahedron vertices and subdivide
             const radius = 13;
@@ -1501,6 +1531,8 @@ document.addEventListener("keydown", (e) => {
             rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
             rootNode.size = 1.6;
             nodes.push(rootNode);
+            addWireframeCore(3.5);
+            nodes.push(rootNode);
             const branches = 6;
             const maxDepth = 4;
             function createBranch(startNode, direction, depth, strength, scale) {
@@ -1574,6 +1606,7 @@ document.addEventListener("keydown", (e) => {
             rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
             rootNode.size = 1.5;
             nodes.push(rootNode);
+            addWireframeCore(3);
             
             const numParticles = Math.floor(800 * densityFactor);
             const brainShape = (theta, phi) => {
