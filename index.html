@@ -130,43 +130,26 @@ canvas {
     justify-items: center;
 }
 .theme-button {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    border: none;
+    width: 100%;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.15);
     cursor: pointer;
     position: relative;
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow:
-        0 4px 10px rgba(0,0,0,0.3),
-        inset 0 2px 4px rgba(255,255,255,0.4),
-        inset 0 -2px 4px rgba(0,0,0,0.2);
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
-#theme-1 { background: radial-gradient(circle at 30% 30%, #a78bfa, #4c1d95); }
-#theme-2 { background: radial-gradient(circle at 30% 30%, #fb7185, #9f1239); }
-#theme-3 { background: radial-gradient(circle at 30% 30%, #38bdf8, #0c4a6e); }
-.theme-button::after {
-    content: '';
-    position: absolute;
-    top: -4px;
-    left: -4px;
-    right: -4px;
-    bottom: -4px;
-    border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.8);
-    opacity: 0;
-    transform: scale(1.1);
-    transition: all 0.3s ease;
-}
+#theme-1 { background: linear-gradient(135deg, #9333ea, #6b21a8); }
+#theme-2 { background: linear-gradient(135deg, #f43f5e, #be123c); }
+#theme-3 { background: linear-gradient(135deg, #06b6d4, #0e7490); }
 .theme-button:hover {
-    transform: scale(1.15) translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.4), inset 0 2px 6px rgba(255,255,255,0.6);
+    transform: translateX(4px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    border-color: rgba(255,255,255,0.4);
 }
-.theme-button.active::after {
-    opacity: 1;
-    transform: scale(1);
-    border-color: rgba(255,255,255,0.9);
-    box-shadow: 0 0 15px rgba(255,255,255,0.3);
+.theme-button.active {
+    border-color: rgba(255,255,255,0.6);
+    box-shadow: 0 6px 25px rgba(255,255,255,0.3);
 }
 #density-controls {
     display: flex;
@@ -230,13 +213,8 @@ canvas {
     flex-direction: column;
     gap: 16px;
     z-index: 20;
-    padding: 20px;
-    backdrop-filter: blur(20px) saturate(120%);
-    background: linear-gradient(145deg, rgba(0,0,0,0.4), rgba(0,0,0,0.2));
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 16px;
+    padding: 0;
     min-width: 140px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
 }
 .control-button {
     backdrop-filter: blur(20px) saturate(140%);
@@ -447,17 +425,17 @@ canvas {
     <button id="reset-camera-btn" class="control-button"><span>Reset</span></button>
     
     <!-- Theme buttons -->
-    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
-        <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.4); margin-bottom: 8px; text-align: center;">Theme</div>
+    <div style="margin-top: 16px;">
+        <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.4); margin-bottom: 8px;">Theme</div>
         <div style="display: flex; flex-direction: column; gap: 8px;">
-            <button class="theme-button active" id="theme-1" data-theme="0" aria-label="Purple Nebula" style="width: 100%; height: 32px; border-radius: 6px;"></button>
-            <button class="theme-button" id="theme-2" data-theme="1" aria-label="Cyan Dream" style="width: 100%; height: 32px; border-radius: 6px;"></button>
-            <button class="theme-button" id="theme-3" data-theme="2" aria-label="Pink Sunset" style="width: 100%; height: 32px; border-radius: 6px;"></button>
+            <button class="theme-button active" id="theme-1" data-theme="0" aria-label="Purple Nebula"></button>
+            <button class="theme-button" id="theme-2" data-theme="1" aria-label="Cyan Dream"></button>
+            <button class="theme-button" id="theme-3" data-theme="2" aria-label="Pink Sunset"></button>
         </div>
     </div>
     
     <!-- Complexity slider -->
-    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
+    <div style="margin-top: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.4);">Complexity</span>
             <span id="density-value" style="font-size: 10px; color: rgba(255,255,255,0.6);">100%</span>
