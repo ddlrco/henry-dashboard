@@ -331,8 +331,6 @@ canvas {
 .pw-error.show{opacity:1}
 .pw-hidden{display:none!important}
 </style>
-</head>
-<body>
 <div class="password-overlay" id="pw-screen">
 <div class="pw-box">
 <div class="pw-logo">HENRY</div>
@@ -347,17 +345,6 @@ canvas {
 <div id="instructions-container" class="glass-panel">
     <div id="instruction-title">HENRY AI</div>
     <div class="instruction-text">AI Command Center<br>Click to interact.</div>
-    <div style="margin-top:16px;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;">
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.4);margin-bottom:8px;">Active Model</div>
-        <select id="model-select" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:8px 12px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22white%22><path d=%22M7 10l5 5 5-5z%22/></svg>');background-repeat:no-repeat;background-position:right 10px center;">
-            <option value="claude-sonnet-4.5" style="background:#111;">Claude Sonnet 4.5</option>
-            <option value="claude-opus-4.6" style="background:#111;">Claude Opus 4.6</option>
-            <option value="gpt-4.1" style="background:#111;">GPT-4.1</option>
-            <option value="gpt-5" style="background:#111;">GPT-5</option>
-            <option value="deepseek-chat" style="background:#111;">DeepSeek V3</option>
-        </select>
-        <div id="model-status" style="font-size:11px;color:rgba(102,126,234,0.8);margin-top:6px;">● Connected</div>
-    </div>
 </div>
 <div id="theme-selector" class="glass-panel">
     <div style="flex: 1;">
@@ -393,51 +380,6 @@ document.getElementById("pw-input").value="";
 if(sessionStorage.getItem("henryAuth")==="true"){
 document.addEventListener("DOMContentLoaded",function(){document.getElementById("pw-screen").classList.add("pw-hidden");});
 }
-// Voice Recognition
-const voiceRecog = "webkitSpeechRecognition" in window ? new webkitSpeechRecognition() : ("SpeechRecognition" in window ? new SpeechRecognition() : null);
-if (voiceRecog) {
-    voiceRecog.continuous = false;
-    voiceRecog.lang = "en-US";
-    voiceRecog.onresult = (ev) => {
-        const text = ev.results[0][0].transcript;
-        const utt = new SpeechSynthesisUtterance("You said: " + text);
-        const voices = window.speechSynthesis.getVoices();
-        const jarvis = voices.find(v => v.name.includes("Daniel") || v.name.includes("Google UK English Male") || v.name.includes("Arthur") || v.name.includes("James"));
-        if (jarvis) utt.voice = jarvis;
-        utt.rate = 0.95;
-        utt.pitch = 0.85;
-        window.speechSynthesis.speak(utt);
-    };
-}
-document.addEventListener("keydown", (e) => {
-    if (e.code === "Space" && voiceRecog && !e.target.closest("input,textarea")) {
-        e.preventDefault();
-        voiceRecog.start();
-    }
-});
-</script>
-<script>
-const voiceRecog = "webkitSpeechRecognition" in window ? new webkitSpeechRecognition() : ("SpeechRecognition" in window ? new SpeechRecognition() : null);
-if (voiceRecog) {
-    voiceRecog.continuous = false;
-    voiceRecog.lang = "en-US";
-    voiceRecog.onresult = (ev) => {
-        const text = ev.results[0][0].transcript;
-        const utt = new SpeechSynthesisUtterance("You said: " + text);
-        const voices = window.speechSynthesis.getVoices();
-        const jarvis = voices.find(v => v.name.includes("Daniel") || v.name.includes("Google UK English Male") || v.name.includes("Arthur") || v.name.includes("James"));
-        if (jarvis) utt.voice = jarvis;
-        utt.rate = 0.95;
-        utt.pitch = 0.85;
-        window.speechSynthesis.speak(utt);
-    };
-}
-document.addEventListener("keydown", (e) => {
-    if (e.code === "Space" && voiceRecog && !e.target.closest("input,textarea")) {
-        e.preventDefault();
-        voiceRecog.start();
-    }
-});
 </script>
 <script type="importmap">
 {
@@ -574,9 +516,9 @@ document.addEventListener("keydown", (e) => {
     composer.addPass(new RenderPass(scene, camera));
     const bloomPass = new UnrealBloomPass(
         new THREE.Vector2(window.innerWidth, window.innerHeight),
-        0.9,
-        0.4,
-        0.85
+        1.8,
+        0.6,
+        0.7
     );
     composer.addPass(bloomPass);
     composer.addPass(new OutputPass());
@@ -729,7 +671,7 @@ document.addEventListener("keydown", (e) => {
             if (dist > 1.0) discard;
             float glow1 = 1.0 - smoothstep(0.0, 0.5, dist);
             float glow2 = 1.0 - smoothstep(0.0, 1.0, dist);
-            float glowStrength = pow(glow1, 1.5) + glow2 * 0.15;
+            float glowStrength = pow(glow1, 1.2) + glow2 * 0.3;
             float breatheColor = 0.9 + 0.1 * sin(uTime * 0.6 + vDistanceFromRoot * 0.25);
             vec3 baseColor = vColor * breatheColor;
             vec3 finalColor = baseColor;
@@ -739,8 +681,8 @@ document.addEventListener("keydown", (e) => {
                 finalColor *= (1.0 + vPulseIntensity * 1.2);
                 glowStrength *= (1.0 + vPulseIntensity);
             }
-            float coreBrightness = smoothstep(0.3, 0.0, dist);
-            finalColor += vec3(1.0) * coreBrightness * 0.15;
+            float coreBrightness = smoothstep(0.4, 0.0, dist);
+            finalColor += vec3(1.0) * coreBrightness * 0.3;
             float alpha = glowStrength * (0.95 - 0.3 * dist);
             float camDistance = length(vPosition - cameraPosition);
             float distanceFade = smoothstep(100.0, 15.0, camDistance);
@@ -868,7 +810,7 @@ document.addEventListener("keydown", (e) => {
             const layers = 5;
             const goldenRatio = (1 + Math.sqrt(5)) / 2;
             for (let layer = 1; layer <= layers; layer++) {
-                const radius = layer * 3;
+                const radius = layer * 4;
                 const numPoints = Math.floor(layer * 12 * densityFactor);
                 for (let i = 0; i < numPoints; i++) {
                     const phi = Math.acos(1 - 2 * (i + 0.5) / numPoints);
@@ -1297,7 +1239,6 @@ document.addEventListener("keydown", (e) => {
     renderer.domElement.addEventListener('click', (e) => {
         if (e.target.closest('.glass-panel, #control-buttons')) return;
         if (!config.paused) triggerPulse(e.clientX, e.clientY);
-        if (voiceRecog) { try { voiceRecog.start(); } catch(err) {} }
     });
     renderer.domElement.addEventListener('touchstart', (e) => {
         if (e.target.closest('.glass-panel, #control-buttons')) return;
@@ -1386,123 +1327,4 @@ document.addEventListener("keydown", (e) => {
     
     window.addEventListener('resize', onWindowResize);
     init();
-</script>
-<!-- Chat Bar & File Drop -->
-<style>
-.chat-container { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 90%; max-width: 800px; z-index: 200; padding: 1.5rem 0 2rem; }
-.chat-messages { max-height: 200px; overflow-y: auto; margin-bottom: 1rem; display: none; padding: 0 0.5rem; }
-.chat-messages.has-messages { display: block; }
-.chat-msg { padding: 0.75rem 1rem; margin-bottom: 0.5rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; font-family: 'Outfit', sans-serif; }
-.chat-msg.user { background: rgba(102, 126, 234, 0.2); border: 1px solid rgba(102, 126, 234, 0.3); margin-left: 20%; }
-.chat-msg.ai { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); margin-right: 20%; color: rgba(255,255,255,0.8); }
-.chat-input-row { display: flex; gap: 0.75rem; align-items: center; }
-.chat-input { flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 50px; padding: 1rem 1.5rem; color: #fff; font-size: 0.95rem; font-family: 'Outfit', sans-serif; transition: all 0.3s; outline: none; }
-.chat-input:focus { border-color: rgba(102, 126, 234, 0.5); box-shadow: 0 0 20px rgba(102, 126, 234, 0.15); background: rgba(255, 255, 255, 0.08); }
-.chat-input::placeholder { color: rgba(255, 255, 255, 0.3); }
-.chat-btn { width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgba(102, 126, 234, 0.4); background: rgba(102, 126, 234, 0.1); color: #667eea; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.chat-btn:hover { background: rgba(102, 126, 234, 0.2); box-shadow: 0 0 15px rgba(102, 126, 234, 0.3); }
-.file-drop { position: fixed; inset: 0; background: rgba(0,0,0,0.8); border: 3px dashed rgba(102, 126, 234, 0.6); z-index: 9998; display: none; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif; font-size: 1.5rem; color: rgba(102, 126, 234, 0.8); letter-spacing: 0.1em; }
-.file-drop.active { display: flex; }
-.file-label { cursor: pointer; }
-.file-label input { display: none; }
-.file-info { font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 0.5rem; padding: 0 1.5rem; font-family: 'Outfit', sans-serif; }
-</style>
-
-<div class="file-drop" id="file-drop">DROP FILES HERE</div>
-
-<div class="chat-container">
-    <div class="chat-messages" id="chat-messages"></div>
-    <div class="file-info" id="file-info"></div>
-    <div class="chat-input-row">
-        <label class="file-label chat-btn" title="Upload file">📎<input type="file" id="file-input" multiple></label>
-        <input type="text" class="chat-input" id="chat-input" placeholder="Message Henry..." autocomplete="off">
-        <button class="chat-btn" id="chat-send" title="Send">→</button>
-    </div>
-</div>
-
-<script>
-// Chat
-const chatInput = document.getElementById('chat-input');
-const chatSend = document.getElementById('chat-send');
-const chatMessages = document.getElementById('chat-messages');
-const fileInput = document.getElementById('file-input');
-const fileInfo = document.getElementById('file-info');
-const fileDrop = document.getElementById('file-drop');
-let uploadedFiles = [];
-
-function addMsg(text, type) {
-    const div = document.createElement('div');
-    div.className = 'chat-msg ' + type;
-    div.textContent = text;
-    chatMessages.appendChild(div);
-    chatMessages.classList.add('has-messages');
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-async function sendChat() {
-    const msg = chatInput.value.trim();
-    if (!msg && uploadedFiles.length === 0) return;
-    if (msg) addMsg(msg, 'user');
-    if (uploadedFiles.length > 0) {
-        addMsg('📎 ' + uploadedFiles.map(f => f.name).join(', '), 'user');
-        uploadedFiles = [];
-        fileInfo.textContent = '';
-    }
-    chatInput.value = '';
-    
-    // Call Vercel proxy → OpenClaw API
-    try {
-        const response = await fetch('/api/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ message: msg })
-        });
-        
-        if (!response.ok) throw new Error('API request failed');
-        
-        const data = await response.json();
-        addMsg(data.reply, 'ai');
-    } catch (error) {
-        addMsg('⚠️ Connection error. Make sure OpenClaw is running.', 'ai');
-        console.error('API Error:', error);
-    }
-}
-
-chatSend.addEventListener('click', sendChat);
-chatInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
-});
-
-// File Upload
-fileInput.addEventListener('change', (e) => {
-    const files = Array.from(e.target.files);
-    uploadedFiles.push(...files);
-    fileInfo.textContent = '📎 ' + uploadedFiles.map(f => f.name + ' (' + (f.size/1024).toFixed(1) + 'KB)').join(', ');
-});
-
-// Drag & Drop
-let dragCounter = 0;
-document.addEventListener('dragenter', (e) => {
-    e.preventDefault();
-    dragCounter++;
-    fileDrop.classList.add('active');
-});
-document.addEventListener('dragleave', (e) => {
-    e.preventDefault();
-    dragCounter--;
-    if (dragCounter === 0) fileDrop.classList.remove('active');
-});
-document.addEventListener('dragover', (e) => e.preventDefault());
-document.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dragCounter = 0;
-    fileDrop.classList.remove('active');
-    const files = Array.from(e.dataTransfer.files);
-    uploadedFiles.push(...files);
-    fileInfo.textContent = '📎 ' + uploadedFiles.map(f => f.name + ' (' + (f.size/1024).toFixed(1) + 'KB)').join(', ');
-});
-</script>
-</body>
-</html>
+</script></html>

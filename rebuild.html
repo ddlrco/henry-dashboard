@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>HENRY - AI Command Center</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: sans-serif; background: #000; color: #fff; overflow: hidden; height: 100vh; }
+        .password-screen { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .password-logo { font-size: 3rem; color: #00d9ff; margin-bottom: 2rem; letter-spacing: 0.3em; }
+        .password-input { width: 300px; background: rgba(255,255,255,0.05); border: 1px solid #00d9ff; padding: 1rem; color: #fff; margin-bottom: 1rem; }
+        .password-submit { width: 300px; background: rgba(0,217,255,0.1); border: 1px solid #00d9ff; padding: 1rem; color: #00d9ff; cursor: pointer; }
+        .hidden { display: none !important; }
+        header { position: absolute; top: 2rem; left: 3rem; z-index: 100; }
+        .logo { font-size: 1.5rem; color: #00d9ff; letter-spacing: 0.3em; }
+        
+        /* Rotating HUD */
+        .hud-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 600px; height: 600px; }
+        .circle { position: absolute; border-radius: 50%; border: 2px solid rgba(0,217,255,0.4); }
+        .circle-1 { width: 500px; height: 500px; margin: -250px 0 0 -250px; top: 50%; left: 50%; animation: rotate-one 30s linear infinite; }
+        .circle-2 { width: 400px; height: 400px; margin: -200px 0 0 -200px; top: 50%; left: 50%; animation: rotate-two 20s linear infinite reverse; border-style: dashed; }
+        .circle-3 { width: 320px; height: 320px; margin: -160px 0 0 -160px; top: 50%; left: 50%; animation: rotate-three 25s linear infinite; }
+        @keyframes rotate-one { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes rotate-two { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes rotate-three { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        .orb { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(0,255,255,0.8), rgba(0,217,255,0.5), rgba(0,150,255,0.2)); box-shadow: 0 0 80px rgba(0,217,255,0.8); cursor: pointer; z-index: 10; animation: pulse-orb 3s infinite; }
+        @keyframes pulse-orb { 0%, 100% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.05); } }
+    </style>
+</head>
+<body>
+    <div class="password-screen" id="pw">
+        <div>
+            <div class="password-logo">HENRY</div>
+            <input type="password" id="pwin" class="password-input" placeholder="ACCESS CODE" />
+            <br><button class="password-submit" onclick="login()">ENTER</button>
+        </div>
+    </div>
+    <div class="main" id="main" style="display:none;">
+        <header><div class="logo">HENRY</div></header>
+        <div class="hud-container">
+            <div class="circle circle-1"></div>
+            <div class="circle circle-2"></div>
+            <div class="circle circle-3"></div>
+            <div class="orb"></div>
+        </div>
+    </div>
+    <script>
+        function login() {
+            if (document.getElementById('pwin').value === '@agenthenry123') {
+                document.getElementById('pw').classList.add('hidden');
+                document.getElementById('main').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
