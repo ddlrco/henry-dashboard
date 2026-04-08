@@ -550,7 +550,7 @@ body.inverted #logout-btn { border-color: rgba(220,38,38,0.3); color: rgba(220,3
 <form id="pw-form" onsubmit="return false">
 <input type="password" id="pw-input" class="pw-input" placeholder="" autocomplete="off" style="display:none;" onkeydown="if(event.key==='Enter'){event.preventDefault();checkPw();}">
 <button class="pw-btn" id="pw-auth-btn" type="button" onclick="handleAuth()">AUTHENTICATE</button>
-<div class="pw-error" id="pw-error">UNAUTHORIZED</div>
+<div class="pw-error" id="pw-error" style="min-height:1.5em;">UNAUTHORIZED</div>
 </form>
 </div>
 </div>
@@ -833,18 +833,11 @@ function henryLogout(){
     const msgs = document.getElementById('chat-messages');
     if (msgs) { msgs.innerHTML = ''; msgs.classList.remove('has-messages'); }
 }
-let authStage = 1;
 function handleAuth() {
-    if (authStage === 1) {
-        // Show password field
-        authStage = 2;
-        document.getElementById('pw-input').style.display = '';
-        document.getElementById('pw-input').placeholder = 'enter access key';
-        document.getElementById('pw-input').focus();
-        document.getElementById('pw-auth-btn').textContent = 'ENTER';
-    } else {
-        checkPw();
-    }
+    document.getElementById('pw-input').style.display = '';
+    document.getElementById('pw-input').placeholder = 'enter access key';
+    document.getElementById('pw-input').focus();
+    document.getElementById('pw-auth-btn').style.display = 'none';
 }
 async function checkPw(){
 const pw = document.getElementById("pw-input").value;
