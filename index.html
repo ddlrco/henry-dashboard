@@ -1,357 +1,57 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HENRY - AI Command Center</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #000; color: #fff; overflow: hidden; height: 100vh; }
+        body { font-family: sans-serif; background: #000; color: #fff; overflow: hidden; height: 100vh; }
         .password-screen { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 9999; }
-        .password-box { text-align: center; padding: 3rem 2.5rem; max-width: 400px; width: 90%; }
-        .password-logo { font-size: 3rem; font-weight: 200; color: #00d9ff; margin-bottom: 0.5rem; letter-spacing: 0.3em; text-shadow: 0 0 30px rgba(0, 217, 255, 0.5); }
-        .password-subtitle { color: rgba(255, 255, 255, 0.4); margin-bottom: 3rem; font-size: 0.875rem; font-weight: 300; letter-spacing: 0.15em; }
-        .password-input { width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(0, 217, 255, 0.3); border-radius: 8px; padding: 1rem 1.5rem; color: #fff; font-size: 1rem; text-align: center; letter-spacing: 0.2em; margin-bottom: 1.5rem; transition: all 0.3s; }
-        .password-input:focus { outline: none; border-color: #00d9ff; box-shadow: 0 0 20px rgba(0, 217, 255, 0.3); background: rgba(255, 255, 255, 0.08); }
-        .password-submit { width: 100%; background: rgba(0, 217, 255, 0.1); border: 1px solid rgba(0, 217, 255, 0.5); padding: 1rem 2rem; border-radius: 8px; color: #00d9ff; font-weight: 500; cursor: pointer; transition: all 0.3s; font-size: 0.875rem; letter-spacing: 0.15em; }
-        .password-submit:hover { background: rgba(0, 217, 255, 0.15); box-shadow: 0 0 30px rgba(0, 217, 255, 0.3); }
-        .password-error { color: #f44; margin-top: 1rem; font-size: 0.875rem; opacity: 0; transition: opacity 0.3s; }
-        .password-error.show { opacity: 1; }
+        .password-logo { font-size: 3rem; color: #00d9ff; margin-bottom: 2rem; letter-spacing: 0.3em; }
+        .password-input { width: 300px; background: rgba(255,255,255,0.05); border: 1px solid #00d9ff; padding: 1rem; color: #fff; margin-bottom: 1rem; }
+        .password-submit { width: 300px; background: rgba(0,217,255,0.1); border: 1px solid #00d9ff; padding: 1rem; color: #00d9ff; cursor: pointer; }
         .hidden { display: none !important; }
+        header { position: absolute; top: 2rem; left: 3rem; z-index: 100; }
+        .logo { font-size: 1.5rem; color: #00d9ff; letter-spacing: 0.3em; }
         
-        .main-container { height: 100vh; position: relative; }
-        header { position: absolute; top: 0; left: 0; right: 0; padding: 2rem 3rem; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
-        .logo { font-size: 1.5rem; font-weight: 200; letter-spacing: 0.3em; color: #00d9ff; text-shadow: 0 0 20px rgba(0, 217, 255, 0.5); }
-        .status { display: flex; align-items: center; gap: 0.75rem; font-size: 0.75rem; color: rgba(255, 255, 255, 0.4); letter-spacing: 0.15em; text-transform: uppercase; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #0f8; box-shadow: 0 0 15px #0f8; animation: pulse-dot 2s ease-in-out infinite; }
-        @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        /* Rotating HUD */
+        .hud-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 600px; height: 600px; }
+        .circle { position: absolute; border-radius: 50%; border: 2px solid rgba(0,217,255,0.4); }
+        .circle-1 { width: 500px; height: 500px; margin: -250px 0 0 -250px; top: 50%; left: 50%; animation: rotate-one 30s linear infinite; }
+        .circle-2 { width: 400px; height: 400px; margin: -200px 0 0 -200px; top: 50%; left: 50%; animation: rotate-two 20s linear infinite reverse; border-style: dashed; }
+        .circle-3 { width: 320px; height: 320px; margin: -160px 0 0 -160px; top: 50%; left: 50%; animation: rotate-three 25s linear infinite; }
+        @keyframes rotate-one { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes rotate-two { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes rotate-three { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         
-        /* MASSIVE ORB */
-        .orb-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; height: 400px; z-index: 1; cursor: pointer; }
-        .orb { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 250px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, rgba(0, 255, 255, 0.8), rgba(0, 217, 255, 0.5), rgba(0, 150, 255, 0.2), rgba(0, 80, 200, 0.1)); box-shadow: 0 0 80px rgba(0, 217, 255, 0.8), 0 0 150px rgba(0, 217, 255, 0.5), inset 0 0 80px rgba(0, 217, 255, 0.4); animation: rotate-orb 15s linear infinite, pulse-orb 3s ease-in-out infinite; }
-        .orb::before { content: ''; position: absolute; top: 15%; left: 15%; width: 70%; height: 70%; border-radius: 50%; background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.4), transparent 60%); animation: shimmer 2s ease-in-out infinite; }
-        .orb::after { content: ''; position: absolute; inset: -10px; border-radius: 50%; border: 2px solid rgba(0, 217, 255, 0.6); animation: ring-pulse 3s ease-in-out infinite; }
-        @keyframes rotate-orb { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
-        @keyframes pulse-orb { 0%, 100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 80px rgba(0, 217, 255, 0.8), 0 0 150px rgba(0, 217, 255, 0.5), inset 0 0 80px rgba(0, 217, 255, 0.4); } 50% { transform: translate(-50%, -50%) scale(1.05); box-shadow: 0 0 100px rgba(0, 217, 255, 1), 0 0 200px rgba(0, 217, 255, 0.7), inset 0 0 100px rgba(0, 217, 255, 0.6); } }
-        @keyframes shimmer { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
-        @keyframes ring-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.15); opacity: 0.6; } }
-        
-        .center-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 2; margin-top: 280px; pointer-events: none; }
-        .voice-status { font-size: 0.75rem; color: rgba(255, 255, 255, 0.6); letter-spacing: 0.2em; text-transform: uppercase; font-weight: 300; }
-        
-        /* JARVIS HUD PANELS */
-        .hud-panel { position: absolute; z-index: 50; padding: 1.5rem; background: linear-gradient(135deg, rgba(0, 20, 40, 0.4), rgba(0, 10, 30, 0.3)); border: 1px solid rgba(0, 217, 255, 0.3); backdrop-filter: blur(15px); box-shadow: 0 8px 32px rgba(0, 217, 255, 0.1); }
-        .hud-left { top: 100px; left: 30px; width: 300px; }
-        .hud-right { top: 100px; right: 30px; width: 300px; }
-        .hud-title { font-size: 0.65rem; color: #00d9ff; letter-spacing: 0.2em; margin-bottom: 1rem; text-transform: uppercase; text-shadow: 0 0 10px rgba(0, 217, 255, 0.5); }
-        
-        .crypto-item { margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(0, 217, 255, 0.1); }
-        .crypto-item:last-child { border: none; }
-        .crypto-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-        .crypto-symbol { font-size: 0.85rem; color: #fff; font-weight: 600; }
-        .crypto-price { font-size: 1.1rem; color: #00d9ff; font-weight: 500; }
-        .crypto-change { font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 3px; }
-        .crypto-change.up { background: rgba(0, 255, 136, 0.2); color: #0f8; }
-        .crypto-change.down { background: rgba(255, 68, 68, 0.2); color: #f44; }
-        
-        .metal-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
-        .metal-name { font-size: 0.75rem; color: rgba(255, 255, 255, 0.7); }
-        .metal-price { font-size: 0.95rem; color: #ffd700; font-weight: 500; }
-        
-        .waveform { display: flex; align-items: center; justify-content: space-between; height: 50px; gap: 2px; margin-top: 1rem; }
-        .waveform-bar { width: 4px; background: linear-gradient(180deg, #00d9ff, #0080ff); border-radius: 2px; transition: height 0.15s ease; box-shadow: 0 0 8px rgba(0, 217, 255, 0.5); }
-        
-        .input-container { position: absolute; bottom: 0; left: 0; right: 0; padding: 2rem 3rem 3rem; z-index: 100; }
-        .input-wrapper { max-width: 800px; margin: 0 auto; position: relative; }
-        .input-bar { width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 1.25rem 5rem 1.25rem 2rem; color: #fff; font-size: 1rem; transition: all 0.3s; font-family: inherit; resize: none; min-height: 56px; max-height: 200px; }
-        .input-bar:focus { outline: none; background: rgba(255, 255, 255, 0.08); border-color: rgba(0, 217, 255, 0.3); box-shadow: 0 0 30px rgba(0, 217, 255, 0.15); }
-        .input-bar::placeholder { color: rgba(255, 255, 255, 0.3); }
-        .send-btn { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; background: rgba(0, 217, 255, 0.1); border: 1px solid rgba(0, 217, 255, 0.3); cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
-        .send-btn:hover { background: rgba(0, 217, 255, 0.2); box-shadow: 0 0 20px rgba(0, 217, 255, 0.3); }
-        .send-btn::before { content: '→'; color: #00d9ff; font-size: 1.5rem; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); } 20%, 40%, 60%, 80% { transform: translateX(10px); } }
-        @media (max-width: 1200px) { .hud-panel { display: none; } }
+        .orb { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(0,255,255,0.8), rgba(0,217,255,0.5), rgba(0,150,255,0.2)); box-shadow: 0 0 80px rgba(0,217,255,0.8); cursor: pointer; z-index: 10; animation: pulse-orb 3s infinite; }
+        @keyframes pulse-orb { 0%, 100% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.05); } }
     </style>
 </head>
 <body>
-    <div class="password-screen" id="password-screen">
-        <div class="password-box">
+    <div class="password-screen" id="pw">
+        <div>
             <div class="password-logo">HENRY</div>
-            <div class="password-subtitle">AI COMMAND CENTER</div>
-            <form id="password-form">
-                <input type="password" id="password-input" class="password-input" placeholder="ACCESS CODE" autocomplete="off" autofocus />
-                <button type="submit" class="password-submit">ENTER</button>
-                <div class="password-error" id="password-error">ACCESS DENIED</div>
-            </form>
+            <input type="password" id="pwin" class="password-input" placeholder="ACCESS CODE" />
+            <br><button class="password-submit" onclick="login()">ENTER</button>
         </div>
     </div>
-    <div class="main-container">
-        <header>
-            <div class="logo">HENRY</div>
-            <div class="status"><span class="status-dot"></span><span>ONLINE</span></div>
-        </header>
-        
-        <!-- HUD Canvas Layer -->
-        <canvas id="hud-canvas" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 0; pointer-events: none;"></canvas>
-
-        <div class="orb-container" id="orb-container">
+    <div class="main" id="main" style="display:none;">
+        <header><div class="logo">HENRY</div></header>
+        <div class="hud-container">
+            <div class="circle circle-1"></div>
+            <div class="circle circle-2"></div>
+            <div class="circle circle-3"></div>
             <div class="orb"></div>
-        </div>
-        
-        <div class="center-content"><div class="voice-status" id="voice-status">TAP ORB TO SPEAK</div></div>
-        
-        <!-- LEFT HUD: CRYPTO -->
-        <div class="hud-panel hud-left">
-            <div class="hud-title">⬡ CRYPTO MARKETS</div>
-            <div id="crypto-container"></div>
-            <div class="hud-title" style="margin-top: 1.5rem;">⬡ SIGNAL</div>
-            <div class="waveform" id="waveform-left"></div>
-        </div>
-        
-        <!-- RIGHT HUD: PRECIOUS METALS -->
-        <div class="hud-panel hud-right">
-            <div class="hud-title">⬡ PRECIOUS METALS</div>
-            <div id="metals-container"></div>
-            <div class="hud-title" style="margin-top: 1.5rem;">⬡ WAVEFORM</div>
-            <div class="waveform" id="waveform-right"></div>
-        </div>
-        
-        <div class="input-container">
-            <div class="input-wrapper">
-                <textarea id="input-bar" class="input-bar" placeholder="Message Henry..." rows="1"></textarea>
-                <button class="send-btn" id="send-btn"></button>
-            </div>
         </div>
     </div>
     <script>
-        const PASSWORD = '@agenthenry123';
-        const passwordScreen = document.getElementById('password-screen');
-        const passwordForm = document.getElementById('password-form');
-        const passwordInput = document.getElementById('password-input');
-        const passwordError = document.getElementById('password-error');
-        const mainContainer = document.querySelector('.main-container');
-        
-        if (sessionStorage.getItem('henryAuth') === 'true') { 
-            passwordScreen.classList.add('hidden'); 
-            init();
-        } else { 
-            mainContainer.style.display = 'none'; 
-        }
-        
-        passwordForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            if (passwordInput.value === PASSWORD) {
-                sessionStorage.setItem('henryAuth', 'true');
-                passwordScreen.classList.add('hidden');
-                mainContainer.style.display = 'block';
-                setTimeout(() => { init(); document.getElementById('input-bar').focus(); }, 100);
-            } else {
-                passwordError.classList.add('show');
-                passwordInput.value = '';
-                passwordForm.style.animation = 'shake 0.5s';
-                setTimeout(() => passwordForm.style.animation = '', 500);
+        function login() {
+            if (document.getElementById('pwin').value === '@agenthenry123') {
+                document.getElementById('pw').classList.add('hidden');
+                document.getElementById('main').style.display = 'block';
             }
-        });
-        
-        function init() {
-            initHUD();
-            initWaveforms();
-            updateMarkets();
-            setInterval(updateMarkets, 30000); // Update every 30s
-            initVoice();
         }
-        
-        // Live Market Data
-        async function updateMarkets() {
-            const crypto = {
-                BTC: { price: 95698, change: -1.39 },
-                ETH: { price: 2960, change: -1.89 },
-                SOL: { price: 111.76, change: -0.54 },
-                XRP: { price: 1.83, change: -2.10 }
-            };
-            
-            const metals = {
-                Gold: 6497.15,
-                Silver: 100.92
-            };
-            
-            const cryptoContainer = document.getElementById('crypto-container');
-            cryptoContainer.innerHTML = Object.entries(crypto).map(([symbol, data]) => `
-                <div class="crypto-item">
-                    <div class="crypto-header">
-                        <span class="crypto-symbol">${symbol}/CAD</span>
-                        <span class="crypto-change ${data.change >= 0 ? 'up' : 'down'}">${data.change >= 0 ? '+' : ''}${data.change.toFixed(2)}%</span>
-                    </div>
-                    <div class="crypto-price">$${data.price.toLocaleString('en-CA', {minimumFractionDigits: 2})}</div>
-                </div>
-            `).join('');
-            
-            const metalsContainer = document.getElementById('metals-container');
-            metalsContainer.innerHTML = Object.entries(metals).map(([name, price]) => `
-                <div class="metal-item">
-                    <span class="metal-name">${name}/oz</span>
-                    <span class="metal-price">$${price.toLocaleString('en-CA', {minimumFractionDigits: 2})}</span>
-                </div>
-            `).join('');
-        }
-        
-        // Waveforms
-        function initWaveforms() {
-            const left = document.getElementById('waveform-left');
-            const right = document.getElementById('waveform-right');
-            for (let i = 0; i < 25; i++) {
-                left.innerHTML += '<div class="waveform-bar"></div>';
-                right.innerHTML += '<div class="waveform-bar"></div>';
-            }
-            animateWaveforms();
-        }
-        
-        function animateWaveforms() {
-            document.querySelectorAll('.waveform-bar').forEach((bar, i) => {
-                const height = 10 + Math.sin(Date.now() / 200 + i * 0.5) * 20 + Math.random() * 15;
-                bar.style.height = height + 'px';
-            });
-            requestAnimationFrame(animateWaveforms);
-        }
-        
-        // Voice
-        const voiceStatus = document.getElementById('voice-status');
-        const recognition = 'webkitSpeechRecognition' in window ? new webkitSpeechRecognition() : ('SpeechRecognition' in window ? new SpeechRecognition() : null);
-        const synthesis = window.speechSynthesis;
-        let isListening = false;
-        
-        function initVoice() {
-            if (!recognition) return;
-            recognition.continuous = false;
-            recognition.lang = 'en-US';
-            recognition.onstart = () => {
-                isListening = true;
-                voiceStatus.textContent = 'LISTENING...';
-            };
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                voiceStatus.textContent = 'PROCESSING...';
-                setTimeout(() => {
-                    const response = `You said: ${transcript}`;
-                    const utterance = new SpeechSynthesisUtterance(response);
-                    utterance.rate = 1.1;
-                    synthesis.speak(utterance);
-                    voiceStatus.textContent = 'TAP ORB TO SPEAK';
-                }, 1000);
-            };
-            recognition.onerror = () => {
-                voiceStatus.textContent = 'ERROR - TAP TO RETRY';
-                isListening = false;
-            };
-            recognition.onend = () => { isListening = false; };
-        }
-        
-        document.getElementById('orb-container').addEventListener('click', () => {
-            if (recognition && !isListening) recognition.start();
-        });
-        
-        // Input
-        const inputBar = document.getElementById('input-bar');
-        const sendBtn = document.getElementById('send-btn');
-        inputBar.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 200) + 'px'; });
-        function sendMessage() {
-            const msg = inputBar.value.trim();
-            if (!msg) return;
-            voiceStatus.textContent = 'PROCESSING...';
-            inputBar.value = '';
-            inputBar.style.height = 'auto';
-            setTimeout(() => voiceStatus.textContent = 'TAP ORB TO SPEAK', 2000);
-        }
-        sendBtn.addEventListener('click', sendMessage);
-        inputBar.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
     </script>
 </body>
 </html>
-        
-        // HUD Rings Animation
-        const hudCanvas = document.getElementById('hud-canvas');
-        const hudCtx = hudCanvas.getContext('2d');
-        let hudAngle = 0;
-        
-        function initHUD() {
-            hudCanvas.width = 800;
-            hudCanvas.height = 800;
-            animateHUD();
-        }
-        
-        function animateHUD() {
-            hudCtx.clearRect(0, 0, hudCanvas.width, hudCanvas.height);
-            const cx = hudCanvas.width / 2;
-            const cy = hudCanvas.height / 2;
-            
-            // Rotating outer ring
-            hudCtx.save();
-            hudCtx.translate(cx, cy);
-            hudCtx.rotate(hudAngle);
-            hudCtx.beginPath();
-            hudCtx.arc(0, 0, 200, 0, Math.PI * 1.5);
-            hudCtx.strokeStyle = 'rgba(0, 217, 255, 0.4)';
-            hudCtx.lineWidth = 2;
-            hudCtx.stroke();
-            hudCtx.restore();
-            
-            // Counter-rotating middle ring
-            hudCtx.save();
-            hudCtx.translate(cx, cy);
-            hudCtx.rotate(-hudAngle * 0.7);
-            hudCtx.beginPath();
-            hudCtx.arc(0, 0, 170, Math.PI * 0.2, Math.PI * 1.8);
-            hudCtx.strokeStyle = 'rgba(0, 217, 255, 0.3)';
-            hudCtx.lineWidth = 1.5;
-            hudCtx.stroke();
-            hudCtx.restore();
-            
-            // Scanning arc
-            hudCtx.save();
-            hudCtx.translate(cx, cy);
-            hudCtx.rotate(hudAngle * 2);
-            const grad = hudCtx.createRadialGradient(0, 0, 150, 0, 0, 190);
-            grad.addColorStop(0, 'transparent');
-            grad.addColorStop(0.8, 'rgba(0, 217, 255, 0.3)');
-            grad.addColorStop(1, 'rgba(0, 217, 255, 0)');
-            hudCtx.fillStyle = grad;
-            hudCtx.beginPath();
-            hudCtx.moveTo(0, 0);
-            hudCtx.arc(0, 0, 190, 0, Math.PI * 0.3);
-            hudCtx.closePath();
-            hudCtx.fill();
-            hudCtx.restore();
-            
-            // Corner brackets
-            drawBracket(cx - 180, cy - 180, 30, 1);
-            drawBracket(cx + 180, cy - 180, 30, 2);
-            drawBracket(cx - 180, cy + 180, 30, 3);
-            drawBracket(cx + 180, cy + 180, 30, 4);
-            
-            hudAngle += 0.01;
-            requestAnimationFrame(animateHUD);
-        }
-        
-        function drawBracket(x, y, size, corner) {
-            hudCtx.strokeStyle = 'rgba(0, 217, 255, 0.5)';
-            hudCtx.lineWidth = 2;
-            hudCtx.beginPath();
-            if (corner === 1) {
-                hudCtx.moveTo(x, y + size);
-                hudCtx.lineTo(x, y);
-                hudCtx.lineTo(x + size, y);
-            } else if (corner === 2) {
-                hudCtx.moveTo(x - size, y);
-                hudCtx.lineTo(x, y);
-                hudCtx.lineTo(x, y + size);
-            } else if (corner === 3) {
-                hudCtx.moveTo(x, y - size);
-                hudCtx.lineTo(x, y);
-                hudCtx.lineTo(x + size, y);
-            } else {
-                hudCtx.moveTo(x - size, y);
-                hudCtx.lineTo(x, y);
-                hudCtx.lineTo(x, y - size);
-            }
-            hudCtx.stroke();
-        }
