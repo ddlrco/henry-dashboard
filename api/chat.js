@@ -27,7 +27,7 @@ export default async function handler(req, res) {
         'Authorization': 'Bearer cLVJRZ4dM4QEOQxZbBqc94jWevmBEtoI'
       },
       body: JSON.stringify({
-        model: 'anthropic/claude-sonnet-4-5',
+        model: 'openclaw',
         messages: [{ role: 'user', content: message }],
         stream: false
       })
