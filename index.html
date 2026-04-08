@@ -408,6 +408,20 @@ canvas {
     box-shadow: 0 0 6px rgba(102,126,234,0.4);
     transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
+.spark-chart {
+    width: 100%;
+    height: 28px;
+    margin-top: 4px;
+    opacity: 0.8;
+}
+.data-node-change {
+    font-size: 10px;
+    font-weight: 500;
+    margin-left: auto;
+    padding-left: 6px;
+}
+.data-node-change.up { color: rgba(74, 222, 128, 0.8); }
+.data-node-change.down { color: rgba(248, 113, 113, 0.8); }
 </style>
 <style>
 .password-overlay{position:fixed;inset:0;background:#050508;display:flex;align-items:center;justify-content:center;z-index:9999;font-family:"Outfit",sans-serif}
@@ -526,11 +540,15 @@ canvas {
         <div class="data-node-row">
             <span>BTC</span>
             <span id="btc-price" class="data-node-value-sm">--</span>
+            <span id="btc-change" class="data-node-change"></span>
         </div>
-        <div class="data-node-row">
+        <canvas id="btc-chart" class="spark-chart" width="160" height="28"></canvas>
+        <div class="data-node-row" style="margin-top:6px;">
             <span>ETH</span>
             <span id="eth-price" class="data-node-value-sm">--</span>
+            <span id="eth-change" class="data-node-change"></span>
         </div>
+        <canvas id="eth-chart" class="spark-chart" width="160" height="28"></canvas>
     </div>
     
     <!-- Metals Node -->
@@ -539,11 +557,15 @@ canvas {
         <div class="data-node-row">
             <span>GOLD</span>
             <span id="gold-price" class="data-node-value-sm">--</span>
+            <span id="gold-change" class="data-node-change"></span>
         </div>
-        <div class="data-node-row">
+        <canvas id="gold-chart" class="spark-chart" width="160" height="28"></canvas>
+        <div class="data-node-row" style="margin-top:6px;">
             <span>SILVER</span>
             <span id="silver-price" class="data-node-value-sm">--</span>
+            <span id="silver-change" class="data-node-change"></span>
         </div>
+        <canvas id="silver-chart" class="spark-chart" width="160" height="28"></canvas>
     </div>
     
     <!-- Skills Node -->
@@ -1839,9 +1861,67 @@ document.addEventListener("keydown", (e) => {
     init();
     
     // Live Data Updates
+    // Sparkline chart drawing
+    function drawSparkline(canvasId, data, color = 'rgba(102,126,234,0.6)') {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas || !data || data.length < 2) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        
+        const min = Math.min(...data);
+        const max = Math.max(...data);
+        const range = max - min || 1;
+        
+        // Gradient fill
+        const grad = ctx.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, color.replace('0.6', '0.15'));
+        grad.addColorStop(1, 'transparent');
+        
+        // Draw fill
+        ctx.beginPath();
+        ctx.moveTo(0, h);
+        for (let i = 0; i < data.length; i++) {
+            const x = (i / (data.length - 1)) * w;
+            const y = h - ((data[i] - min) / range) * (h - 4) - 2;
+            ctx.lineTo(x, y);
+        }
+        ctx.lineTo(w, h);
+        ctx.fillStyle = grad;
+        ctx.fill();
+        
+        // Draw line
+        ctx.beginPath();
+        for (let i = 0; i < data.length; i++) {
+            const x = (i / (data.length - 1)) * w;
+            const y = h - ((data[i] - min) / range) * (h - 4) - 2;
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        
+        // End dot
+        const lastX = w;
+        const lastY = h - ((data[data.length - 1] - min) / range) * (h - 4) - 2;
+        ctx.beginPath();
+        ctx.arc(lastX - 1, lastY, 2, 0, Math.PI * 2);
+        ctx.fillStyle = color.replace('0.6', '1');
+        ctx.fill();
+    }
+    
+    function setChange(id, pct) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const sign = pct >= 0 ? '+' : '';
+        el.textContent = sign + pct.toFixed(1) + '%';
+        el.className = 'data-node-change ' + (pct >= 0 ? 'up' : 'down');
+    }
+    
     async function updateLiveData() {
         try {
-            // Weather (using wttr.in for simplicity)
+            // Weather
             fetch('https://wttr.in/Edmonton?format=j1')
                 .then(r => r.json())
                 .then(d => {
@@ -1852,16 +1932,34 @@ document.addEventListener("keydown", (e) => {
                 })
                 .catch(() => {});
             
-            // Crypto prices (CoinGecko API - free, no key needed)
-            fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=cad')
+            // Crypto prices + sparkline data (CoinGecko)
+            fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=cad&days=1')
                 .then(r => r.json())
                 .then(d => {
-                    document.getElementById('btc-price').textContent = '$' + (d.bitcoin.cad / 1000).toFixed(1) + 'K';
-                    document.getElementById('eth-price').textContent = '$' + d.ethereum.cad.toFixed(0);
+                    const prices = d.prices.map(p => p[1]);
+                    const current = prices[prices.length - 1];
+                    const prev = prices[0];
+                    const change = ((current - prev) / prev) * 100;
+                    document.getElementById('btc-price').textContent = '$' + (current / 1000).toFixed(1) + 'K';
+                    setChange('btc-change', change);
+                    drawSparkline('btc-chart', prices, change >= 0 ? 'rgba(74,222,128,0.6)' : 'rgba(248,113,113,0.6)');
                 })
                 .catch(() => {});
             
-            // Metals (using metals-api.com or backup to static data)
+            fetch('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=cad&days=1')
+                .then(r => r.json())
+                .then(d => {
+                    const prices = d.prices.map(p => p[1]);
+                    const current = prices[prices.length - 1];
+                    const prev = prices[0];
+                    const change = ((current - prev) / prev) * 100;
+                    document.getElementById('eth-price').textContent = '$' + current.toFixed(0);
+                    setChange('eth-change', change);
+                    drawSparkline('eth-chart', prices, change >= 0 ? 'rgba(74,222,128,0.6)' : 'rgba(248,113,113,0.6)');
+                })
+                .catch(() => {});
+            
+            // Metals
             fetch('https://api.metals.live/v1/spot')
                 .then(r => r.json())
                 .then(d => {
@@ -1869,7 +1967,6 @@ document.addEventListener("keydown", (e) => {
                     document.getElementById('silver-price').textContent = '$' + d.silver.toFixed(2);
                 })
                 .catch(() => {
-                    // Fallback static values if API fails
                     document.getElementById('gold-price').textContent = '$2650';
                     document.getElementById('silver-price').textContent = '$30.50';
                 });
