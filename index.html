@@ -503,6 +503,7 @@ canvas {
             <option value="deepseek-chat" style="background:#111;">DeepSeek V3</option>
         </select>
         <div id="model-status" style="font-size:11px;color:#4ade80;margin-top:8px;">● Connected</div>
+        <div id="token-count" style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px;letter-spacing:1px;">TOKENS: 0</div>
     </div>
 </div>
 <div id="theme-selector" class="glass-panel">
@@ -2207,6 +2208,13 @@ async function sendChat() {
         
         const data = await response.json();
         addMsg(data.reply, 'ai');
+        
+        // Update token count
+        if (!window._totalTokens) window._totalTokens = 0;
+        const tokensUsed = data.tokens || Math.round((data.reply ? data.reply.length / 4 : 0) + (msg ? msg.length / 4 : 0));
+        window._totalTokens += tokensUsed;
+        const tokenEl = document.getElementById('token-count');
+        if (tokenEl) tokenEl.textContent = 'TOKENS: ' + Math.round(window._totalTokens).toLocaleString();
         
         // Speak the reply
         const utt = new SpeechSynthesisUtterance(data.reply);

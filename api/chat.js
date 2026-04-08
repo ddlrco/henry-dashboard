@@ -53,7 +53,8 @@ export default async function handler(req, res) {
     console.log('OpenClaw reply:', data.choices[0].message.content.substring(0, 100));
     const reply = data.choices[0].message.content;
 
-    return res.status(200).json({ reply });
+    const usage = data.usage || {};
+    return res.status(200).json({ reply, tokens: usage.total_tokens || 0 });
   } catch (error) {
     console.error('Proxy error:', error.message);
     if (error.name === 'AbortError') {
