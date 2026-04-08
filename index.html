@@ -555,6 +555,7 @@ canvas {
         </select>
         <div id="model-status" style="font-size:11px;color:#4ade80;margin-top:8px;">● Connected</div>
         <div id="token-count" style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px;letter-spacing:1px;">TOKENS: 0</div>
+        <button id="logout-btn" onclick="henryLogout()" style="margin-top:12px;background:none;border:1px solid rgba(248,113,113,0.3);color:rgba(248,113,113,0.6);padding:6px 14px;border-radius:4px;font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.3s;">LOGOUT</button>
     </div>
 </div>
 <div id="theme-selector" class="glass-panel">
@@ -798,6 +799,20 @@ canvas {
     </div>
 </div>
 <script>
+function henryLogout(){
+    sessionStorage.removeItem("henryAuth");
+    // Kill mic if active
+    if (window.voiceRecog) { try { window.voiceRecog.abort(); } catch(e){} }
+    if (typeof micStream !== 'undefined' && micStream) {
+        try { micStream.mediaStream.getTracks().forEach(t => t.stop()); } catch(e){}
+    }
+    // Show password screen
+    document.getElementById("pw-screen").classList.remove("pw-hidden");
+    document.getElementById("pw-input").value = "";
+    // Clear chat
+    const msgs = document.getElementById('chat-messages');
+    if (msgs) { msgs.innerHTML = ''; msgs.classList.remove('has-messages'); }
+}
 function checkPw(){
 if(document.getElementById("pw-input").value==="@agenthenry123"){
 sessionStorage.setItem("henryAuth","true");
