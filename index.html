@@ -190,16 +190,14 @@ canvas {
 }
 .density-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #fff;
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.9);
     cursor: pointer;
-    box-shadow:
-        0 0 15px rgba(255,255,255,0.8),
-        0 2px 5px rgba(0,0,0,0.3);
+    box-shadow: 0 0 8px rgba(255,255,255,0.5);
     transition: all 0.2s ease;
-    margin-top: -6px;
+    margin-top: -4px;
     position: relative;
     z-index: 2;
 }
@@ -550,9 +548,14 @@ body.inverted #logout-btn { border-color: rgba(220,38,38,0.3); color: rgba(220,3
 <div class="pw-sub">Neural Command Interface</div>
 <div class="pw-line"></div>
 <form id="pw-form" onsubmit="return false">
-<input type="password" id="pw-input" class="pw-input" placeholder="enter access key" autocomplete="off" autofocus>
-<button class="pw-btn" onclick="checkPw()">AUTHENTICATE</button>
+<div id="pw-stage1">
+<button class="pw-btn" type="button" onclick="document.getElementById('pw-stage1').style.display='none';document.getElementById('pw-stage2').style.display='block';document.getElementById('pw-input').focus();">AUTHENTICATE</button>
+</div>
+<div id="pw-stage2" style="display:none;">
+<input type="password" id="pw-input" class="pw-input" placeholder="enter access key" autocomplete="off">
+<button class="pw-btn" type="button" onclick="checkPw()">ENTER</button>
 <div class="pw-error" id="pw-error">UNAUTHORIZED</div>
+</div>
 </form>
 </div>
 </div>
@@ -1377,20 +1380,48 @@ document.addEventListener("keydown", (e) => {
                 [phi, 0, -1], [phi, 0, 1], [-phi, 0, -1], [-phi, 0, 1]
             ];
             const coreNodes = [];
+            // Main icosahedron vertices
             for (const v of icoVerts) {
                 const len = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
                 const pos = new THREE.Vector3(v[0]/len * coreScale, v[1]/len * coreScale, v[2]/len * coreScale);
-                const node = new Node(pos, 1, 0);
-                node.size = 1.4;
+                const node = new Node(pos, 0, 0);
+                node.size = 2.0;
                 node.distanceFromRoot = coreScale;
                 nodes.push(node);
                 coreNodes.push(node);
-                rootNode.addConnection(node, 0.6);
+                rootNode.addConnection(node, 0.8);
             }
+            // Connect all edges (wider threshold for more lines)
             for (let i = 0; i < coreNodes.length; i++) {
                 for (let j = i + 1; j < coreNodes.length; j++) {
                     const d = coreNodes[i].position.distanceTo(coreNodes[j].position);
-                    if (d < coreScale * 0.75) coreNodes[i].addConnection(coreNodes[j], 0.85);
+                    if (d < coreScale * 1.2) coreNodes[i].addConnection(coreNodes[j], 0.9);
+                }
+            }
+            // Add midpoint nodes on each edge for denser mesh
+            const edgePairs = [];
+            for (let i = 0; i < coreNodes.length; i++) {
+                for (let j = i + 1; j < coreNodes.length; j++) {
+                    if (coreNodes[i].isConnectedTo(coreNodes[j])) edgePairs.push([i, j]);
+                }
+            }
+            const midNodes = [];
+            for (const [i, j] of edgePairs) {
+                const mid = new THREE.Vector3().addVectors(coreNodes[i].position, coreNodes[j].position).multiplyScalar(0.5);
+                mid.normalize().multiplyScalar(coreScale * 0.85);
+                const midNode = new Node(mid, 0, 0);
+                midNode.size = 1.0;
+                midNode.distanceFromRoot = mid.length();
+                nodes.push(midNode);
+                midNodes.push(midNode);
+                coreNodes[i].addConnection(midNode, 0.7);
+                midNode.addConnection(coreNodes[j], 0.7);
+            }
+            // Cross-connect nearby midpoints
+            for (let i = 0; i < midNodes.length; i++) {
+                for (let j = i + 1; j < midNodes.length; j++) {
+                    const d = midNodes[i].position.distanceTo(midNodes[j].position);
+                    if (d < coreScale * 0.7) midNodes[i].addConnection(midNodes[j], 0.5);
                 }
             }
             return coreNodes;
@@ -1400,7 +1431,7 @@ document.addEventListener("keydown", (e) => {
             rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
             rootNode.size = 2.0;
             nodes.push(rootNode);
-            addWireframeCore(4);
+            addWireframeCore(3);
             const layers = 5;
             const goldenRatio = (1 + Math.sqrt(5)) / 2;
             for (let layer = 1; layer <= layers; layer++) {
@@ -1461,7 +1492,7 @@ document.addEventListener("keydown", (e) => {
             rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
             rootNode.size = 1.8;
             nodes.push(rootNode);
-            addWireframeCore(4);
+            addWireframeCore(3);
             
             // Generate icosahedron vertices and subdivide
             const radius = 13;
@@ -1547,7 +1578,7 @@ document.addEventListener("keydown", (e) => {
             rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
             rootNode.size = 1.6;
             nodes.push(rootNode);
-            addWireframeCore(3.5);
+            addWireframeCore(3);
             const branches = 6;
             const maxDepth = 4;
             function createBranch(startNode, direction, depth, strength, scale) {
