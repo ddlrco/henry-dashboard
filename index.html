@@ -2037,8 +2037,8 @@ document.addEventListener("keydown", (e) => {
                 const key = [Math.min(nodeIndex, connectedIndex), Math.max(nodeIndex, connectedIndex)].join('-');
                 if (!processedConnections.has(key)) {
                     processedConnections.add(key);
-                    const numSegments = 20;
-                    for (let i = 0; i < numSegments; i++) {
+                    const numPairs = 16;
+                    for (let i = 0; i < numPairs; i++) {
                         const avgLevel = Math.min(Math.floor((node.level + connectedNode.level) / 2), palette.length - 1);
                         const baseColor = palette[avgLevel % palette.length].clone();
                         baseColor.offsetHSL(
@@ -2046,6 +2046,8 @@ document.addEventListener("keydown", (e) => {
                             THREE.MathUtils.randFloatSpread(0.08),
                             THREE.MathUtils.randFloatSpread(0.08)
                         );
+                        // 2 vertices per segment pair
+                        connectionColors.push(baseColor.r, baseColor.g, baseColor.b);
                         connectionColors.push(baseColor.r, baseColor.g, baseColor.b);
                     }
                 }
