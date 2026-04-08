@@ -838,16 +838,27 @@ function henryLogout(){
     const msgs = document.getElementById('chat-messages');
     if (msgs) { msgs.innerHTML = ''; msgs.classList.remove('has-messages'); }
 }
-function checkPw(){
-if(document.getElementById("pw-input").value==="@agenthenry123"){
-sessionStorage.setItem("henryAuth","true");
-document.getElementById("pw-screen").classList.add("pw-hidden");
-}else{
-document.getElementById("pw-error").classList.add("show");
-document.getElementById("pw-input").value="";
+async function checkPw(){
+const pw = document.getElementById("pw-input").value;
+try {
+    const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw })
+    });
+    const data = await res.json();
+    if (data.success) {
+        sessionStorage.setItem("henryAuth", data.token);
+        document.getElementById("pw-screen").classList.add("pw-hidden");
+    } else {
+        document.getElementById("pw-error").classList.add("show");
+        document.getElementById("pw-input").value="";
+    }
+} catch(e) {
+    document.getElementById("pw-error").classList.add("show");
 }
 }
-if(sessionStorage.getItem("henryAuth")==="true"){
+if(sessionStorage.getItem("henryAuth")){
 document.addEventListener("DOMContentLoaded",function(){document.getElementById("pw-screen").classList.add("pw-hidden");});
 }
 // Voice Recognition - attach to window so the Three.js module can access it
