@@ -1183,10 +1183,7 @@ document.addEventListener("keydown", (e) => {
             float isOuter = smoothstep(0.3, 0.6, nodeType) * smoothstep(3.0, 8.0, distanceFromRoot);
             
             // Ping pulse — sharp spike then decay, outer nodes only
-            float pingPhase = fract(uTime * 0.4); // ~2.5s cycle
-            float ping = exp(-pingPhase * 8.0) * 0.12 * isOuter;
-            
-            float breathe = 1.0 + ping - isOuter * (1.0 - (sin(uTime * 0.7 + distanceFromRoot * 0.15) * 0.08 + 0.92));
+            float breathe = 1.0 - isOuter * (1.0 - (sin(uTime * 0.7 + distanceFromRoot * 0.15) * 0.08 + 0.92));
             
             // Audio reactivity only on outer nodes
             vec3 wp = (modelMatrix * vec4(position, 1.0)).xyz;
@@ -1201,7 +1198,7 @@ document.addEventListener("keydown", (e) => {
             audioReact *= isOuter; // only outer nodes react
             
             // Displace outer nodes only + ping
-            float displacement = audioReact * 3.0 + ping * 2.0;
+            float displacement = audioReact * 3.0;
             vec3 displaceDir = normalize(position);
             
             float sizeBoost = 1.0 + audioReact * 1.5 + uAudioIntensity * 0.5 * isOuter;
@@ -2209,9 +2206,7 @@ document.addEventListener("keydown", (e) => {
             }
             
             // Bloom pulses with ping + audio
-            const pingPhaseB = (t * 0.4) % 1.0;
-            const heartGlow = Math.exp(-pingPhaseB * 8) * 0.15;
-            bloomPass.strength = 0.35 + heartGlow + (smoothAudio > 0.05 ? smoothAudio * 0.5 : 0);
+            bloomPass.strength = 0.35 + (smoothAudio > 0.05 ? smoothAudio * 0.5 : 0);
         }
         starField.rotation.y += 0.0002;
         starField.material.uniforms.uTime.value = t;
