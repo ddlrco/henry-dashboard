@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 25000); // 25s timeout
 
-    const response = await fetch('https://fc8723e8fb92ee.lhr.life/v1/chat/completions', {
+    const response = await fetch('https://fdd4ceb6e118ba.lhr.life/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
