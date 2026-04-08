@@ -380,6 +380,24 @@ document.getElementById("pw-input").value="";
 if(sessionStorage.getItem("henryAuth")==="true"){
 document.addEventListener("DOMContentLoaded",function(){document.getElementById("pw-screen").classList.add("pw-hidden");});
 }
+// Voice Recognition
+const voiceRecog = "webkitSpeechRecognition" in window ? new webkitSpeechRecognition() : ("SpeechRecognition" in window ? new SpeechRecognition() : null);
+if (voiceRecog) {
+    voiceRecog.continuous = false;
+    voiceRecog.lang = "en-US";
+    voiceRecog.onresult = (ev) => {
+        const text = ev.results[0][0].transcript;
+        const utt = new SpeechSynthesisUtterance("You said: " + text);
+        utt.rate = 1.1;
+        window.speechSynthesis.speak(utt);
+    };
+}
+document.addEventListener("keydown", (e) => {
+    if (e.code === "Space" && voiceRecog && !e.target.closest("input,textarea")) {
+        e.preventDefault();
+        voiceRecog.start();
+    }
+});
 </script>
 <script type="importmap">
 {
@@ -388,6 +406,24 @@ document.addEventListener("DOMContentLoaded",function(){document.getElementById(
         "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/"
     }
 }
+// Voice Recognition
+const voiceRecog = "webkitSpeechRecognition" in window ? new webkitSpeechRecognition() : ("SpeechRecognition" in window ? new SpeechRecognition() : null);
+if (voiceRecog) {
+    voiceRecog.continuous = false;
+    voiceRecog.lang = "en-US";
+    voiceRecog.onresult = (ev) => {
+        const text = ev.results[0][0].transcript;
+        const utt = new SpeechSynthesisUtterance("You said: " + text);
+        utt.rate = 1.1;
+        window.speechSynthesis.speak(utt);
+    };
+}
+document.addEventListener("keydown", (e) => {
+    if (e.code === "Space" && voiceRecog && !e.target.closest("input,textarea")) {
+        e.preventDefault();
+        voiceRecog.start();
+    }
+});
 </script>
 <script type="module">
     import * as THREE from 'three';
