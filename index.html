@@ -1388,7 +1388,60 @@ document.addEventListener("keydown", (e) => {
     let neuralNetwork = null;
     let nodesMesh = null;
     let connectionsMesh = null;
-    function createNetworkVisualization(formationIndex, densityFactor = 1.0) {
+    let morphing = false;
+    let morphProgress = 0;
+    let morphFromPositions = null;
+    let morphToPositions = null;
+    let morphFromSizes = null;
+    let morphToSizes = null;
+    
+    function startMorph(formationIndex, densityFactor) {
+        // Save current positions
+        if (nodesMesh && nodesMesh.geometry.attributes.position) {
+            morphFromPositions = new Float32Array(nodesMesh.geometry.attributes.position.array);
+            morphFromSizes = new Float32Array(nodesMesh.geometry.attributes.nodeSize.array);
+        }
+        
+        // Generate new formation to get target positions
+        createNetworkVisualization(formationIndex, densityFactor, true);
+        
+        if (nodesMesh && morphFromPositions) {
+            morphToPositions = new Float32Array(nodesMesh.geometry.attributes.position.array);
+            morphToSizes = new Float32Array(nodesMesh.geometry.attributes.nodeSize.array);
+            
+            // Pad arrays to match (use random scatter for missing points)
+            const maxLen = Math.max(morphFromPositions.length, morphToPositions.length);
+            if (morphFromPositions.length < maxLen) {
+                const padded = new Float32Array(maxLen);
+                padded.set(morphFromPositions);
+                for (let i = morphFromPositions.length; i < maxLen; i += 3) {
+                    padded[i] = (Math.random() - 0.5) * 30;
+                    padded[i+1] = (Math.random() - 0.5) * 30;
+                    padded[i+2] = (Math.random() - 0.5) * 30;
+                }
+                morphFromPositions = padded;
+            }
+            if (morphToPositions.length < maxLen) {
+                const padded = new Float32Array(maxLen);
+                padded.set(morphToPositions);
+                for (let i = morphToPositions.length; i < maxLen; i += 3) {
+                    padded[i] = (Math.random() - 0.5) * 30;
+                    padded[i+1] = (Math.random() - 0.5) * 30;
+                    padded[i+2] = (Math.random() - 0.5) * 30;
+                }
+                morphToPositions = padded;
+            }
+            
+            // Start from old positions
+            nodesMesh.geometry.attributes.position.array.set(morphFromPositions.subarray(0, nodesMesh.geometry.attributes.position.array.length));
+            nodesMesh.geometry.attributes.position.needsUpdate = true;
+            
+            morphProgress = 0;
+            morphing = true;
+        }
+    }
+    
+    function createNetworkVisualization(formationIndex, densityFactor = 1.0, skipRemove = false) {
         console.log(`Creating formation ${formationIndex}, density ${densityFactor}`);
         if (nodesMesh) {
             scene.remove(nodesMesh);
@@ -1624,7 +1677,7 @@ document.addEventListener("keydown", (e) => {
     changeFormationBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         config.currentFormation = (config.currentFormation + 1) % config.numFormations;
-        createNetworkVisualization(config.currentFormation, config.densityFactor);
+        startMorph(config.currentFormation, config.densityFactor);
         controls.autoRotate = false;
         setTimeout(() => { controls.autoRotate = true; }, 2500);
     });
@@ -1673,6 +1726,28 @@ document.addEventListener("keydown", (e) => {
         
         // Update audio data
         getAudioData();
+        
+        // Handle morphing
+        if (morphing && nodesMesh && morphFromPositions && morphToPositions) {
+            morphProgress += 0.015; // ~1.5 seconds for full morph
+            if (morphProgress >= 1.0) {
+                morphProgress = 1.0;
+                morphing = false;
+            }
+            // Smooth easing
+            const ease = morphProgress < 0.5 
+                ? 4 * morphProgress * morphProgress * morphProgress 
+                : 1 - Math.pow(-2 * morphProgress + 2, 3) / 2;
+            
+            const posArray = nodesMesh.geometry.attributes.position.array;
+            const count = posArray.length;
+            for (let i = 0; i < count; i++) {
+                const fromVal = i < morphFromPositions.length ? morphFromPositions[i] : 0;
+                const toVal = i < morphToPositions.length ? morphToPositions[i] : 0;
+                posArray[i] = fromVal + (toVal - fromVal) * ease;
+            }
+            nodesMesh.geometry.attributes.position.needsUpdate = true;
+        }
         
         if (!config.paused) {
             if (nodesMesh) {
