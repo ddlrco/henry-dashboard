@@ -510,17 +510,26 @@ async function startMicAnalysis() {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         window.analyser = audioContext.createAnalyser();
         window.analyser.fftSize = 256;
+        console.log('Audio context created, fftSize:', window.analyser.fftSize, 'frequencyBinCount:', window.analyser.frequencyBinCount);
     }
     if (!micStream) {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             micStream = audioContext.createMediaStreamSource(stream);
             micStream.connect(window.analyser);
+            console.log('Microphone connected to analyser');
         } catch (e) {
-            console.log('Mic access denied');
+            console.log('Mic access denied:', e);
         }
     }
 }
+
+// Auto-start mic on first click
+document.addEventListener('click', () => {
+    if (!audioContext) {
+        startMicAnalysis().then(() => console.log('Mic activated on click'));
+    }
+}, { once: true });
 
 window.voiceRecog = "webkitSpeechRecognition" in window ? new webkitSpeechRecognition() : ("SpeechRecognition" in window ? new SpeechRecognition() : null);
 if (window.voiceRecog) {
@@ -1466,6 +1475,7 @@ document.addEventListener("keydown", (e) => {
     let dataArray, audioIntensity = 0;
     let frequencyBands = [0, 0, 0, 0]; // low, mid-low, mid-high, high
     
+    let audioDebugCounter = 0;
     function getAudioData() {
         if (!window.analyser) return;
         if (!dataArray) dataArray = new Uint8Array(window.analyser.frequencyBinCount);
@@ -1480,6 +1490,11 @@ document.addEventListener("keydown", (e) => {
         
         const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
         audioIntensity = avg / 255;
+        
+        // Debug log every 60 frames
+        if (audioDebugCounter++ % 60 === 0 && (frequencyBands[0] > 0.1 || frequencyBands[1] > 0.1 || frequencyBands[2] > 0.1 || frequencyBands[3] > 0.1)) {
+            console.log('Audio bands:', frequencyBands.map(b => b.toFixed(2)).join(', '), 'intensity:', audioIntensity.toFixed(2));
+        }
     }
     
     function animate() {
