@@ -679,6 +679,7 @@ document.addEventListener("keydown", (e) => {
         attribute float nodeType;
         attribute vec3 nodeColor;
         attribute float distanceFromRoot;
+        attribute float audioMod;
         
         uniform float uTime;
         uniform vec3 uPulsePositions[3];
@@ -714,7 +715,8 @@ document.addEventListener("keydown", (e) => {
             }
             vPulseIntensity = min(totalPulseIntensity, 1.0);
             float breathe = sin(uTime * 0.7 + distanceFromRoot * 0.15) * 0.15 + 0.85;
-            float baseSize = nodeSize * breathe;
+            float audioReact = 1.0 + audioMod * 0.8; // audio reactive scaling
+            float baseSize = nodeSize * breathe * audioReact;
             float pulseSize = baseSize * (1.0 + vPulseIntensity * 2.5);
             vGlow = 0.5 + 0.5 * sin(uTime * 0.5 + distanceFromRoot * 0.2);
             vec3 modifiedPosition = position;
@@ -1156,6 +1158,7 @@ document.addEventListener("keydown", (e) => {
         nodesGeometry.setAttribute('nodeSize', new THREE.Float32BufferAttribute(nodeSizes, 1));
         nodesGeometry.setAttribute('nodeColor', new THREE.Float32BufferAttribute(nodeColors, 3));
         nodesGeometry.setAttribute('distanceFromRoot', new THREE.Float32BufferAttribute(distancesFromRoot, 1));
+        nodesGeometry.setAttribute('audioMod', new THREE.Float32BufferAttribute(new Float32Array(nodePositions.length / 3), 1));
         const nodesMaterial = new THREE.ShaderMaterial({
             uniforms: THREE.UniformsUtils.clone(pulseUniforms),
             vertexShader: nodeShader.vertexShader,
@@ -1367,33 +1370,63 @@ document.addEventListener("keydown", (e) => {
     const clock = new THREE.Clock();
     // Audio reactivity
     let dataArray, audioIntensity = 0;
+    let frequencyBands = [0, 0, 0, 0]; // low, mid-low, mid-high, high
     
-    function getAudioIntensity() {
-        if (!window.analyser) return 0;
+    function getAudioData() {
+        if (!window.analyser) return;
         if (!dataArray) dataArray = new Uint8Array(window.analyser.frequencyBinCount);
         window.analyser.getByteFrequencyData(dataArray);
+        
+        // Split into frequency bands
+        const bandSize = Math.floor(dataArray.length / 4);
+        frequencyBands[0] = dataArray.slice(0, bandSize).reduce((a, b) => a + b, 0) / bandSize / 255;
+        frequencyBands[1] = dataArray.slice(bandSize, bandSize * 2).reduce((a, b) => a + b, 0) / bandSize / 255;
+        frequencyBands[2] = dataArray.slice(bandSize * 2, bandSize * 3).reduce((a, b) => a + b, 0) / bandSize / 255;
+        frequencyBands[3] = dataArray.slice(bandSize * 3).reduce((a, b) => a + b, 0) / (dataArray.length - bandSize * 3) / 255;
+        
         const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
-        return avg / 255; // normalize 0-1
+        audioIntensity = avg / 255;
     }
     
     function animate() {
         requestAnimationFrame(animate);
         const t = clock.getElapsedTime();
         
-        // Update audio intensity
-        audioIntensity = audioIntensity * 0.8 + getAudioIntensity() * 0.2; // smooth
-        const pulse = 1 + audioIntensity * 0.3; // scale factor
+        // Update audio data
+        getAudioData();
         
         if (!config.paused) {
             if (nodesMesh) {
                 nodesMesh.material.uniforms.uTime.value = t;
                 nodesMesh.rotation.y = Math.sin(t * 0.04) * 0.05;
-                nodesMesh.scale.setScalar(pulse); // audio reactive scale
+                
+                // Add per-node frequency-based modulation
+                const positions = nodesMesh.geometry.attributes.position.array;
+                const count = positions.length / 3;
+                
+                for (let i = 0; i < count; i++) {
+                    const x = positions[i * 3];
+                    const y = positions[i * 3 + 1];
+                    const z = positions[i * 3 + 2];
+                    
+                    // Map position to frequency band
+                    const angle = Math.atan2(z, x);
+                    const bandIndex = Math.floor((angle + Math.PI) / (Math.PI * 2) * 4) % 4;
+                    const intensity = frequencyBands[bandIndex];
+                    
+                    // Modulate node size via custom attribute (needs setup in geometry)
+                    if (nodesMesh.geometry.attributes.audioMod) {
+                        nodesMesh.geometry.attributes.audioMod.array[i] = intensity;
+                    }
+                }
+                
+                if (nodesMesh.geometry.attributes.audioMod) {
+                    nodesMesh.geometry.attributes.audioMod.needsUpdate = true;
+                }
             }
             if (connectionsMesh) {
                 connectionsMesh.material.uniforms.uTime.value = t;
                 connectionsMesh.rotation.y = Math.sin(t * 0.04) * 0.05;
-                connectionsMesh.scale.setScalar(pulse); // audio reactive scale
             }
         }
         starField.rotation.y += 0.0002;
