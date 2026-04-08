@@ -1173,9 +1173,9 @@ document.addEventListener("keydown", (e) => {
                 finalColor = mix(baseColor, pulseColor * 1.2, vPulseIntensity * 0.7);
                 flowIntensity += vPulseIntensity * 0.8;
             }
-            finalColor *= (0.7 + flowIntensity + vConnectionStrength * 0.5);
-            float baseAlpha = 0.7 * vConnectionStrength;
-            float flowAlpha = combinedFlow * 0.3;
+            finalColor *= (1.0 + flowIntensity + vConnectionStrength * 0.5);
+            float baseAlpha = 1.0 * vConnectionStrength;
+            float flowAlpha = combinedFlow * 0.4;
             float alpha = baseAlpha + flowAlpha;
             alpha = mix(alpha, min(1.0, alpha * 2.5), vPulseIntensity);
             float distanceFade = smoothstep(100.0, 15.0, vDistanceFromCamera);
