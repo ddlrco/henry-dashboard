@@ -436,13 +436,14 @@ if (window.voiceRecog) {
     window.voiceRecog.onstart = () => startMicAnalysis();
     window.voiceRecog.onresult = (ev) => {
         const text = ev.results[0][0].transcript;
-        const utt = new SpeechSynthesisUtterance("You said: " + text);
-        const voices = window.speechSynthesis.getVoices();
-        const jarvis = voices.find(v => v.name.includes("Daniel") || v.name.includes("Google UK English Male") || v.name.includes("Arthur") || v.name.includes("James"));
-        if (jarvis) utt.voice = jarvis;
-        utt.rate = 0.95;
-        utt.pitch = 0.85;
-        window.speechSynthesis.speak(utt);
+        // Fill the chat input and send
+        const chatInput = document.getElementById('chat-input');
+        if (chatInput) {
+            chatInput.value = text;
+            // Trigger send
+            const sendBtn = document.getElementById('chat-send');
+            if (sendBtn) sendBtn.click();
+        }
     };
 }
 document.addEventListener("keydown", (e) => {
