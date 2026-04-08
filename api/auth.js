@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 
   // Hash the submitted password and compare to stored hash
   const hash = createHash('sha256').update(password).digest('hex');
-  const correctHash = '7e4a47f80a31de444b9e4a07fae982e7f75e40949e8399a37e413b2fb392839c'; // sha256 of @agenthenry123
+  const correctHash = 'f075b4923797d1d814690a797783c89c5a069f32c5f51d2fba07bbaf04251563'; // sha256 of @agenthenry123
 
   if (hash === correctHash) {
     // Generate a session token
