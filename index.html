@@ -328,6 +328,68 @@ canvas {
         flex: 1;
     }
 }
+.data-node {
+    backdrop-filter: blur(20px) saturate(120%);
+    background: linear-gradient(145deg, rgba(0,0,0,0.4), rgba(0,0,0,0.2));
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: 12px;
+    padding: 16px;
+    min-width: 180px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    transition: all 0.3s;
+}
+.data-node:hover {
+    border-color: rgba(102, 126, 234, 0.6);
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+}
+.data-node-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+.data-node-value {
+    font-size: 24px;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+.data-node-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+}
+.data-node-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 6px;
+}
+.data-node-row:last-child {
+    margin-bottom: 0;
+}
+.data-node-value-sm {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+}
+.data-node-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+.data-node-bar-fill {
+    height: 100%;
+    transition: width 0.3s;
+    border-radius: 2px;
+}
 </style>
 <style>
 .password-overlay{position:fixed;inset:0;background:#050508;display:flex;align-items:center;justify-content:center;z-index:9999;font-family:"Outfit",sans-serif}
@@ -403,6 +465,50 @@ canvas {
         <input type="range" min="30" max="100" value="100" class="density-slider" id="density-slider" style="width: 100%;" />
     </div>
 </div>
+
+<!-- Live Data Nodes -->
+<div id="data-nodes" style="position: fixed; right: 32px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 16px; z-index: 20;">
+    <!-- Status Node -->
+    <div class="data-node" id="status-node">
+        <div class="data-node-title">SYSTEM</div>
+        <div class="data-node-value" id="status-value">ONLINE</div>
+        <div class="data-node-bar"><div class="data-node-bar-fill" style="width: 100%; background: #4ade80;"></div></div>
+    </div>
+    
+    <!-- Weather Node -->
+    <div class="data-node" id="weather-node">
+        <div class="data-node-title">WEATHER</div>
+        <div class="data-node-value" id="weather-value">--°</div>
+        <div class="data-node-sub" id="weather-location">Loading...</div>
+    </div>
+    
+    <!-- Crypto Node -->
+    <div class="data-node" id="crypto-node">
+        <div class="data-node-title">CRYPTO</div>
+        <div class="data-node-row">
+            <span>BTC</span>
+            <span id="btc-price" class="data-node-value-sm">--</span>
+        </div>
+        <div class="data-node-row">
+            <span>ETH</span>
+            <span id="eth-price" class="data-node-value-sm">--</span>
+        </div>
+    </div>
+    
+    <!-- Metals Node -->
+    <div class="data-node" id="metals-node">
+        <div class="data-node-title">METALS</div>
+        <div class="data-node-row">
+            <span>GOLD</span>
+            <span id="gold-price" class="data-node-value-sm">--</span>
+        </div>
+        <div class="data-node-row">
+            <span>SILVER</span>
+            <span id="silver-price" class="data-node-value-sm">--</span>
+        </div>
+    </div>
+</div>
+
 <canvas id="neural-network-canvas"></canvas>
 <script>
 function checkPw(){
@@ -1458,6 +1564,50 @@ document.addEventListener("keydown", (e) => {
     
     window.addEventListener('resize', onWindowResize);
     init();
+    
+    // Live Data Updates
+    async function updateLiveData() {
+        try {
+            // Weather (using wttr.in for simplicity)
+            fetch('https://wttr.in/Edmonton?format=j1')
+                .then(r => r.json())
+                .then(d => {
+                    const temp = d.current_condition[0].temp_C;
+                    const desc = d.current_condition[0].weatherDesc[0].value;
+                    document.getElementById('weather-value').textContent = temp + '°C';
+                    document.getElementById('weather-location').textContent = desc;
+                })
+                .catch(() => {});
+            
+            // Crypto prices (CoinGecko API - free, no key needed)
+            fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=cad')
+                .then(r => r.json())
+                .then(d => {
+                    document.getElementById('btc-price').textContent = '$' + (d.bitcoin.cad / 1000).toFixed(1) + 'K';
+                    document.getElementById('eth-price').textContent = '$' + d.ethereum.cad.toFixed(0);
+                })
+                .catch(() => {});
+            
+            // Metals (using metals-api.com or backup to static data)
+            fetch('https://api.metals.live/v1/spot')
+                .then(r => r.json())
+                .then(d => {
+                    document.getElementById('gold-price').textContent = '$' + d.gold.toFixed(0);
+                    document.getElementById('silver-price').textContent = '$' + d.silver.toFixed(2);
+                })
+                .catch(() => {
+                    // Fallback static values if API fails
+                    document.getElementById('gold-price').textContent = '$2650';
+                    document.getElementById('silver-price').textContent = '$30.50';
+                });
+        } catch (e) {
+            console.log('Data update error:', e);
+        }
+    }
+    
+    // Update immediately and every 60 seconds
+    updateLiveData();
+    setInterval(updateLiveData, 60000);
 </script>
 <!-- Chat Bar & File Drop -->
 <style>
