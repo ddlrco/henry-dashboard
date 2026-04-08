@@ -469,14 +469,19 @@ canvas {
 }
 </style>
 <style>
-.password-overlay{position:fixed;inset:0;background:#050508;display:flex;align-items:center;justify-content:center;z-index:9999;font-family:"Outfit",sans-serif}
-.pw-box{text-align:center}
-.pw-logo{font-size:3rem;font-weight:200;color:#667eea;margin-bottom:2rem;letter-spacing:.3em;text-shadow:0 0 30px rgba(102,126,234,.5)}
-.pw-input{width:300px;background:rgba(255,255,255,.05);border:1px solid rgba(102,126,234,.4);border-radius:12px;padding:1rem 1.5rem;color:#fff;font-size:1rem;text-align:center;letter-spacing:.2em;margin-bottom:1.5rem;font-family:"Outfit",sans-serif}
-.pw-input:focus{outline:none;border-color:#667eea;box-shadow:0 0 20px rgba(102,126,234,.3)}
-.pw-btn{width:300px;background:rgba(102,126,234,.1);border:1px solid rgba(102,126,234,.5);padding:1rem;border-radius:12px;color:#667eea;font-weight:500;cursor:pointer;font-family:"Outfit",sans-serif;font-size:.875rem;letter-spacing:.15em}
-.pw-btn:hover{background:rgba(102,126,234,.2);box-shadow:0 0 30px rgba(102,126,234,.3)}
-.pw-error{color:#f44;margin-top:1rem;font-size:.875rem;opacity:0;transition:opacity .3s}
+.password-overlay{position:fixed;inset:0;background:#030305;display:flex;align-items:center;justify-content:center;z-index:9999;font-family:"Outfit",sans-serif;overflow:hidden}
+.password-overlay::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(102,126,234,0.04) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);animation:pwPulse 4s ease-in-out infinite}
+@keyframes pwPulse{0%,100%{opacity:0.3;transform:translate(-50%,-50%) scale(1)}50%{opacity:0.6;transform:translate(-50%,-50%) scale(1.1)}}
+.pw-box{text-align:center;position:relative;z-index:1}
+.pw-logo{font-size:1.8rem;font-weight:200;color:rgba(255,255,255,0.8);margin-bottom:0.5rem;letter-spacing:1.2em;text-indent:1.2em}
+.pw-sub{font-size:0.6rem;letter-spacing:0.5em;text-indent:0.5em;color:rgba(255,255,255,0.2);margin-bottom:3rem;text-transform:uppercase}
+.pw-line{width:40px;height:1px;background:rgba(102,126,234,0.3);margin:0 auto 2rem;}
+.pw-input{width:280px;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.15);padding:0.8rem 0;color:rgba(255,255,255,0.9);font-size:0.85rem;text-align:center;letter-spacing:0.4em;margin-bottom:2.5rem;font-family:"Outfit",sans-serif;border-radius:0}
+.pw-input:focus{outline:none;border-bottom-color:rgba(102,126,234,0.5)}
+.pw-input::placeholder{color:rgba(255,255,255,0.15);letter-spacing:0.3em;font-size:0.75rem}
+.pw-btn{width:280px;background:transparent;border:1px solid rgba(255,255,255,0.1);padding:0.75rem;color:rgba(255,255,255,0.5);font-weight:400;cursor:pointer;font-family:"Outfit",sans-serif;font-size:0.7rem;letter-spacing:0.4em;text-transform:uppercase;transition:all 0.4s;border-radius:2px}
+.pw-btn:hover{background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.25);color:rgba(255,255,255,0.8)}
+.pw-error{color:rgba(255,80,80,0.7);margin-top:1.5rem;font-size:0.65rem;letter-spacing:0.3em;opacity:0;transition:opacity .3s}
 .pw-error.show{opacity:1}
 .pw-hidden{display:none!important}
 body.inverted { background: #f0f0f5; color: #1a1a2e; }
@@ -542,11 +547,12 @@ body.inverted #logout-btn { border-color: rgba(220,38,38,0.3); color: rgba(220,3
 <div class="password-overlay" id="pw-screen">
 <div class="pw-box">
 <div class="pw-logo">HENRY</div>
-<div style="color:rgba(255,255,255,.4);margin-bottom:2rem;font-size:.875rem;letter-spacing:.15em">AI COMMAND CENTER</div>
+<div class="pw-sub">Neural Command Interface</div>
+<div class="pw-line"></div>
 <form id="pw-form" onsubmit="return false">
-<input type="password" id="pw-input" class="pw-input" placeholder="ACCESS CODE" autocomplete="off" autofocus>
-<br><button class="pw-btn" onclick="checkPw()">ENTER</button>
-<div class="pw-error" id="pw-error">ACCESS DENIED</div>
+<input type="password" id="pw-input" class="pw-input" placeholder="enter access key" autocomplete="off" autofocus>
+<button class="pw-btn" onclick="checkPw()">AUTHENTICATE</button>
+<div class="pw-error" id="pw-error">UNAUTHORIZED</div>
 </form>
 </div>
 </div>
