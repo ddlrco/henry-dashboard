@@ -1016,12 +1016,29 @@ document.addEventListener("keydown", (e) => {
                 totalPulseIntensity += getPulseIntensity(worldPos, uPulsePositions[i], uPulseTimes[i]);
             }
             vPulseIntensity = min(totalPulseIntensity, 1.0);
-            float breathe = sin(uTime * 0.7 + distanceFromRoot * 0.15) * 0.15 + 0.85;
+            
+            // === ALIVE MOTION ===
+            // 1. Organic breathing — whole structure breathes
+            float breathe = sin(uTime * 0.5 + distanceFromRoot * 0.12) * 0.12 + 0.88;
+            
+            // 2. Node drift — each node wanders slightly
+            vec3 drift = vec3(
+                snoise(position * 0.15 + uTime * 0.2),
+                snoise(position * 0.15 + uTime * 0.2 + 100.0),
+                snoise(position * 0.15 + uTime * 0.2 + 200.0)
+            ) * 0.8;
+            
+            // 3. Neural firing — random nodes flare up
+            float firePhase = snoise(position * 0.05 + uTime * 0.8);
+            float firing = smoothstep(0.6, 0.9, firePhase); // only top 30% fire
+            
+            // 4. Ripple waves emanating from center
+            float ripple = sin(distanceFromRoot * 0.8 - uTime * 2.5) * 0.3;
             
             // Audio reactivity: map node position angle to frequency band
             vec3 wp = (modelMatrix * vec4(position, 1.0)).xyz;
-            float angle = atan(wp.z, wp.x); // -PI to PI
-            float normAngle = (angle + 3.14159) / 6.28318; // 0 to 1
+            float angle = atan(wp.z, wp.x);
+            float normAngle = (angle + 3.14159) / 6.28318;
             int bandIdx = int(normAngle * 4.0);
             float audioReact = 0.0;
             if (bandIdx == 0) audioReact = uAudioBands[0];
@@ -1029,18 +1046,25 @@ document.addEventListener("keydown", (e) => {
             else if (bandIdx == 2) audioReact = uAudioBands[2];
             else audioReact = uAudioBands[3];
             
-            // Displace node outward based on frequency
-            float displacement = audioReact * 3.0;
+            // Displace node outward based on frequency + ripple + drift
+            float displacement = audioReact * 3.0 + ripple;
             vec3 displaceDir = normalize(position);
             
-            float sizeBoost = 1.0 + audioReact * 1.5 + uAudioIntensity * 0.5;
+            // Size reacts to firing + audio + breathing
+            float sizeBoost = 1.0 + audioReact * 1.5 + uAudioIntensity * 0.5 + firing * 1.2;
             float baseSize = nodeSize * breathe * sizeBoost;
             float pulseSize = baseSize * (1.0 + vPulseIntensity * 2.5);
-            vGlow = 0.5 + 0.5 * sin(uTime * 0.5 + distanceFromRoot * 0.2);
-            vec3 modifiedPosition = position + displaceDir * displacement;
+            
+            // Glow flickers with neural firing
+            vGlow = 0.4 + 0.3 * sin(uTime * 0.5 + distanceFromRoot * 0.2) + firing * 0.5;
+            
+            // Apply all motion
+            vec3 modifiedPosition = position + displaceDir * displacement + drift;
+            
+            // Extra noise motion for leaf nodes
             if (nodeType > 0.5) {
-                float noise = snoise(position * 0.08 + uTime * 0.08);
-                modifiedPosition += normal * noise * 0.15;
+                float noise = snoise(position * 0.08 + uTime * 0.12);
+                modifiedPosition += normalize(position) * noise * 0.3;
             }
             vec4 mvPosition = modelViewMatrix * vec4(modifiedPosition, 1.0);
             gl_PointSize = pulseSize * uBaseNodeSize * (1000.0 / -mvPosition.z);
@@ -1142,9 +1166,15 @@ document.addEventListener("keydown", (e) => {
             vec3 p0 = mix(aStart, midPoint, t);
             vec3 p1 = mix(midPoint, aEnd, t);
             vec3 finalPos = mix(p0, p1, t);
-            float noiseTime = uTime * 0.15;
+            // Alive connection motion
+            float noiseTime = uTime * 0.25;
             float noise = snoise(vec3(pathIndex * 0.08, t * 0.6, noiseTime));
-            finalPos += perpendicular * noise * 0.12;
+            float drift = snoise(vec3(pathIndex * 0.12, t * 0.3, uTime * 0.15 + 50.0));
+            finalPos += perpendicular * (noise * 0.25 + drift * 0.15);
+            
+            // Energy pulse traveling along connection
+            float pulse = sin(t * 6.28 - uTime * 3.0 + pathIndex) * 0.1;
+            finalPos += normalize(aEnd - aStart) * pulse;
             vec3 worldPos = (modelMatrix * vec4(finalPos, 1.0)).xyz;
             float totalPulseIntensity = 0.0;
             for (int i = 0; i < 3; i++) {
@@ -1903,6 +1933,31 @@ document.addEventListener("keydown", (e) => {
         }
         starField.rotation.y += 0.0002;
         starField.material.uniforms.uTime.value = t;
+        
+        // Auto-fire random neural pulses every 2-4 seconds
+        if (!window._lastAutoFire) window._lastAutoFire = 0;
+        if (t - window._lastAutoFire > 2 + Math.random() * 2) {
+            window._lastAutoFire = t;
+            if (neuralNetwork && neuralNetwork.nodes.length > 1) {
+                const randomNode = neuralNetwork.nodes[Math.floor(Math.random() * neuralNetwork.nodes.length)];
+                const firePos = randomNode.position.clone();
+                const palette = colorPalettes[config.activePaletteIndex];
+                const fireColor = palette[Math.floor(Math.random() * palette.length)];
+                const pulseIdx = (lastPulseIndex + 1) % 3;
+                lastPulseIndex = pulseIdx;
+                if (nodesMesh) {
+                    nodesMesh.material.uniforms.uPulsePositions.value[pulseIdx].copy(firePos);
+                    nodesMesh.material.uniforms.uPulseTimes.value[pulseIdx] = t;
+                    nodesMesh.material.uniforms.uPulseColors.value[pulseIdx].copy(fireColor);
+                }
+                if (connectionsMesh) {
+                    connectionsMesh.material.uniforms.uPulsePositions.value[pulseIdx].copy(firePos);
+                    connectionsMesh.material.uniforms.uPulseTimes.value[pulseIdx] = t;
+                    connectionsMesh.material.uniforms.uPulseColors.value[pulseIdx].copy(fireColor);
+                }
+            }
+        }
+        
         controls.update();
         composer.render();
     }
