@@ -906,7 +906,7 @@ document.addEventListener("keydown", (e) => {
         paused: false,
         activePaletteIndex: 0,
         currentFormation: 0,
-        numFormations: 5,
+        numFormations: 4,
         densityFactor: 1
     };
     const colorPalettes = [
@@ -1726,12 +1726,11 @@ document.addEventListener("keydown", (e) => {
             }
         }
         
-        switch (formationIndex % 5) {
+        switch (formationIndex % 4) {
             case 0: generateWireframeCore(); break;
             case 1: generateCrystallineSphere(); break;
             case 2: generateGeodesicSphere(); break;
             case 3: generateFractalWeb(); break;
-            case 4: generateParticleCloud(); break;
         }
         if (densityFactor < 1.0) {
             const targetCount = Math.ceil(nodes.length * Math.max(0.3, densityFactor));
