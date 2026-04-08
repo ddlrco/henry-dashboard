@@ -484,10 +484,9 @@ canvas {
 .pw-error{color:rgba(255,80,80,0.7);margin-top:1.5rem;font-size:0.65rem;letter-spacing:0.3em;opacity:0;transition:opacity .3s}
 .pw-error.show{opacity:1}
 .pw-hidden{display:none!important}
-body.inverted { background: #eeeef2; color: #1a1a2e; }
+body.inverted { background: #f0f0f5; color: #1a1a2e; }
 body.inverted canvas { filter: invert(0.85) hue-rotate(180deg); }
-body.inverted *:not(canvas) { color: inherit; }
-body.inverted .data-node-title { color: rgba(80,80,120,0.7); }
+body.inverted .data-node-title { color: rgba(102,126,234,0.8); }
 body.inverted .data-node-value { color: #1a1a2e; }
 body.inverted .data-node-value-sm { color: #1a1a2e; }
 body.inverted .data-node-sub { color: rgba(0,0,0,0.5); }
@@ -501,23 +500,19 @@ body.inverted .skill-bar { background: rgba(0,0,0,0.08); }
 body.inverted .agent-name { color: rgba(0,0,0,0.5); }
 body.inverted .agent-status { color: rgba(0,0,0,0.35); }
 body.inverted .agent-dot.active { background: rgba(16,185,129,0.8); box-shadow: 0 0 6px rgba(16,185,129,0.4); }
-body.inverted .control-button { color: rgba(0,0,0,0.6); border-left-color: rgba(102,126,234,0.4); }
+body.inverted .control-button { color: rgba(0,0,0,0.5); border-left-color: rgba(102,126,234,0.4); }
 body.inverted .control-button:hover { color: rgba(102,126,234,0.9); }
-body.inverted #instruction-title { -webkit-text-fill-color: #1a1a2e; background: none; }
-body.inverted #model-select { background: rgba(0,0,0,0.05); color: #1a1a2e; border-color: rgba(0,0,0,0.15); }
+body.inverted #instruction-title { -webkit-text-fill-color: #1a1a2e; }
 body.inverted #model-status { color: #16a34a; }
 body.inverted #token-count { color: rgba(0,0,0,0.4); }
 body.inverted #crypto-expand { color: rgba(102,126,234,0.7); }
-body.inverted .density-slider { opacity: 0.6; }
-body.inverted .chat-input { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.12); color: #1a1a2e; }
+body.inverted .chat-input { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.15); color: #1a1a2e; }
 body.inverted .chat-input::placeholder { color: rgba(0,0,0,0.3); }
-body.inverted .chat-btn { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.12); color: rgba(0,0,0,0.5); }
-body.inverted .chat-msg.user { background: rgba(102,126,234,0.1); border-color: rgba(102,126,234,0.2); color: #1a1a2e; }
-body.inverted .chat-msg.ai { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.08); color: #1a1a2e; }
-body.inverted #invert-btn { border-color: rgba(0,0,0,0.15); color: rgba(0,0,0,0.5); }
+body.inverted .chat-btn { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.15); color: rgba(0,0,0,0.5); }
+body.inverted .chat-msg.user { background: rgba(102,126,234,0.12); border-color: rgba(102,126,234,0.25); color: #1a1a2e; }
+body.inverted .chat-msg.ai { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.1); color: #1a1a2e; }
+body.inverted #invert-btn { border-color: rgba(0,0,0,0.2); color: rgba(0,0,0,0.5); }
 body.inverted #logout-btn { border-color: rgba(220,38,38,0.3); color: rgba(220,38,38,0.6); }
-body.inverted div[style*="color:rgba(255,255,255"] { color: rgba(0,0,0,0.5) !important; }
-body.inverted span[style*="color:rgba(255,255,255"] { color: rgba(0,0,0,0.5) !important; }
 
 /* Iron Man HUD */
 #hud-overlay { display: none; }
@@ -1393,8 +1388,8 @@ document.addEventListener("keydown", (e) => {
             for (const v of icoVerts) {
                 const len = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
                 const pos = new THREE.Vector3(v[0]/len * coreScale, v[1]/len * coreScale, v[2]/len * coreScale);
-                const node = new Node(pos, 0, 0);
-                node.size = 2.2;
+                const node = new Node(pos, 1, 0);
+                node.size = 1.6;
                 node.distanceFromRoot = coreScale;
                 nodes.push(node);
                 coreNodes.push(node);
@@ -1414,8 +1409,8 @@ document.addEventListener("keydown", (e) => {
                     if (coreNodes[i].isConnectedTo(coreNodes[j])) {
                         const mid = new THREE.Vector3().addVectors(coreNodes[i].position, coreNodes[j].position).multiplyScalar(0.5);
                         mid.normalize().multiplyScalar(coreScale * 0.85);
-                        const midNode = new Node(mid, 0, 0);
-                        midNode.size = 1.2;
+                        const midNode = new Node(mid, 1, 0);
+                        midNode.size = 0.8;
                         midNode.distanceFromRoot = mid.length();
                         nodes.push(midNode);
                         midNodes.push(midNode);
@@ -1433,14 +1428,14 @@ document.addEventListener("keydown", (e) => {
                     }
                 }
             }
-            return [...coreNodes, ...midNodes]; // return all core+mid nodes for outer connection
+            return coreNodes;
         }
         
         function generateCrystallineSphere() {
             rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
             rootNode.size = 2.0;
             nodes.push(rootNode);
-            const coreAllNodes = addWireframeCore(2.5);
+            addWireframeCore(4);
             const layers = 5;
             const goldenRatio = (1 + Math.sqrt(5)) / 2;
             for (let layer = 1; layer <= layers; layer++) {
@@ -1469,9 +1464,7 @@ document.addEventListener("keydown", (e) => {
                             node.addConnection(prevLayerNodes[j], Math.max(0.3, strength));
                         }
                     } else {
-                        // Connect first layer to nearest core node
-                        const nearestCore = [...coreAllNodes].sort((a, b) => pos.distanceTo(a.position) - pos.distanceTo(b.position))[0];
-                        if (nearestCore) nearestCore.addConnection(node, 0.8);
+                        rootNode.addConnection(node, 0.9);
                     }
                 }
                 const layerNodes = nodes.filter(n => n.level === layer && n !== rootNode);
@@ -1503,7 +1496,7 @@ document.addEventListener("keydown", (e) => {
             rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
             rootNode.size = 1.8;
             nodes.push(rootNode);
-            const coreAllNodes = addWireframeCore(2.5);
+            addWireframeCore(4);
             
             // Generate icosahedron vertices and subdivide
             const radius = 13;
@@ -1527,9 +1520,7 @@ document.addEventListener("keydown", (e) => {
                 node.distanceFromRoot = radius;
                 nodes.push(node);
                 mainNodes.push(node);
-                // Connect to nearest core node
-                const nearCore = [...coreAllNodes].sort((a, b) => node.position.distanceTo(a.position) - node.position.distanceTo(b.position))[0];
-                if (nearCore) nearCore.addConnection(node, 0.7);
+                rootNode.addConnection(node, 0.6);
             }
             
             // Connect nearby main nodes (icosahedron edges)
@@ -1591,7 +1582,7 @@ document.addEventListener("keydown", (e) => {
             rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
             rootNode.size = 1.6;
             nodes.push(rootNode);
-            const coreAllNodes = addWireframeCore(4);
+            addWireframeCore(3.5);
             const branches = 6;
             const maxDepth = 4;
             function createBranch(startNode, direction, depth, strength, scale) {
@@ -1628,13 +1619,7 @@ document.addEventListener("keydown", (e) => {
                     Math.sin(phi) * Math.sin(theta),
                     Math.cos(phi)
                 ).normalize();
-                // Start branch from nearest core node
-                const startCore = [...coreAllNodes].sort((a, b) => {
-                    const da = a.position.clone().normalize().dot(direction);
-                    const db = b.position.clone().normalize().dot(direction);
-                    return db - da;
-                })[0] || rootNode;
-                createBranch(startCore, direction, 1, 0.9, 1.0);
+                createBranch(rootNode, direction, 1, 0.9, 1.0);
             }
             const leafNodes = nodes.filter(n => n.level >= 2);
             for (let i = 0; i < leafNodes.length; i++) {
@@ -1671,7 +1656,7 @@ document.addEventListener("keydown", (e) => {
             rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
             rootNode.size = 1.5;
             nodes.push(rootNode);
-            addWireframeCore(2);
+            addWireframeCore(3);
             
             const numParticles = Math.floor(800 * densityFactor);
             const brainShape = (theta, phi) => {
