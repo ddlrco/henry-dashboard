@@ -479,12 +479,35 @@ canvas {
 .pw-error{color:#f44;margin-top:1rem;font-size:.875rem;opacity:0;transition:opacity .3s}
 .pw-error.show{opacity:1}
 .pw-hidden{display:none!important}
+body.inverted { background: #f0f0f5; color: #1a1a2e; }
 body.inverted canvas { filter: invert(0.85) hue-rotate(180deg); }
 body.inverted .data-node-title { color: rgba(102,126,234,0.8); }
-body.inverted .data-node-value { color: #fff; text-shadow: 0 0 10px rgba(102,126,234,0.4); }
-body.inverted .data-node-value-sm { color: #fff; }
-body.inverted .skill-fill { background: rgba(102,126,234,0.8); }
-body.inverted .agent-dot.active { background: rgba(102,126,234,0.8); box-shadow: 0 0 6px rgba(102,126,234,0.4); }
+body.inverted .data-node-value { color: #1a1a2e; }
+body.inverted .data-node-value-sm { color: #1a1a2e; }
+body.inverted .data-node-sub { color: rgba(0,0,0,0.5); }
+body.inverted .data-node-row { color: rgba(0,0,0,0.5); }
+body.inverted .data-node-change.up { color: #16a34a; }
+body.inverted .data-node-change.down { color: #dc2626; }
+body.inverted .coin-name { color: rgba(0,0,0,0.5); }
+body.inverted .skill-label { color: rgba(0,0,0,0.5); }
+body.inverted .skill-fill { background: rgba(102,126,234,0.7); }
+body.inverted .skill-bar { background: rgba(0,0,0,0.08); }
+body.inverted .agent-name { color: rgba(0,0,0,0.5); }
+body.inverted .agent-status { color: rgba(0,0,0,0.35); }
+body.inverted .agent-dot.active { background: rgba(16,185,129,0.8); box-shadow: 0 0 6px rgba(16,185,129,0.4); }
+body.inverted .control-button { color: rgba(0,0,0,0.5); border-left-color: rgba(102,126,234,0.4); }
+body.inverted .control-button:hover { color: rgba(102,126,234,0.9); }
+body.inverted #instruction-title { -webkit-text-fill-color: #1a1a2e; }
+body.inverted #model-status { color: #16a34a; }
+body.inverted #token-count { color: rgba(0,0,0,0.4); }
+body.inverted #crypto-expand { color: rgba(102,126,234,0.7); }
+body.inverted .chat-input { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.15); color: #1a1a2e; }
+body.inverted .chat-input::placeholder { color: rgba(0,0,0,0.3); }
+body.inverted .chat-btn { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.15); color: rgba(0,0,0,0.5); }
+body.inverted .chat-msg.user { background: rgba(102,126,234,0.12); border-color: rgba(102,126,234,0.25); color: #1a1a2e; }
+body.inverted .chat-msg.ai { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.1); color: #1a1a2e; }
+body.inverted #invert-btn { border-color: rgba(0,0,0,0.2); color: rgba(0,0,0,0.5); }
+body.inverted #logout-btn { border-color: rgba(220,38,38,0.3); color: rgba(220,38,38,0.6); }
 
 /* Iron Man HUD */
 #hud-overlay { display: none; }
