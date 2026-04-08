@@ -1630,14 +1630,12 @@ document.addEventListener("keydown", (e) => {
                     processedConnections.add(key);
                     const startPoint = node.position;
                     const endPoint = connectedNode.position;
-                    const numSegments = 20;
-                    for (let i = 0; i < numSegments; i++) {
-                        const t = i / (numSegments - 1);
-                        connectionPositions.push(t, 0, 0);
-                        startPoints.push(startPoint.x, startPoint.y, startPoint.z);
-                        endPoints.push(endPoint.x, endPoint.y, endPoint.z);
-                        pathIndices.push(pathIndex);
-                        connectionStrengths.push(connection.strength);
+                    // Each pair of adjacent verts = one line segment
+                    // Need 2 verts per segment, so numPairs segments need numPairs*2 verts
+                    const numPairs = 16;
+                    for (let i = 0; i < numPairs; i++) {
+                        const t0 = i / numPairs;
+                        const t1 = (i + 1) / numPairs;
                         const avgLevel = Math.min(Math.floor((node.level + connectedNode.level) / 2), palette.length - 1);
                         const baseColor = palette[avgLevel % palette.length].clone();
                         baseColor.offsetHSL(
@@ -1645,6 +1643,19 @@ document.addEventListener("keydown", (e) => {
                             THREE.MathUtils.randFloatSpread(0.08),
                             THREE.MathUtils.randFloatSpread(0.08)
                         );
+                        // Vertex 1
+                        connectionPositions.push(t0, 0, 0);
+                        startPoints.push(startPoint.x, startPoint.y, startPoint.z);
+                        endPoints.push(endPoint.x, endPoint.y, endPoint.z);
+                        pathIndices.push(pathIndex);
+                        connectionStrengths.push(connection.strength);
+                        connectionColors.push(baseColor.r, baseColor.g, baseColor.b);
+                        // Vertex 2
+                        connectionPositions.push(t1, 0, 0);
+                        startPoints.push(startPoint.x, startPoint.y, startPoint.z);
+                        endPoints.push(endPoint.x, endPoint.y, endPoint.z);
+                        pathIndices.push(pathIndex);
+                        connectionStrengths.push(connection.strength);
                         connectionColors.push(baseColor.r, baseColor.g, baseColor.b);
                     }
                     pathIndex++;
