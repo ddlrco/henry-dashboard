@@ -563,9 +563,9 @@ document.addEventListener("keydown", (e) => {
     composer.addPass(new RenderPass(scene, camera));
     const bloomPass = new UnrealBloomPass(
         new THREE.Vector2(window.innerWidth, window.innerHeight),
-        1.8,
-        0.6,
-        0.7
+        0.9,
+        0.4,
+        0.85
     );
     composer.addPass(bloomPass);
     composer.addPass(new OutputPass());
@@ -718,7 +718,7 @@ document.addEventListener("keydown", (e) => {
             if (dist > 1.0) discard;
             float glow1 = 1.0 - smoothstep(0.0, 0.5, dist);
             float glow2 = 1.0 - smoothstep(0.0, 1.0, dist);
-            float glowStrength = pow(glow1, 1.2) + glow2 * 0.3;
+            float glowStrength = pow(glow1, 1.5) + glow2 * 0.15;
             float breatheColor = 0.9 + 0.1 * sin(uTime * 0.6 + vDistanceFromRoot * 0.25);
             vec3 baseColor = vColor * breatheColor;
             vec3 finalColor = baseColor;
@@ -728,8 +728,8 @@ document.addEventListener("keydown", (e) => {
                 finalColor *= (1.0 + vPulseIntensity * 1.2);
                 glowStrength *= (1.0 + vPulseIntensity);
             }
-            float coreBrightness = smoothstep(0.4, 0.0, dist);
-            finalColor += vec3(1.0) * coreBrightness * 0.3;
+            float coreBrightness = smoothstep(0.3, 0.0, dist);
+            finalColor += vec3(1.0) * coreBrightness * 0.15;
             float alpha = glowStrength * (0.95 - 0.3 * dist);
             float camDistance = length(vPosition - cameraPosition);
             float distanceFade = smoothstep(100.0, 15.0, camDistance);
@@ -857,7 +857,7 @@ document.addEventListener("keydown", (e) => {
             const layers = 5;
             const goldenRatio = (1 + Math.sqrt(5)) / 2;
             for (let layer = 1; layer <= layers; layer++) {
-                const radius = layer * 4;
+                const radius = layer * 3;
                 const numPoints = Math.floor(layer * 12 * densityFactor);
                 for (let i = 0; i < numPoints; i++) {
                     const phi = Math.acos(1 - 2 * (i + 0.5) / numPoints);
@@ -1286,6 +1286,7 @@ document.addEventListener("keydown", (e) => {
     renderer.domElement.addEventListener('click', (e) => {
         if (e.target.closest('.glass-panel, #control-buttons')) return;
         if (!config.paused) triggerPulse(e.clientX, e.clientY);
+        if (voiceRecog) { try { voiceRecog.start(); } catch(err) {} }
     });
     renderer.domElement.addEventListener('touchstart', (e) => {
         if (e.target.closest('.glass-panel, #control-buttons')) return;
