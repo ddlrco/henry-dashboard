@@ -712,17 +712,7 @@ async function startMicAnalysis() {
     }
 }
 
-// Auto-start mic on any user interaction
-function tryStartMic() {
-    if (!audioContext) {
-        startMicAnalysis().then(() => console.log('Mic activated'));
-    }
-}
-document.addEventListener('click', tryStartMic, { once: false });
-document.addEventListener('keydown', tryStartMic, { once: false });
-document.addEventListener('touchstart', tryStartMic, { once: false });
-// Also try on page load (might fail without user gesture but worth trying)
-setTimeout(tryStartMic, 1000);
+// Mic only activates via the mic toggle button — no auto-start
 
 window.voiceRecog = "webkitSpeechRecognition" in window ? new webkitSpeechRecognition() : ("SpeechRecognition" in window ? new SpeechRecognition() : null);
 if (window.voiceRecog) {
@@ -2197,7 +2187,9 @@ micToggle.addEventListener('click', () => {
         micToggle.style.borderColor = 'rgba(74, 222, 128, 0.6)';
         micToggle.style.color = '#4ade80';
         micToggle.title = 'Mic ON — click to mute';
-        startMicAnalysis();
+        startMicAnalysis().then(() => {
+            console.log('Mic started, analyser:', !!window.analyser, 'micStream:', !!micStream);
+        });
         // Start continuous voice recognition
         if (window.voiceRecog) {
             window.voiceRecog.continuous = true;
