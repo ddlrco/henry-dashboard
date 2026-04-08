@@ -1376,5 +1376,106 @@ document.addEventListener("keydown", (e) => {
     window.addEventListener('resize', onWindowResize);
     init();
 </script>
+<!-- Chat Bar & File Drop -->
+<style>
+.chat-container { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 90%; max-width: 800px; z-index: 200; padding: 1.5rem 0 2rem; }
+.chat-messages { max-height: 200px; overflow-y: auto; margin-bottom: 1rem; display: none; padding: 0 0.5rem; }
+.chat-messages.has-messages { display: block; }
+.chat-msg { padding: 0.75rem 1rem; margin-bottom: 0.5rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; font-family: 'Outfit', sans-serif; }
+.chat-msg.user { background: rgba(102, 126, 234, 0.2); border: 1px solid rgba(102, 126, 234, 0.3); margin-left: 20%; }
+.chat-msg.ai { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); margin-right: 20%; color: rgba(255,255,255,0.8); }
+.chat-input-row { display: flex; gap: 0.75rem; align-items: center; }
+.chat-input { flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 50px; padding: 1rem 1.5rem; color: #fff; font-size: 0.95rem; font-family: 'Outfit', sans-serif; transition: all 0.3s; outline: none; }
+.chat-input:focus { border-color: rgba(102, 126, 234, 0.5); box-shadow: 0 0 20px rgba(102, 126, 234, 0.15); background: rgba(255, 255, 255, 0.08); }
+.chat-input::placeholder { color: rgba(255, 255, 255, 0.3); }
+.chat-btn { width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgba(102, 126, 234, 0.4); background: rgba(102, 126, 234, 0.1); color: #667eea; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.chat-btn:hover { background: rgba(102, 126, 234, 0.2); box-shadow: 0 0 15px rgba(102, 126, 234, 0.3); }
+.file-drop { position: fixed; inset: 0; background: rgba(0,0,0,0.8); border: 3px dashed rgba(102, 126, 234, 0.6); z-index: 9998; display: none; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif; font-size: 1.5rem; color: rgba(102, 126, 234, 0.8); letter-spacing: 0.1em; }
+.file-drop.active { display: flex; }
+.file-label { cursor: pointer; }
+.file-label input { display: none; }
+.file-info { font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 0.5rem; padding: 0 1.5rem; font-family: 'Outfit', sans-serif; }
+</style>
+
+<div class="file-drop" id="file-drop">DROP FILES HERE</div>
+
+<div class="chat-container">
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="file-info" id="file-info"></div>
+    <div class="chat-input-row">
+        <label class="file-label chat-btn" title="Upload file">📎<input type="file" id="file-input" multiple></label>
+        <input type="text" class="chat-input" id="chat-input" placeholder="Message Henry..." autocomplete="off">
+        <button class="chat-btn" id="chat-send" title="Send">→</button>
+    </div>
+</div>
+
+<script>
+// Chat
+const chatInput = document.getElementById('chat-input');
+const chatSend = document.getElementById('chat-send');
+const chatMessages = document.getElementById('chat-messages');
+const fileInput = document.getElementById('file-input');
+const fileInfo = document.getElementById('file-info');
+const fileDrop = document.getElementById('file-drop');
+let uploadedFiles = [];
+
+function addMsg(text, type) {
+    const div = document.createElement('div');
+    div.className = 'chat-msg ' + type;
+    div.textContent = text;
+    chatMessages.appendChild(div);
+    chatMessages.classList.add('has-messages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function sendChat() {
+    const msg = chatInput.value.trim();
+    if (!msg && uploadedFiles.length === 0) return;
+    if (msg) addMsg(msg, 'user');
+    if (uploadedFiles.length > 0) {
+        addMsg('📎 ' + uploadedFiles.map(f => f.name).join(', '), 'user');
+        uploadedFiles = [];
+        fileInfo.textContent = '';
+    }
+    chatInput.value = '';
+    setTimeout(() => {
+        addMsg('Message received. I\'m processing your request...', 'ai');
+    }, 800);
+}
+
+chatSend.addEventListener('click', sendChat);
+chatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+});
+
+// File Upload
+fileInput.addEventListener('change', (e) => {
+    const files = Array.from(e.target.files);
+    uploadedFiles.push(...files);
+    fileInfo.textContent = '📎 ' + uploadedFiles.map(f => f.name + ' (' + (f.size/1024).toFixed(1) + 'KB)').join(', ');
+});
+
+// Drag & Drop
+let dragCounter = 0;
+document.addEventListener('dragenter', (e) => {
+    e.preventDefault();
+    dragCounter++;
+    fileDrop.classList.add('active');
+});
+document.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    dragCounter--;
+    if (dragCounter === 0) fileDrop.classList.remove('active');
+});
+document.addEventListener('dragover', (e) => e.preventDefault());
+document.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dragCounter = 0;
+    fileDrop.classList.remove('active');
+    const files = Array.from(e.dataTransfer.files);
+    uploadedFiles.push(...files);
+    fileInfo.textContent = '📎 ' + uploadedFiles.map(f => f.name + ' (' + (f.size/1024).toFixed(1) + 'KB)').join(', ');
+});
+</script>
 </body>
 </html>
