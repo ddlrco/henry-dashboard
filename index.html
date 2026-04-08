@@ -1270,82 +1270,89 @@ document.addEventListener("keydown", (e) => {
                 }
             }
         }
-        function generateHelixLattice() {
+        function generateGeodesicSphere() {
             rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
             rootNode.size = 1.8;
             nodes.push(rootNode);
-            const numHelices = 4;
-            const height = 30;
-            const maxRadius = 12;
-            const nodesPerHelix = Math.floor(50 * densityFactor);
-            const helixArrays = [];
-            for (let h = 0; h < numHelices; h++) {
-                const helixPhase = (h / numHelices) * Math.PI * 2;
-                const helixNodes = [];
-                for (let i = 0; i < nodesPerHelix; i++) {
-                    const t = i / (nodesPerHelix - 1);
-                    const y = (t - 0.5) * height;
-                    const radiusScale = Math.sin(t * Math.PI) * 0.7 + 0.3;
-                    const radius = maxRadius * radiusScale;
-                    const angle = helixPhase + t * Math.PI * 6;
-                    const pos = new THREE.Vector3(
-                        radius * Math.cos(angle),
-                        y,
-                        radius * Math.sin(angle)
-                    );
-                    const level = Math.ceil(t * 5);
-                    const isLeaf = i > nodesPerHelix - 5 || Math.random() < 0.25;
-                    const node = new Node(pos, level, isLeaf ? 1 : 0);
-                    node.distanceFromRoot = Math.sqrt(radius * radius + y * y);
-                    node.helixIndex = h;
-                    node.helixT = t;
-                    nodes.push(node);
-                    helixNodes.push(node);
-                }
-                helixArrays.push(helixNodes);
-                rootNode.addConnection(helixNodes[0], 1.0);
-                for (let i = 0; i < helixNodes.length - 1; i++) {
-                    helixNodes[i].addConnection(helixNodes[i + 1], 0.85);
+            
+            // Generate icosahedron vertices and subdivide
+            const radius = 13;
+            const t = (1 + Math.sqrt(5)) / 2; // golden ratio
+            const icoVerts = [
+                [-1, t, 0], [1, t, 0], [-1, -t, 0], [1, -t, 0],
+                [0, -1, t], [0, 1, t], [0, -1, -t], [0, 1, -t],
+                [t, 0, -1], [t, 0, 1], [-t, 0, -1], [-t, 0, 1]
+            ];
+            // Normalize and scale
+            const basePoints = icoVerts.map(v => {
+                const len = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+                return [v[0]/len * radius, v[1]/len * radius, v[2]/len * radius];
+            });
+            
+            // Add icosahedron vertices as main nodes
+            const mainNodes = [];
+            for (const p of basePoints) {
+                const node = new Node(new THREE.Vector3(p[0], p[1], p[2]), 1, 0);
+                node.size = 1.5;
+                node.distanceFromRoot = radius;
+                nodes.push(node);
+                mainNodes.push(node);
+                rootNode.addConnection(node, 0.6);
+            }
+            
+            // Connect nearby main nodes (icosahedron edges)
+            for (let i = 0; i < mainNodes.length; i++) {
+                for (let j = i + 1; j < mainNodes.length; j++) {
+                    const d = mainNodes[i].position.distanceTo(mainNodes[j].position);
+                    if (d < radius * 0.8) mainNodes[i].addConnection(mainNodes[j], 0.8);
                 }
             }
-            for (let h = 0; h < numHelices; h++) {
-                const currentHelix = helixArrays[h];
-                const nextHelix = helixArrays[(h + 1) % numHelices];
-                for (let i = 0; i < currentHelix.length; i += 5) {
-                    const t = currentHelix[i].helixT;
-                    const targetIdx = Math.round(t * (nextHelix.length - 1));
-                    if (targetIdx < nextHelix.length) {
-                        currentHelix[i].addConnection(nextHelix[targetIdx], 0.7);
+            
+            // Subdivide: add midpoints between connected nodes
+            const midNodes = [];
+            const subdivisions = Math.ceil(3 * densityFactor);
+            for (let sub = 0; sub < subdivisions; sub++) {
+                const currentNodes = [...mainNodes, ...midNodes];
+                for (let i = 0; i < currentNodes.length; i++) {
+                    const nearby = currentNodes.filter(n => {
+                        const d = currentNodes[i].position.distanceTo(n.position);
+                        return n !== currentNodes[i] && d < radius * 0.7 && !currentNodes[i].isConnectedTo(n);
+                    }).slice(0, 2);
+                    for (const n of nearby) {
+                        const mid = new THREE.Vector3().addVectors(currentNodes[i].position, n.position).multiplyScalar(0.5);
+                        mid.normalize().multiplyScalar(radius * (0.85 + Math.random() * 0.3));
+                        const midNode = new Node(mid, 2 + sub, Math.random() < 0.4 ? 1 : 0);
+                        midNode.size = 0.8 - sub * 0.15;
+                        midNode.distanceFromRoot = mid.length();
+                        nodes.push(midNode);
+                        midNodes.push(midNode);
+                        currentNodes[i].addConnection(midNode, 0.6);
+                        midNode.addConnection(n, 0.6);
                     }
                 }
             }
-            for (const helix of helixArrays) {
-                for (let i = 0; i < helix.length; i += 8) {
-                    const node = helix[i];
-                    const innerNodes = nodes.filter(n =>
-                        n !== node &&
-                        n !== rootNode &&
-                        n.distanceFromRoot < node.distanceFromRoot * 0.5
-                    );
-                    if (innerNodes.length > 0) {
-                        const nearest = innerNodes.sort((a, b) =>
-                            node.position.distanceTo(a.position) - node.position.distanceTo(b.position)
-                        )[0];
-                        node.addConnection(nearest, 0.5);
-                    }
-                }
-            }
-            const allHelixNodes = nodes.filter(n => n !== rootNode);
-            for (let i = 0; i < Math.floor(30 * densityFactor); i++) {
-                const n1 = allHelixNodes[Math.floor(Math.random() * allHelixNodes.length)];
-                const nearby = allHelixNodes.filter(n => {
-                    const dist = n.position.distanceTo(n1.position);
-                    return n !== n1 && dist < 8 && dist > 3 && !n1.isConnectedTo(n);
-                });
-                if (nearby.length > 0) {
-                    const n2 = nearby[Math.floor(Math.random() * nearby.length)];
-                    n1.addConnection(n2, 0.45);
-                }
+            
+            // Add random surface scatter
+            const numScatter = Math.floor(80 * densityFactor);
+            for (let i = 0; i < numScatter; i++) {
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                const r = radius * (0.9 + Math.random() * 0.2);
+                const pos = new THREE.Vector3(
+                    r * Math.sin(phi) * Math.cos(theta),
+                    r * Math.sin(phi) * Math.sin(theta),
+                    r * Math.cos(phi)
+                );
+                const node = new Node(pos, 3, 1);
+                node.size = 0.4 + Math.random() * 0.4;
+                node.distanceFromRoot = r;
+                nodes.push(node);
+                
+                // Connect to nearest existing node
+                const allExisting = [...mainNodes, ...midNodes];
+                allExisting.sort((a, b) => pos.distanceTo(a.position) - pos.distanceTo(b.position));
+                if (allExisting.length > 0) node.addConnection(allExisting[0], 0.4);
+                if (allExisting.length > 1 && Math.random() < 0.3) node.addConnection(allExisting[1], 0.3);
             }
         }
         function generateFractalWeb() {
@@ -1477,7 +1484,7 @@ document.addEventListener("keydown", (e) => {
         
         switch (formationIndex % 4) {
             case 0: generateCrystallineSphere(); break;
-            case 1: generateHelixLattice(); break;
+            case 1: generateGeodesicSphere(); break;
             case 2: generateFractalWeb(); break;
             case 3: generateParticleCloud(); break;
         }
