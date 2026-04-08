@@ -2389,22 +2389,7 @@ async function sendChat() {
         const tokenEl = document.getElementById('token-count');
         if (tokenEl) tokenEl.textContent = 'TOKENS: ' + Math.round(window._totalTokens).toLocaleString();
         
-        // Only speak short confirmations, not full responses
-        const reply = data.reply || '';
-        const shortPhrases = [
-            'Done', 'Got it', 'On it', 'Ready', 'Here you go',
-            'Updated', 'Fixed', 'Understood', 'Processing', 'Complete'
-        ];
-        // Speak first sentence only if it's short, otherwise say a confirmation
-        const firstSentence = reply.split(/[.!?\n]/)[0].trim();
-        const speakText = firstSentence.length <= 40 ? firstSentence : shortPhrases[Math.floor(Math.random() * shortPhrases.length)];
-        const utt = new SpeechSynthesisUtterance(speakText);
-        const voices = window.speechSynthesis.getVoices();
-        const voice = voices.find(v => v.name.includes("Daniel") || v.name.includes("Google UK English Male") || v.name.includes("Samantha") || v.name.includes("Alex"));
-        if (voice) utt.voice = voice;
-        utt.rate = 1.05;
-        utt.pitch = 0.85;
-        window.speechSynthesis.speak(utt);
+        // Voice disabled until proper TTS is set up
     } catch (error) {
         addMsg('⚠️ Connection error. Make sure OpenClaw is running.', 'ai');
         console.error('API Error:', error);
