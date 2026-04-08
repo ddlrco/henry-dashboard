@@ -1381,16 +1381,43 @@ document.addEventListener("keydown", (e) => {
                 const len = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
                 const pos = new THREE.Vector3(v[0]/len * coreScale, v[1]/len * coreScale, v[2]/len * coreScale);
                 const node = new Node(pos, 1, 0);
-                node.size = 1.4;
+                node.size = 1.6;
                 node.distanceFromRoot = coreScale;
                 nodes.push(node);
                 coreNodes.push(node);
-                rootNode.addConnection(node, 0.6);
+                rootNode.addConnection(node, 0.8);
             }
+            // Connect all icosahedron edges (wider threshold)
             for (let i = 0; i < coreNodes.length; i++) {
                 for (let j = i + 1; j < coreNodes.length; j++) {
                     const d = coreNodes[i].position.distanceTo(coreNodes[j].position);
-                    if (d < coreScale * 0.75) coreNodes[i].addConnection(coreNodes[j], 0.85);
+                    if (d < coreScale * 1.2) coreNodes[i].addConnection(coreNodes[j], 0.9);
+                }
+            }
+            // Add midpoint nodes between edges for denser wireframe
+            const midNodes = [];
+            for (let i = 0; i < coreNodes.length; i++) {
+                for (let j = i + 1; j < coreNodes.length; j++) {
+                    if (coreNodes[i].isConnectedTo(coreNodes[j])) {
+                        const mid = new THREE.Vector3().addVectors(coreNodes[i].position, coreNodes[j].position).multiplyScalar(0.5);
+                        mid.normalize().multiplyScalar(coreScale * 0.85);
+                        const midNode = new Node(mid, 1, 0);
+                        midNode.size = 0.8;
+                        midNode.distanceFromRoot = mid.length();
+                        nodes.push(midNode);
+                        midNodes.push(midNode);
+                        coreNodes[i].addConnection(midNode, 0.7);
+                        midNode.addConnection(coreNodes[j], 0.7);
+                    }
+                }
+            }
+            // Cross-connect midpoints that are close
+            for (let i = 0; i < midNodes.length; i++) {
+                for (let j = i + 1; j < midNodes.length; j++) {
+                    const d = midNodes[i].position.distanceTo(midNodes[j].position);
+                    if (d < coreScale * 0.6 && !midNodes[i].isConnectedTo(midNodes[j])) {
+                        midNodes[i].addConnection(midNodes[j], 0.5);
+                    }
                 }
             }
             return coreNodes;
