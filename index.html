@@ -149,9 +149,9 @@ canvas {
     transition: all 0.3s;
     opacity: 0.4;
 }
-#theme-1 { background: linear-gradient(90deg, #9333ea, #a78bfa); }
-#theme-2 { background: linear-gradient(90deg, #f43f5e, #fb7185); }
-#theme-3 { background: linear-gradient(90deg, #06b6d4, #67e8f9); }
+#theme-1 { background: linear-gradient(90deg, #4060ff, #c0d0ff); }
+#theme-2 { background: linear-gradient(90deg, #ff3d00, #ffaa00); }
+#theme-3 { background: linear-gradient(90deg, #7c3aed, #00ffa3); }
 .theme-button:hover {
     opacity: 0.8;
     box-shadow: 0 0 12px currentColor;
@@ -591,26 +591,29 @@ document.addEventListener("keydown", (e) => {
         densityFactor: 1
     };
     const colorPalettes = [
+        // Ghost Protocol — cold white/blue, minimal, clean AI
         [
-            new THREE.Color(0x667eea),
-            new THREE.Color(0x764ba2),
-            new THREE.Color(0xf093fb),
-            new THREE.Color(0x9d50bb),
-            new THREE.Color(0x6e48aa)
+            new THREE.Color(0xc0d0ff),
+            new THREE.Color(0x8090ff),
+            new THREE.Color(0x4060ff),
+            new THREE.Color(0xffffff),
+            new THREE.Color(0x6080dd)
         ],
+        // Neon Ember — hot amber/orange, aggressive, Blade Runner
         [
-            new THREE.Color(0xf857a6),
-            new THREE.Color(0xff5858),
-            new THREE.Color(0xfeca57),
-            new THREE.Color(0xff6348),
-            new THREE.Color(0xff9068)
+            new THREE.Color(0xff6b00),
+            new THREE.Color(0xff3d00),
+            new THREE.Color(0xffaa00),
+            new THREE.Color(0xff1744),
+            new THREE.Color(0xff8a00)
         ],
+        // Void — deep purple/teal, mysterious, cyberpunk
         [
-            new THREE.Color(0x4facfe),
-            new THREE.Color(0x00f2fe),
-            new THREE.Color(0x43e97b),
-            new THREE.Color(0x38f9d7),
-            new THREE.Color(0x4484ce)
+            new THREE.Color(0x00ffa3),
+            new THREE.Color(0x7c3aed),
+            new THREE.Color(0x00d4ff),
+            new THREE.Color(0x06ffa5),
+            new THREE.Color(0x8b5cf6)
         ]
     ];
     const scene = new THREE.Scene();
