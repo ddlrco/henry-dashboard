@@ -19,8 +19,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    // Call OpenClaw API (using Tailscale IP for security)
-    const response = await fetch('http://100.85.46.68:18789/v1/chat/completions', {
+    // Call OpenClaw API (using public IP)
+    const response = await fetch('http://187.77.212.77:18789/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
