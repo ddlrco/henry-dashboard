@@ -859,7 +859,9 @@ try {
         sessionStorage.setItem("henryAuth", data.token);
         document.getElementById("pw-screen").classList.add("pw-hidden");
     } else {
-        document.getElementById("pw-error").classList.add("show");
+        const errEl = document.getElementById("pw-error");
+        errEl.textContent = data.error || 'UNAUTHORIZED';
+        errEl.classList.add("show");
         document.getElementById("pw-input").value="";
     }
 } catch(e) {
