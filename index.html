@@ -1470,7 +1470,7 @@ document.addEventListener("keydown", (e) => {
                         }
                     } else {
                         // Connect first layer to nearest core node
-                        const nearestCore = coreAllNodes.sort((a, b) => pos.distanceTo(a.position) - pos.distanceTo(b.position))[0];
+                        const nearestCore = [...coreAllNodes].sort((a, b) => pos.distanceTo(a.position) - pos.distanceTo(b.position))[0];
                         if (nearestCore) nearestCore.addConnection(node, 0.8);
                     }
                 }
@@ -1528,7 +1528,7 @@ document.addEventListener("keydown", (e) => {
                 nodes.push(node);
                 mainNodes.push(node);
                 // Connect to nearest core node
-                const nearCore = coreAllNodes.sort((a, b) => node.position.distanceTo(a.position) - node.position.distanceTo(b.position))[0];
+                const nearCore = [...coreAllNodes].sort((a, b) => node.position.distanceTo(a.position) - node.position.distanceTo(b.position))[0];
                 if (nearCore) nearCore.addConnection(node, 0.7);
             }
             
@@ -1629,7 +1629,7 @@ document.addEventListener("keydown", (e) => {
                     Math.cos(phi)
                 ).normalize();
                 // Start branch from nearest core node
-                const startCore = coreAllNodes.sort((a, b) => {
+                const startCore = [...coreAllNodes].sort((a, b) => {
                     const da = a.position.clone().normalize().dot(direction);
                     const db = b.position.clone().normalize().dot(direction);
                     return db - da;
