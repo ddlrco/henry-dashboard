@@ -394,6 +394,33 @@ canvas {
 .pw-error{color:#f44;margin-top:1rem;font-size:.875rem;opacity:0;transition:opacity .3s}
 .pw-error.show{opacity:1}
 .pw-hidden{display:none!important}
+
+/* Iron Man HUD */
+#hud-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 15; overflow: hidden; }
+.hud-corner { position: absolute; width: 80px; height: 80px; border-color: rgba(102,126,234,0.25); border-style: solid; border-width: 0; }
+.hud-tl { top: 20px; left: 20px; border-top-width: 1px; border-left-width: 1px; }
+.hud-tr { top: 20px; right: 20px; border-top-width: 1px; border-right-width: 1px; }
+.hud-bl { bottom: 20px; left: 20px; border-bottom-width: 1px; border-left-width: 1px; }
+.hud-br { bottom: 20px; right: 20px; border-bottom-width: 1px; border-right-width: 1px; }
+
+.hud-ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.6; animation: hudSpin 30s linear infinite; }
+@keyframes hudSpin { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+
+.hud-scanline { position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent 0%, rgba(102,126,234,0.3) 50%, transparent 100%); animation: hudScan 4s ease-in-out infinite; }
+@keyframes hudScan { 0% { top: 10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 90%; opacity: 0; } }
+
+.hud-thinking { position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%); display: none; align-items: center; gap: 12px; }
+.hud-thinking.active { display: flex; }
+.hud-thinking-label { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: rgba(102,126,234,0.6); font-family: 'Outfit', sans-serif; }
+.hud-thinking-bar { width: 120px; height: 2px; background: rgba(255,255,255,0.06); overflow: hidden; }
+.hud-thinking-fill { width: 40%; height: 100%; background: rgba(102,126,234,0.6); animation: hudThink 1.5s ease-in-out infinite; }
+@keyframes hudThink { 0% { transform: translateX(-100%); } 100% { transform: translateX(350%); } }
+
+.hud-top-bar { position: absolute; top: 28px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; align-items: center; }
+.hud-bottom-bar { position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; align-items: center; }
+.hud-tag { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.3); font-family: 'Outfit', sans-serif; font-weight: 400; }
+.hud-separator { color: rgba(255,255,255,0.1); font-size: 9px; }
+.hud-live { color: rgba(74,222,128,0.6); }
 </style>
 </head>
 <body>
@@ -494,6 +521,58 @@ canvas {
 </div>
 
 <canvas id="neural-network-canvas"></canvas>
+
+<!-- Iron Man HUD Overlay -->
+<div id="hud-overlay">
+    <!-- Corner brackets -->
+    <div class="hud-corner hud-tl"></div>
+    <div class="hud-corner hud-tr"></div>
+    <div class="hud-corner hud-bl"></div>
+    <div class="hud-corner hud-br"></div>
+    
+    <!-- Rotating ring -->
+    <div class="hud-ring" id="hud-ring">
+        <svg viewBox="0 0 400 400" width="400" height="400">
+            <circle cx="200" cy="200" r="180" fill="none" stroke="rgba(102,126,234,0.15)" stroke-width="1" />
+            <circle cx="200" cy="200" r="160" fill="none" stroke="rgba(102,126,234,0.08)" stroke-width="0.5" stroke-dasharray="4 8" />
+            <circle cx="200" cy="200" r="190" fill="none" stroke="rgba(102,126,234,0.1)" stroke-width="0.5" stroke-dasharray="2 12" />
+            <!-- Tick marks -->
+            <g id="hud-ticks"></g>
+            <!-- Arc segments -->
+            <path d="M200 20 A180 180 0 0 1 380 200" fill="none" stroke="rgba(102,126,234,0.25)" stroke-width="2" stroke-linecap="round" />
+            <path d="M200 380 A180 180 0 0 1 20 200" fill="none" stroke="rgba(102,126,234,0.15)" stroke-width="1" stroke-linecap="round" />
+        </svg>
+    </div>
+    
+    <!-- Scanning line -->
+    <div class="hud-scanline" id="hud-scanline"></div>
+    
+    <!-- Thinking bar -->
+    <div class="hud-thinking" id="hud-thinking">
+        <div class="hud-thinking-label">PROCESSING</div>
+        <div class="hud-thinking-bar"><div class="hud-thinking-fill" id="hud-thinking-fill"></div></div>
+    </div>
+    
+    <!-- Top status bar -->
+    <div class="hud-top-bar">
+        <span class="hud-tag">NEURAL.CORE</span>
+        <span class="hud-separator">|</span>
+        <span class="hud-tag" id="hud-fps">60 FPS</span>
+        <span class="hud-separator">|</span>
+        <span class="hud-tag" id="hud-latency">12ms</span>
+        <span class="hud-separator">|</span>
+        <span class="hud-tag hud-live">● LIVE</span>
+    </div>
+    
+    <!-- Bottom readout -->
+    <div class="hud-bottom-bar">
+        <span class="hud-tag" id="hud-audio-level">AUDIO: ▁▂▃▅▇</span>
+        <span class="hud-separator">|</span>
+        <span class="hud-tag" id="hud-node-count">NODES: 0</span>
+        <span class="hud-separator">|</span>
+        <span class="hud-tag" id="hud-timestamp"></span>
+    </div>
+</div>
 <script>
 function checkPw(){
 if(document.getElementById("pw-input").value==="@agenthenry123"){
@@ -1609,6 +1688,46 @@ document.addEventListener("keydown", (e) => {
     // Update immediately and every 30 seconds
     updateLiveData();
     setInterval(updateLiveData, 30000);
+    
+    // HUD updates
+    let frameCount = 0;
+    let lastFpsTime = performance.now();
+    let fps = 60;
+    
+    function updateHUD() {
+        frameCount++;
+        const now = performance.now();
+        if (now - lastFpsTime >= 1000) {
+            fps = frameCount;
+            frameCount = 0;
+            lastFpsTime = now;
+            const fpsEl = document.getElementById('hud-fps');
+            if (fpsEl) fpsEl.textContent = fps + ' FPS';
+        }
+        
+        // Audio level bars
+        const audioEl = document.getElementById('hud-audio-level');
+        if (audioEl && window.analyser) {
+            const bars = ['\u2581','\u2582','\u2583','\u2584','\u2585','\u2586','\u2587','\u2588'];
+            const level = Math.min(Math.floor(audioIntensity * 8), 7);
+            let viz = 'AUDIO: ';
+            for (let i = 0; i < 5; i++) {
+                const b = Math.min(Math.floor((frequencyBands[Math.min(i, 3)] || 0) * 8), 7);
+                viz += bars[b];
+            }
+            audioEl.textContent = viz;
+        }
+        
+        // Timestamp
+        const tsEl = document.getElementById('hud-timestamp');
+        if (tsEl) {
+            const d = new Date();
+            tsEl.textContent = d.toLocaleTimeString('en-US', { hour12: false });
+        }
+        
+        requestAnimationFrame(updateHUD);
+    }
+    updateHUD();
 </script>
 <!-- Chat Bar & File Drop -->
 <style>
