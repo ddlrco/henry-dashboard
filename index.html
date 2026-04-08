@@ -386,14 +386,15 @@ canvas {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
+    padding: 2px 0;
 }
 .skill-row:last-child { margin-bottom: 0; }
 .skill-label {
-    font-size: 9px;
+    font-size: 8px;
     letter-spacing: 2px;
     color: rgba(255,255,255,0.4);
-    width: 48px;
+    width: 58px;
     flex-shrink: 0;
 }
 .skill-bar {
@@ -408,21 +409,17 @@ canvas {
     box-shadow: 0 0 6px rgba(102,126,234,0.4);
     transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.skill-fill.thinking {
-    animation: skillPulse 0.6s ease-in-out infinite alternate;
-    box-shadow: 0 0 10px rgba(102,126,234,0.6);
-}
-@keyframes skillPulse {
-    0% { width: var(--base-width); opacity: 0.5; }
-    100% { width: calc(var(--base-width) + 5%); opacity: 1; }
-}
 .skill-row.thinking .skill-fill {
     animation: skillFreq var(--freq-speed, 0.5s) ease-in-out infinite alternate;
+    transform-origin: left;
 }
 @keyframes skillFreq {
-    0% { transform: scaleX(0.7); opacity: 0.4; }
-    50% { transform: scaleX(1.1); opacity: 1; }
-    100% { transform: scaleX(0.85); opacity: 0.6; }
+    0% { transform: scaleX(0.3); opacity: 0.3; box-shadow: 0 0 4px rgba(102,126,234,0.2); }
+    50% { transform: scaleX(1.15); opacity: 1; box-shadow: 0 0 12px rgba(102,126,234,0.8); }
+    100% { transform: scaleX(0.5); opacity: 0.5; box-shadow: 0 0 6px rgba(102,126,234,0.3); }
+}
+.skill-row.thinking .skill-bar {
+    height: 3px;
 }
 .spark-chart {
     width: 100%;
@@ -2161,7 +2158,7 @@ document.addEventListener("keydown", (e) => {
     <div class="chat-messages" id="chat-messages"></div>
     <div class="file-info" id="file-info"></div>
     <div class="chat-input-row">
-        <button class="chat-btn" id="mic-toggle" title="Toggle microphone" style="font-size: 1.4rem;">🎤</button>
+        <button class="chat-btn" id="mic-toggle" title="Toggle microphone" style="font-size: 1rem;">MIC</button>
         <label class="file-label chat-btn" title="Upload file">📎<input type="file" id="file-input" multiple></label>
         <input type="text" class="chat-input" id="chat-input" placeholder="Message Henry..." autocomplete="off">
         <button class="chat-btn" id="chat-send" title="Send">→</button>
