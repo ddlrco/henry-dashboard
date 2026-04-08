@@ -396,10 +396,31 @@ if(sessionStorage.getItem("henryAuth")==="true"){
 document.addEventListener("DOMContentLoaded",function(){document.getElementById("pw-screen").classList.add("pw-hidden");});
 }
 // Voice Recognition - attach to window so the Three.js module can access it
+// Audio setup for neural orb reactivity
+let audioContext, micStream;
+
+async function startMicAnalysis() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        window.analyser = audioContext.createAnalyser();
+        window.analyser.fftSize = 256;
+    }
+    if (!micStream) {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            micStream = audioContext.createMediaStreamSource(stream);
+            micStream.connect(window.analyser);
+        } catch (e) {
+            console.log('Mic access denied');
+        }
+    }
+}
+
 window.voiceRecog = "webkitSpeechRecognition" in window ? new webkitSpeechRecognition() : ("SpeechRecognition" in window ? new SpeechRecognition() : null);
 if (window.voiceRecog) {
     window.voiceRecog.continuous = false;
     window.voiceRecog.lang = "en-US";
+    window.voiceRecog.onstart = () => startMicAnalysis();
     window.voiceRecog.onresult = (ev) => {
         const text = ev.results[0][0].transcript;
         const utt = new SpeechSynthesisUtterance("You said: " + text);
@@ -1331,17 +1352,35 @@ document.addEventListener("keydown", (e) => {
         setTimeout(() => { controls.autoRotate = true; }, 2000);
     });
     const clock = new THREE.Clock();
+    // Audio reactivity
+    let dataArray, audioIntensity = 0;
+    
+    function getAudioIntensity() {
+        if (!window.analyser) return 0;
+        if (!dataArray) dataArray = new Uint8Array(window.analyser.frequencyBinCount);
+        window.analyser.getByteFrequencyData(dataArray);
+        const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+        return avg / 255; // normalize 0-1
+    }
+    
     function animate() {
         requestAnimationFrame(animate);
         const t = clock.getElapsedTime();
+        
+        // Update audio intensity
+        audioIntensity = audioIntensity * 0.8 + getAudioIntensity() * 0.2; // smooth
+        const pulse = 1 + audioIntensity * 0.3; // scale factor
+        
         if (!config.paused) {
             if (nodesMesh) {
                 nodesMesh.material.uniforms.uTime.value = t;
                 nodesMesh.rotation.y = Math.sin(t * 0.04) * 0.05;
+                nodesMesh.scale.setScalar(pulse); // audio reactive scale
             }
             if (connectionsMesh) {
                 connectionsMesh.material.uniforms.uTime.value = t;
                 connectionsMesh.rotation.y = Math.sin(t * 0.04) * 0.05;
+                connectionsMesh.scale.setScalar(pulse); // audio reactive scale
             }
         }
         starField.rotation.y += 0.0002;
