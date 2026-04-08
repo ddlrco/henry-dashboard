@@ -2389,20 +2389,7 @@ async function sendChat() {
         const tokenEl = document.getElementById('token-count');
         if (tokenEl) tokenEl.textContent = 'TOKENS: ' + Math.round(window._totalTokens).toLocaleString();
         
-        // OpenAI TTS voice
-        try {
-            const ttsRes = await fetch('/api/tts', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: data.reply })
-            });
-            if (ttsRes.ok) {
-                const audioBlob = await ttsRes.blob();
-                const audioUrl = URL.createObjectURL(audioBlob);
-                const audio = new Audio(audioUrl);
-                audio.play().catch(() => {});
-            }
-        } catch(e) { console.log('TTS skipped'); }
+        // TTS disabled — enable when ready (OpenAI TTS or ElevenLabs)
     } catch (error) {
         addMsg('⚠️ Connection error. Make sure OpenClaw is running.', 'ai');
         console.error('API Error:', error);
