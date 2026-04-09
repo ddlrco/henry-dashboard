@@ -554,6 +554,51 @@ body.inverted #logout-btn { border-color: rgba(220,38,38,0.3); color: rgba(220,3
 </form>
 </div>
 </div>
+<!-- Quick Actions Left Panel -->
+<div id="quick-actions" style="position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:20;width:140px;background:rgba(5,5,10,0.75);backdrop-filter:blur(12px);border-right:1px solid rgba(255,255,255,0.06);padding:12px 8px;display:flex;flex-direction:column;gap:2px;max-height:80vh;overflow-y:auto;scrollbar-width:none;">
+  <div style="font-size:8px;letter-spacing:3px;color:rgba(255,255,255,0.25);text-transform:uppercase;margin-bottom:8px;padding-left:4px;">QUICK ACTIONS</div>
+  <div style="font-size:8px;letter-spacing:2px;color:rgba(102,126,234,0.7);text-transform:uppercase;margin:6px 0 3px 4px;">MARKET</div>
+  <button class="qa-btn" onclick="fillPrompt('Analyze the current trends in the market focusing on [input sector or stock]. Identify emerging patterns and potential investment opportunities.')">Trend Analysis</button>
+  <button class="qa-btn" onclick="fillPrompt('Using technical analysis, evaluate the stock of [input stock]. Analyze price movements, volume, and key indicators. Provide a buy, sell, or hold recommendation.')">Technical Analysis</button>
+  <button class="qa-btn" onclick="fillPrompt('Explain how to interpret [input company] latest earnings report. Highlight key metrics and how they impact stock price.')">Earnings Report</button>
+  <button class="qa-btn" onclick="fillPrompt('Help me build an AI-powered stock screener that identifies high-growth stocks based on P/E ratio, RSI, moving averages, and volume trends.')">Stock Screener</button>
+  <button class="qa-btn" onclick="fillPrompt('I want to backtest my [insert trading strategy] using historical market data. Provide a step-by-step process to evaluate profitability and risk.')">Backtest Strategy</button>
+  <button class="qa-btn" onclick="fillPrompt('Check current BTC, ETH, SOL, and XRP prices in CAD and compare to last check. Alert if any moved plus or minus 5%.')">Crypto Check</button>
+  <button class="qa-btn" onclick="fillPrompt('Given a portfolio with [input current sectors or stocks], suggest diversification strategies to minimize risk.')">Diversify Portfolio</button>
+  <button class="qa-btn" onclick="fillPrompt('Suggest an automated trading strategy for [insert market] with entry/exit signals, stop-loss, and take-profit levels.')">Auto Strategy</button>
+  <button class="qa-btn" onclick="fillPrompt('Create an automated risk management system for [insert market] that adjusts stop-loss, trailing stops, and position sizing based on volatility.')">Risk Management</button>
+  <button class="qa-btn" onclick="fillPrompt('Compare growth stocks vs dividend stocks and suggest scenarios where each is more suitable. Reference [input specific stocks].')">Growth vs Dividend</button>
+  <div style="font-size:8px;letter-spacing:2px;color:rgba(102,126,234,0.7);text-transform:uppercase;margin:10px 0 3px 4px;">PRINTS</div>
+  <button class="qa-btn" onclick="fillPrompt('Generate 4 new Matte Black Press art prints using Waviboy AI Creative Director methodology. Use FAL Flux, muted earthy palette, hyper-realistic editorial style. Portrait format.')">Generate Prints</button>
+  <button class="qa-btn" onclick="fillPrompt('Generate a vintage travel poster style print for Matte Black Press — destination [input city]. Warm terracotta palette, retro 1950s aesthetic.')">Vintage Travel Print</button>
+  <button class="qa-btn" onclick="fillPrompt('Generate a botanical art print for Matte Black Press — subject [input plant]. Deep earthy greens, macro photography style, minimalist.')">Botanical Print</button>
+  <button class="qa-btn" onclick="fillPrompt('What is the current status of the Matte Black Press Shopify store and what needs to be done next?')">Store Status</button>
+  <button class="qa-btn" onclick="fillPrompt('Write product descriptions for 10 Matte Black Press art prints. Premium, editorial, luxury tone. Limited edition messaging.')">Product Descriptions</button>
+  <div style="font-size:8px;letter-spacing:2px;color:rgba(102,126,234,0.7);text-transform:uppercase;margin:10px 0 3px 4px;">SAL'S</div>
+  <button class="qa-btn" onclick="fillPrompt('Draft a brand licence proposal for Sal\'s Famous for a new location in [input city]. Include $500/month flat fee, 4-year term, name-only licence, no branding provided.')">Brand Licence</button>
+  <button class="qa-btn" onclick="fillPrompt('Draft an NDA for Sal\'s Famous addressed to [input name] before disclosing brand licence terms.')">NDA Draft</button>
+  <button class="qa-btn" onclick="fillPrompt('Summarize the current Sal\'s Famous 82nd Street menu in plain text, items and prices only.')">Menu Summary</button>
+  <button class="qa-btn" onclick="fillPrompt('What is the current status of Sal\'s Famous franchise expansion and pending proposals?')">Franchise Status</button>
+  <div style="font-size:8px;letter-spacing:2px;color:rgba(102,126,234,0.7);text-transform:uppercase;margin:10px 0 3px 4px;">SYSTEM</div>
+  <button class="qa-btn" onclick="fillPrompt('Check openclaw gateway status and report any issues.')">Gateway Status</button>
+  <button class="qa-btn" onclick="fillPrompt('Give me a summary of what we worked on recently and what is pending.')">Recent Summary</button>
+  <button class="qa-btn" onclick="fillPrompt('Check current crypto prices: BTC, ETH, SOL, XRP in CAD.')">Crypto Prices</button>
+  <button class="qa-btn" onclick="fillPrompt('Check current gold and silver spot prices in CAD.')">Metals Prices</button>
+  <button class="qa-btn" onclick="fillPrompt('What tasks are pending across all active projects?')">Pending Tasks</button>
+</div>
+<style>
+#quick-actions::-webkit-scrollbar { display:none; }
+.qa-btn { width:100%; text-align:left; font-size:9.5px; padding:5px 8px; background:transparent; border:none; border-left:1px solid transparent; color:rgba(255,255,255,0.4); font-family:'Outfit',sans-serif; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:all 0.15s; letter-spacing:0.3px; border-radius:0; }
+.qa-btn:hover { color:#a5b4fc; border-left-color:rgba(102,126,234,0.5); background:rgba(102,126,234,0.07); }
+</style>
+<script>
+function fillPrompt(text) {
+  const input = document.getElementById('chat-input');
+  if (input) { input.value = text; input.focus(); }
+}
+</script>
+<!-- End Quick Actions -->
+
 <div id="instructions-container">
     <div id="instruction-title" style="font-size: 22px; font-weight: 600; letter-spacing: -0.02em; background: linear-gradient(135deg, #fff 30%, #a5b4fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px;">HENRY AI</div>
     <div style="margin-top: 0;">
@@ -2576,68 +2621,7 @@ document.addEventListener("keydown", (e) => {
     <div class="chat-messages" id="chat-messages"></div>
     <div class="file-info" id="file-info"></div>
     <!-- Quick Actions Panel -->
-    <div id="quick-actions" style="margin-bottom:1rem;">
-      <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.5rem;">
-        <button class="qa-tab active" onclick="setQaTab('market')" style="font-size:0.7rem;padding:0.3rem 0.7rem;background:rgba(102,126,234,0.2);border:1px solid rgba(102,126,234,0.4);color:#a5b4fc;border-radius:6px;cursor:pointer;">📈 Market</button>
-        <button class="qa-tab" onclick="setQaTab('mbp')" style="font-size:0.7rem;padding:0.3rem 0.7rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);border-radius:6px;cursor:pointer;">🖼️ Prints</button>
-        <button class="qa-tab" onclick="setQaTab('sals')" style="font-size:0.7rem;padding:0.3rem 0.7rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);border-radius:6px;cursor:pointer;">🍕 Sal's</button>
-        <button class="qa-tab" onclick="setQaTab('system')" style="font-size:0.7rem;padding:0.3rem 0.7rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);border-radius:6px;cursor:pointer;">⚙️ System</button>
-      </div>
-      <!-- Market prompts -->
-      <div id="qa-market" class="qa-panel" style="display:flex;gap:0.4rem;flex-wrap:wrap;">
-        <button class="qa-btn" onclick="fillPrompt('Analyze the current trends in the market focusing on [input sector or stock]. Identify emerging patterns and potential investment opportunities.')">📊 Trend Analysis</button>
-        <button class="qa-btn" onclick="fillPrompt('Using technical analysis, evaluate the stock of [input stock]. Analyze price movements, volume, and key indicators. Provide a buy, sell, or hold recommendation.')">📉 Technical Analysis</button>
-        <button class="qa-btn" onclick="fillPrompt('Explain how to interpret [input company] latest earnings report. Highlight key metrics and how they impact stock price.')">📋 Earnings Report</button>
-        <button class="qa-btn" onclick="fillPrompt('Help me build an AI-powered stock screener that identifies high-growth stocks based on P/E ratio, RSI, moving averages, and volume trends.')">🔍 Stock Screener</button>
-        <button class="qa-btn" onclick="fillPrompt('I want to backtest my [insert trading strategy] using historical market data. Provide a step-by-step process to evaluate profitability and risk.')">🔄 Backtest Strategy</button>
-        <button class="qa-btn" onclick="fillPrompt('Check current BTC, ETH, SOL, and XRP prices in CAD and compare to last check. Alert if any moved ±5%.')">💰 Crypto Check</button>
-        <button class="qa-btn" onclick="fillPrompt('Given a portfolio with [input current sectors or stocks], suggest diversification strategies to minimize risk.')">📦 Diversify Portfolio</button>
-        <button class="qa-btn" onclick="fillPrompt('Suggest an automated trading strategy for [insert market] with entry/exit signals, stop-loss, and take-profit levels.')">🤖 Auto Strategy</button>
-        <button class="qa-btn" onclick="fillPrompt('Create an automated risk management system for [insert market] that adjusts stop-loss, trailing stops, and position sizing based on volatility.')">🛡️ Risk Management</button>
-        <button class="qa-btn" onclick="fillPrompt('Compare growth stocks vs dividend stocks and suggest scenarios where each is more suitable. Reference [input specific stocks].')">⚖️ Growth vs Dividend</button>
-      </div>
-      <!-- Matte Black Press -->
-      <div id="qa-mbp" class="qa-panel" style="display:none;gap:0.4rem;flex-wrap:wrap;">
-        <button class="qa-btn" onclick="fillPrompt('Generate 4 new Matte Black Press art prints using Waviboy AI Creative Director methodology. Use FAL Flux, muted earthy palette, hyper-realistic editorial style. Portrait format.')">🎨 Generate Prints</button>
-        <button class="qa-btn" onclick="fillPrompt('Generate a vintage travel poster style print for Matte Black Press — destination [input city]. Warm terracotta palette, retro 1950s aesthetic.')">🗺️ Vintage Travel Print</button>
-        <button class="qa-btn" onclick="fillPrompt('Generate a botanical art print for Matte Black Press — subject [input plant]. Deep earthy greens, macro photography style, minimalist.')">🌿 Botanical Print</button>
-        <button class="qa-btn" onclick="fillPrompt('What is the current status of the Matte Black Press Shopify store and what needs to be done next?')">🏪 Store Status</button>
-        <button class="qa-btn" onclick="fillPrompt('Write product descriptions for 10 Matte Black Press art prints. Premium, editorial, luxury tone. Limited edition messaging.')">✍️ Product Descriptions</button>
-      </div>
-      <!-- Sal's Famous -->
-      <div id="qa-sals" class="qa-panel" style="display:none;gap:0.4rem;flex-wrap:wrap;">
-        <button class="qa-btn" onclick="fillPrompt('Draft a brand licence proposal for Sal\'s Famous for a new location in [input city]. Include $500/month flat fee, 4-year term, name-only licence, no branding provided.')">📄 Brand Licence Proposal</button>
-        <button class="qa-btn" onclick="fillPrompt('Draft an NDA for Sal\'s Famous addressed to [input name] before disclosing brand licence terms.')">🔒 NDA Draft</button>
-        <button class="qa-btn" onclick="fillPrompt('Summarize the current Sal\'s Famous 82nd Street menu in plain text, items and prices only.')">🍕 Menu Summary</button>
-        <button class="qa-btn" onclick="fillPrompt('What is the current status of Sal\'s Famous franchise expansion and pending proposals?')">📊 Franchise Status</button>
-      </div>
-      <!-- System -->
-      <div id="qa-system" class="qa-panel" style="display:none;gap:0.4rem;flex-wrap:wrap;">
-        <button class="qa-btn" onclick="fillPrompt('Check openclaw gateway status and report any issues.')">🔧 Gateway Status</button>
-        <button class="qa-btn" onclick="fillPrompt('Give me a summary of what we worked on recently and what is pending.')">📝 Recent Summary</button>
-        <button class="qa-btn" onclick="fillPrompt('Check current crypto prices: BTC, ETH, SOL, XRP in CAD.')">💰 Crypto Prices</button>
-        <button class="qa-btn" onclick="fillPrompt('Check current gold and silver spot prices in CAD.')">🥇 Metals Prices</button>
-        <button class="qa-btn" onclick="fillPrompt('What tasks are pending across all active projects?')">📋 Pending Tasks</button>
-      </div>
-    </div>
-    <script>
-    function setQaTab(tab) {
-      document.querySelectorAll('.qa-panel').forEach(p => p.style.display='none');
-      document.getElementById('qa-'+tab).style.display='flex';
-      document.querySelectorAll('.qa-tab').forEach(t => {
-        t.style.background='rgba(255,255,255,0.05)';
-        t.style.borderColor='rgba(255,255,255,0.1)';
-        t.style.color='rgba(255,255,255,0.5)';
-      });
-      event.target.style.background='rgba(102,126,234,0.2)';
-      event.target.style.borderColor='rgba(102,126,234,0.4)';
-      event.target.style.color='#a5b4fc';
-    }
-    function fillPrompt(text) {
-      const input = document.getElementById('chat-input');
-      if (input) { input.value = text; input.focus(); }
-    }
-    </script>
+
     <style>
     .qa-btn { font-size:0.68rem; padding:0.3rem 0.7rem; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.6); border-radius:6px; cursor:pointer; white-space:nowrap; transition:all 0.2s; font-family:'Outfit',sans-serif; }
     .qa-btn:hover { background:rgba(102,126,234,0.2); border-color:rgba(102,126,234,0.4); color:#a5b4fc; }
