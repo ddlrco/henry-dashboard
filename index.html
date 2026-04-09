@@ -700,6 +700,56 @@ const BRAIN_DATA = {
     {id:'opus',name:'Claude Opus',group:'Media',val:3},
     {id:'gemini',name:'Gemini',group:'Media',val:3},
     {id:'deepseek',name:'DeepSeek V3',group:'Media',val:2},
+    // Extended Frontend
+    {id:'bloompass',name:'Bloom FX',group:'Frontend',val:2},
+    {id:'orbitctrl',name:'Orbit Controls',group:'Frontend',val:2},
+    {id:'shader_v',name:'Vertex Shader',group:'Frontend',val:2},
+    {id:'shader_f',name:'Fragment Shader',group:'Frontend',val:2},
+    {id:'starfield',name:'Starfield',group:'Frontend',val:2},
+    {id:'hud_fps',name:'FPS Counter',group:'Frontend',val:2},
+    {id:'hud_ring',name:'HUD Ring',group:'Frontend',val:2},
+    {id:'kg_graph',name:'Knowledge Graph',group:'Frontend',val:3},
+    // Extended Backend
+    {id:'vercel_fn',name:'Vercel Functions',group:'Backend',val:3},
+    {id:'jwt',name:'JWT Tokens',group:'Backend',val:2},
+    {id:'openclaw_api',name:'OpenClaw API',group:'Backend',val:3},
+    {id:'webhook',name:'Webhooks',group:'Backend',val:2},
+    {id:'proxy',name:'Proxy Server',group:'Backend',val:2},
+    // Extended System
+    {id:'hostinger',name:'Hostinger VPS',group:'System',val:3},
+    {id:'docker',name:'Docker',group:'System',val:3},
+    {id:'docker_compose',name:'Docker Compose',group:'System',val:2},
+    {id:'nginx',name:'Nginx',group:'System',val:2},
+    {id:'pm2',name:'PM2',group:'System',val:2},
+    {id:'cloudflare',name:'Cloudflare',group:'System',val:2},
+    {id:'openrouter',name:'OpenRouter',group:'System',val:3},
+    // Extended Brain
+    {id:'session_logs',name:'Session Logs',group:'Brain',val:2},
+    {id:'vector_db',name:'Vector DB',group:'Brain',val:3},
+    {id:'fts',name:'Full Text Search',group:'Brain',val:2},
+    {id:'heartbeat_state',name:'Heartbeat State',group:'Brain',val:2},
+    {id:'skill_tmux',name:'tmux',group:'Brain',val:2},
+    {id:'skill_gh',name:'github-skill',group:'Brain',val:2},
+    // Extended Projects
+    {id:'ddlr_taurus',name:'Taurus Cylinder',group:'Projects',val:3},
+    {id:'ddlr_menu',name:'Menu Morph',group:'Projects',val:2},
+    {id:'ddlr_pixel',name:'Pixel Mask Title',group:'Projects',val:2},
+    {id:'sals_wix',name:'Wix Store',group:'Projects',val:3},
+    {id:'sals_menu_82',name:'82st Menu PDF',group:'Projects',val:2},
+    {id:'sals_nda_bar',name:'Barrhead NDA',group:'Projects',val:2},
+    {id:'mbp_v1',name:'V1 Prints',group:'Projects',val:2},
+    {id:'mbp_v2',name:'V2 Prints',group:'Projects',val:2},
+    {id:'mf_trigger',name:'Trigger Automation',group:'Projects',val:2},
+    {id:'mf_compare',name:'Price Compare',group:'Projects',val:2},
+    // Extended Media
+    {id:'kling',name:'Kling 2.6',group:'Media',val:3},
+    {id:'higgsfield',name:'Higgsfield',group:'Media',val:3},
+    {id:'gitnexus',name:'GitNexus',group:'Media',val:2},
+    {id:'force_graph',name:'3D Force Graph',group:'Media',val:3},
+    {id:'three_js',name:'Three.js',group:'Media',val:3},
+    {id:'openai_tts',name:'OpenAI TTS',group:'Media',val:2},
+    {id:'fal_flux',name:'FAL Flux',group:'Media',val:2},
+    {id:'nano_banana',name:'Nano Banana 2',group:'Media',val:2},
   ],
   links: [
     // Root to hubs
@@ -766,6 +816,38 @@ const BRAIN_DATA = {
     {source:'market_w',target:'moneyflow'},{source:'openclaw',target:'backend'},
     {source:'brain',target:'system'},{source:'media',target:'projects'},
     {source:'mem_proj',target:'sals'},{source:'mem_proj',target:'mbp'},
+    // Extended links
+    {source:'frontend',target:'bloompass'},{source:'frontend',target:'orbitctrl'},
+    {source:'frontend',target:'shader_v'},{source:'frontend',target:'shader_f'},
+    {source:'frontend',target:'starfield'},{source:'frontend',target:'kg_graph'},
+    {source:'hud',target:'hud_fps'},{source:'hud',target:'hud_ring'},
+    {source:'backend',target:'vercel_fn'},{source:'backend',target:'jwt'},
+    {source:'backend',target:'openclaw_api'},{source:'backend',target:'webhook'},
+    {source:'backend',target:'proxy'},{source:'openclaw_api',target:'openclaw'},
+    {source:'system',target:'hostinger'},{source:'system',target:'docker'},
+    {source:'docker',target:'docker_compose'},{source:'system',target:'nginx'},
+    {source:'system',target:'cloudflare'},{source:'system',target:'openrouter'},
+    {source:'hostinger',target:'vps'},{source:'vps',target:'docker'},
+    {source:'brain',target:'session_logs'},{source:'brain',target:'vector_db'},
+    {source:'brain',target:'fts'},{source:'brain',target:'heartbeat_state'},
+    {source:'skills',target:'skill_tmux'},{source:'skills',target:'skill_gh'},
+    {source:'ddlr',target:'ddlr_taurus'},{source:'ddlr',target:'ddlr_menu'},
+    {source:'ddlr',target:'ddlr_pixel'},{source:'sals',target:'sals_wix'},
+    {source:'sals',target:'sals_menu_82'},{source:'sals',target:'sals_nda_bar'},
+    {source:'mbp',target:'mbp_v1'},{source:'mbp',target:'mbp_v2'},
+    {source:'moneyflow',target:'mf_trigger'},{source:'moneyflow',target:'mf_compare'},
+    {source:'media',target:'kling'},{source:'media',target:'higgsfield'},
+    {source:'media',target:'gitnexus'},{source:'media',target:'force_graph'},
+    {source:'media',target:'three_js'},{source:'three_js',target:'starfield'},
+    {source:'three_js',target:'shader_v'},{source:'force_graph',target:'kg_graph'},
+    {source:'media',target:'openai_tts'},{source:'media',target:'fal_flux'},
+    {source:'media',target:'nano_banana'},{source:'fal_flux',target:'img_gen'},
+    {source:'nano_banana',target:'img_gen'},{source:'gitnexus',target:'ddlr_dash'},
+    {source:'openrouter',target:'deepseek'},{source:'openrouter',target:'sonnet'},
+    {source:'kling',target:'vid_gen'},{source:'higgsfield',target:'vid_gen'},
+    {source:'openai_tts',target:'tts'},{source:'vector_db',target:'memory'},
+    {source:'fts',target:'memory'},{source:'session_logs',target:'mem_apr9'},
+    {source:'heartbeat_state',target:'heartbeat'},{source:'skill_gh',target:'github'},
   ]
 };
 
@@ -2564,8 +2646,18 @@ document.addEventListener("keydown", (e) => {
     const resetCameraBtn = document.getElementById('reset-camera-btn');
     changeFormationBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        // Reheat the force graph simulation (morphs node positions)
         if (window.brainGraphInstance) {
+          // Scatter nodes to random positions then let force re-settle
+          const gd = window.brainGraphInstance.graphData();
+          gd.nodes.forEach(n => {
+            n.x = (Math.random()-0.5)*400;
+            n.y = (Math.random()-0.5)*400;
+            n.z = (Math.random()-0.5)*400;
+            n.vx = (Math.random()-0.5)*20;
+            n.vy = (Math.random()-0.5)*20;
+            n.vz = (Math.random()-0.5)*20;
+          });
+          window.brainGraphInstance.graphData(gd);
           window.brainGraphInstance.d3ReheatSimulation();
         }
     });
