@@ -781,6 +781,7 @@ function initBrainGraph() {
         const input = document.getElementById('chat-input');
         if (input) { input.value = `Tell me about ${node.name} in Henry's knowledge graph.`; }
       });
+    window.brainGraphInstance = brainGraphInstance;
     // Add lighting so sphere colors show correctly
     brainGraphInstance.scene().add(new THREE.AmbientLight(0xffffff, 2.5));
     brainGraphInstance.scene().add(new THREE.DirectionalLight(0xffffff, 1.5));
@@ -2527,25 +2528,24 @@ document.addEventListener("keydown", (e) => {
     const resetCameraBtn = document.getElementById('reset-camera-btn');
     changeFormationBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        config.currentFormation = (config.currentFormation + 1) % config.numFormations;
-        // Auto-switch palette for knowledge graph formation
-        if (config.currentFormation === 4) { config.activePaletteIndex = 3; }
-        else if (config.activePaletteIndex === 3) { config.activePaletteIndex = 0; }
-        startMorph(config.currentFormation, config.densityFactor);
-        controls.autoRotate = false;
-        setTimeout(() => { controls.autoRotate = true; }, 2500);
+        // Reheat the force graph simulation (morphs node positions)
+        if (window.brainGraphInstance) {
+          window.brainGraphInstance.d3ReheatSimulation();
+        }
     });
     pausePlayBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        config.paused = !config.paused;
-        pausePlayBtn.querySelector('span').textContent = config.paused ? 'Play' : 'Freeze';
-        controls.autoRotate = !config.paused;
+        if (window.brainGraphInstance) {
+          const sim = window.brainGraphInstance.d3Force('charge');
+          config.paused = !config.paused;
+          if (config.paused) window.brainGraphInstance.pauseAnimation();
+          else window.brainGraphInstance.resumeAnimation();
+          pausePlayBtn.querySelector('span').textContent = config.paused ? 'Play' : 'Freeze';
+        }
     });
     resetCameraBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        controls.reset();
-        controls.autoRotate = false;
-        setTimeout(() => { controls.autoRotate = true; }, 2000);
+        if (window.brainGraphInstance) window.brainGraphInstance.cameraPosition({x:0,y:0,z:400});
     });
     const clock = new THREE.Clock();
     // Audio reactivity
