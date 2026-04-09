@@ -585,6 +585,7 @@ body.inverted #logout-btn { border-color: rgba(220,38,38,0.3); color: rgba(220,3
     <button id="change-formation-btn" class="control-button"><span>Morph</span></button>
     <button id="pause-play-btn" class="control-button"><span>Freeze</span></button>
     <button id="reset-camera-btn" class="control-button"><span>Reset</span></button>
+    <button id="knowledge-btn" class="control-button" onclick="toggleKnowledgeGraph()"><span>Brain</span></button>
     
     <!-- Theme buttons -->
     <div style="margin-top: 16px;">
@@ -2704,6 +2705,155 @@ document.addEventListener('drop', (e) => {
     uploadedFiles.push(...files);
     fileInfo.textContent = '📎 ' + uploadedFiles.map(f => f.name + ' (' + (f.size/1024).toFixed(1) + 'KB)').join(', ');
 });
+</script>
+<div id="knowledge-overlay" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(5,5,8,0.95);backdrop-filter:blur(10px);overflow:hidden;">
+  <div style="position:absolute;top:24px;left:50%;transform:translateX(-50%);text-align:center;z-index:10;">
+    <div style="font-family:'Outfit',sans-serif;font-size:11px;letter-spacing:4px;color:rgba(165,180,252,0.8);text-transform:uppercase;margin-bottom:4px;">HENRY — KNOWLEDGE GRAPH</div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:2px;">Live codebase & memory map</div>
+  </div>
+  <canvas id="knowledge-canvas" style="width:100%;height:100%;"></canvas>
+  <button onclick="toggleKnowledgeGraph()" style="position:absolute;top:24px;right:24px;background:none;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.5);padding:8px 16px;border-radius:4px;font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:2px;cursor:pointer;">CLOSE</button>
+  <div id="node-tooltip" style="position:absolute;display:none;background:rgba(10,10,20,0.9);border:1px solid rgba(102,126,234,0.4);padding:8px 12px;border-radius:6px;font-family:'Outfit',sans-serif;font-size:11px;color:#a5b4fc;pointer-events:none;max-width:200px;"></div>
+</div>
+
+<script>
+const KNOWLEDGE_NODES = [
+  {id:'index.html',label:'Dashboard UI',type:'file',cluster:'Frontend',x:0,y:0},
+  {id:'api/chat.js',label:'Chat API',type:'api',cluster:'Backend',x:0,y:0},
+  {id:'api/auth.js',label:'Auth API',type:'api',cluster:'Backend',x:0,y:0},
+  {id:'api/test.js',label:'Test API',type:'api',cluster:'Backend',x:0,y:0},
+  {id:'hud-code.js',label:'HUD System',type:'file',cluster:'Frontend',x:0,y:0},
+  {id:'memory',label:'Memory Files',type:'memory',cluster:'Brain',x:0,y:0},
+  {id:'skills',label:'Skills',type:'skill',cluster:'Brain',x:0,y:0},
+  {id:'sals',label:"Sal's Famous",type:'project',cluster:'Projects',x:0,y:0},
+  {id:'mbp',label:'Matte Black Press',type:'project',cluster:'Projects',x:0,y:0},
+  {id:'ddlr',label:'DDLR.co',type:'project',cluster:'Projects',x:0,y:0},
+  {id:'openclaw',label:'OpenClaw Gateway',type:'system',cluster:'System',x:0,y:0},
+  {id:'telegram',label:'Telegram',type:'channel',cluster:'System',x:0,y:0},
+  {id:'heartbeat',label:'Heartbeat',type:'system',cluster:'System',x:0,y:0},
+  {id:'market',label:'Market Watch',type:'skill',cluster:'Brain',x:0,y:0},
+];
+const KNOWLEDGE_EDGES = [
+  {from:'index.html',to:'api/chat.js'},{from:'index.html',to:'api/auth.js'},
+  {from:'api/chat.js',to:'openclaw'},{from:'openclaw',to:'telegram'},
+  {from:'openclaw',to:'heartbeat'},{from:'heartbeat',to:'market'},
+  {from:'skills',to:'sals'},{from:'skills',to:'mbp'},{from:'skills',to:'ddlr'},
+  {from:'memory',to:'sals'},{from:'memory',to:'mbp'},{from:'memory',to:'ddlr'},
+  {from:'index.html',to:'hud-code.js'},{from:'openclaw',to:'memory'},
+  {from:'market',to:'memory'},{from:'api/auth.js',to:'api/chat.js'},
+];
+
+const CLUSTER_COLORS = {
+  Frontend:'#818cf8',Backend:'#34d399',Brain:'#a78bfa',Projects:'#f59e0b',System:'#60a5fa'
+};
+
+let kgActive = false;
+let kgAnimFrame;
+let kgInitialized = false;
+
+function toggleKnowledgeGraph() {
+  const overlay = document.getElementById('knowledge-overlay');
+  kgActive = !kgActive;
+  overlay.style.display = kgActive ? 'block' : 'none';
+  const btn = document.getElementById('knowledge-btn');
+  if (btn) btn.querySelector('span').textContent = kgActive ? 'Neural' : 'Brain';
+  if (kgActive) { initKG(); }
+  else { cancelAnimationFrame(kgAnimFrame); }
+}
+
+function initKG() {
+  const canvas = document.getElementById('knowledge-canvas');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const W = canvas.width, H = canvas.height, cx = W/2, cy = H/2;
+
+  // Position nodes in clusters
+  const clusters = {};
+  KNOWLEDGE_NODES.forEach(n => { if(!clusters[n.cluster]) clusters[n.cluster]=[];
+    clusters[n.cluster].push(n); });
+  const clusterKeys = Object.keys(clusters);
+  clusterKeys.forEach((cl, ci) => {
+    const angle = (ci / clusterKeys.length) * Math.PI * 2;
+    const r = Math.min(W,H) * 0.28;
+    const ccx = cx + Math.cos(angle)*r, ccy = cy + Math.sin(angle)*r;
+    clusters[cl].forEach((n, ni) => {
+      const a2 = (ni / clusters[cl].length) * Math.PI * 2;
+      n.x = ccx + Math.cos(a2)*70; n.y = ccy + Math.sin(a2)*70;
+      n.vx = 0; n.vy = 0; n.pulse = Math.random()*Math.PI*2;
+    });
+  });
+
+  const ctx = canvas.getContext('2d');
+  let t = 0;
+
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+    t += 0.02;
+
+    // Edges
+    KNOWLEDGE_EDGES.forEach(e => {
+      const a = KNOWLEDGE_NODES.find(n=>n.id===e.from);
+      const b = KNOWLEDGE_NODES.find(n=>n.id===e.to);
+      if (!a||!b) return;
+      const grad = ctx.createLinearGradient(a.x,a.y,b.x,b.y);
+      const ca = CLUSTER_COLORS[a.cluster]||'#667eea';
+      const cb = CLUSTER_COLORS[b.cluster]||'#667eea';
+      grad.addColorStop(0, ca+'55');
+      grad.addColorStop(1, cb+'55');
+      ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);
+      ctx.strokeStyle = grad; ctx.lineWidth = 1;
+
+      // Traveling dot
+      const progress = (t * 0.5) % 1;
+      const dx = b.x-a.x, dy = b.y-a.y;
+      const px = a.x + dx*progress, py = a.y + dy*progress;
+      ctx.stroke();
+      ctx.beginPath(); ctx.arc(px,py,2,0,Math.PI*2);
+      ctx.fillStyle = ca; ctx.fill();
+    });
+
+    // Nodes
+    KNOWLEDGE_NODES.forEach(n => {
+      n.pulse += 0.04;
+      const glow = 0.6 + Math.sin(n.pulse)*0.4;
+      const color = CLUSTER_COLORS[n.cluster]||'#667eea';
+      const r = n.type==='file'?10:n.type==='api'?9:n.type==='memory'?12:n.type==='project'?14:8;
+
+      // Glow
+      const g = ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,r*3);
+      g.addColorStop(0,color+(Math.floor(glow*80).toString(16).padStart(2,'0')));
+      g.addColorStop(1,'transparent');
+      ctx.beginPath(); ctx.arc(n.x,n.y,r*3,0,Math.PI*2);
+      ctx.fillStyle=g; ctx.fill();
+
+      // Node
+      ctx.beginPath(); ctx.arc(n.x,n.y,r,0,Math.PI*2);
+      ctx.fillStyle=color+'cc'; ctx.fill();
+      ctx.strokeStyle=color; ctx.lineWidth=1.5; ctx.stroke();
+
+      // Label
+      ctx.fillStyle='rgba(255,255,255,0.7)';
+      ctx.font='10px Outfit,sans-serif';
+      ctx.textAlign='center';
+      ctx.fillText(n.label,n.x,n.y+r+14);
+    });
+
+    kgAnimFrame = requestAnimationFrame(draw);
+  }
+  draw();
+
+  // Tooltip on hover
+  canvas.onmousemove = e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX-rect.left, my = e.clientY-rect.top;
+    const tip = document.getElementById('node-tooltip');
+    const hit = KNOWLEDGE_NODES.find(n => Math.hypot(n.x-mx,n.y-my)<16);
+    if (hit) {
+      tip.style.display='block'; tip.style.left=(e.clientX+12)+'px'; tip.style.top=(e.clientY-10)+'px';
+      tip.textContent = hit.label+' ['+hit.cluster+']';
+    } else { tip.style.display='none'; }
+  };
+}
 </script>
 </body>
 </html>
