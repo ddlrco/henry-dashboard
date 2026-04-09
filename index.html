@@ -940,6 +940,65 @@ function toggleBrainGraph() {
   if (brainGraphActive && !brainGraphInstance) initBrainGraph();
 }
 
+// Capabilities radial
+(function(){
+  const CAPS=[
+    {name:'CODE',val:95,color:'#818cf8'},{name:'VISION',val:88,color:'#a78bfa'},
+    {name:'VOICE',val:82,color:'#60a5fa'},{name:'DESIGN',val:90,color:'#f472b6'},
+    {name:'DATA',val:92,color:'#34d399'},{name:'OPS',val:85,color:'#4ade80'},
+    {name:'SEARCH',val:94,color:'#f59e0b'},{name:'FINANCE',val:87,color:'#fb923c'},
+    {name:'SECURITY',val:86,color:'#ef4444'},{name:'DEPLOY',val:91,color:'#06b6d4'},
+    {name:'MEDIA',val:89,color:'#d946ef'},{name:'AUTOMATE',val:93,color:'#8b5cf6'},
+  ];
+  function initCapRadial(){
+    const c=document.getElementById('cap-radial');
+    if(!c)return;
+    const ctx=c.getContext('2d');
+    const cx=95,cy=95,n=CAPS.length;
+    let t=0;
+    window._capLevels=CAPS.map(c=>c.val/100);
+    function draw(){
+      ctx.clearRect(0,0,190,190);
+      CAPS.forEach((cap,i)=>{
+        const a0=(i/n)*Math.PI*2-Math.PI/2;
+        const a1=((i+0.82)/n)*Math.PI*2-Math.PI/2;
+        const lv=window._capLevels[i];
+        const r=28+lv*58;
+        ctx.beginPath();ctx.arc(cx,cy,r,a0,a1);
+        ctx.strokeStyle=cap.color+'25';ctx.lineWidth=10;ctx.stroke();
+        ctx.beginPath();ctx.arc(cx,cy,r,a0,a0+(a1-a0)*lv);
+        ctx.strokeStyle=cap.color;ctx.lineWidth=4;
+        ctx.shadowColor=cap.color;ctx.shadowBlur=12;ctx.stroke();ctx.shadowBlur=0;
+        const mid=(a0+a0+(a1-a0)*lv)/2;
+        ctx.fillStyle=cap.color+'ee';ctx.font='6.5px Outfit,Arial';
+        ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillText(cap.name,cx+Math.cos(mid)*(r+14),cy+Math.sin(mid)*(r+14));
+      });
+      ctx.beginPath();ctx.arc(cx,cy,18,0,Math.PI*2);
+      ctx.fillStyle='rgba(102,126,234,0.12)';ctx.fill();
+      ctx.strokeStyle='rgba(102,126,234,0.4)';ctx.lineWidth=1;ctx.stroke();
+      ctx.fillStyle='rgba(255,255,255,0.5)';ctx.font='bold 5.5px Outfit,Arial';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText('HENRY',cx,cy);
+      t+=0.015;requestAnimationFrame(draw);
+    }
+    draw();
+  }
+  window.addEventListener('load',()=>setTimeout(initCapRadial,600));
+
+  // Real sub-agent trigger
+  window.triggerAgent = function(name){
+    const bars=document.querySelectorAll('#subagent-bars > div');
+    const NAMES=['CODEX','CLAUDE','BROWSER','WHISPER','IMG GEN','SEARCH','GITHUB','EMAIL'];
+    const idx=NAMES.findIndex(n=>name.toUpperCase().includes(n.split(' ')[0]));
+    if(idx>=0 && bars[idx]){
+      const fill=bars[idx].querySelector('div div');
+      if(fill){fill.style.width='100%';fill.style.boxShadow='0 0 12px currentColor';}
+      setTimeout(()=>{if(fill){fill.style.width='82%';fill.style.boxShadow='';}},1500);
+    }
+  };
+})();
+
 window.addEventListener('load', () => {
   setTimeout(() => {
     initBrainGraph();
@@ -1037,57 +1096,10 @@ window.addEventListener('load', () => {
         <canvas id="silver-chart" class="spark-chart" width="160" height="28"></canvas>
     </div>
     
-    <!-- Skills Node -->
+    <!-- Capabilities Radial Node -->
     <div class="data-node" id="skills-node">
         <div class="data-node-title">CAPABILITIES</div>
-        <div class="skill-row">
-            <span class="skill-label">CODE</span>
-            <div class="skill-bar"><div class="skill-fill" style="width: 95%;"></div></div>
-        </div>
-        <div class="skill-row">
-            <span class="skill-label">VISION</span>
-            <div class="skill-bar"><div class="skill-fill" style="width: 88%;"></div></div>
-        </div>
-        <div class="skill-row">
-            <span class="skill-label">VOICE</span>
-            <div class="skill-bar"><div class="skill-fill" style="width: 82%;"></div></div>
-        </div>
-        <div class="skill-row">
-            <span class="skill-label">DESIGN</span>
-            <div class="skill-bar"><div class="skill-fill" style="width: 90%;"></div></div>
-        </div>
-        <div class="skill-row">
-            <span class="skill-label">DATA</span>
-            <div class="skill-bar"><div class="skill-fill" style="width: 92%;"></div></div>
-        </div>
-        <div class="skill-row">
-            <span class="skill-label">OPS</span>
-            <div class="skill-bar"><div class="skill-fill" style="width: 85%;"></div></div>
-        </div>
-        <div class="skill-row">
-            <span class="skill-label">SEARCH</span>
-            <div class="skill-bar"><div class="skill-fill" style="width: 94%;"></div></div>
-        </div>
-        <div class="skill-row">
-            <span class="skill-label">FINANCE</span>
-            <div class="skill-bar"><div class="skill-fill" style="width: 87%;"></div></div>
-        </div>
-        <div class="skill-row">
-            <span class="skill-label">SECURITY</span>
-            <div class="skill-bar"><div class="skill-fill" style="width: 86%;"></div></div>
-        </div>
-        <div class="skill-row">
-            <span class="skill-label">DEPLOY</span>
-            <div class="skill-bar"><div class="skill-fill" style="width: 91%;"></div></div>
-        </div>
-        <div class="skill-row">
-            <span class="skill-label">MEDIA</span>
-            <div class="skill-bar"><div class="skill-fill" style="width: 89%;"></div></div>
-        </div>
-        <div class="skill-row">
-            <span class="skill-label">AUTOMATE</span>
-            <div class="skill-bar"><div class="skill-fill" style="width: 93%;"></div></div>
-        </div>
+        <canvas id="cap-radial" width="190" height="190" style="display:block;margin:8px auto 4px;"></canvas>
     </div>
     
     <!-- Sub-Agents Radial Node (hidden - moved to left panel) -->
