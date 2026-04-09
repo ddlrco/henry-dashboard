@@ -2643,8 +2643,18 @@ document.addEventListener("keydown", (e) => {
         densityValue.textContent = `${val}%`;
         clearTimeout(densityTimeout);
         densityTimeout = setTimeout(() => {
-            createNetworkVisualization(config.currentFormation, config.densityFactor);
-        }, 400);
+            if (window.brainGraphInstance) {
+                // Scale: particle count, link width, force charge
+                const particles = Math.round(val / 25); // 1-4
+                const linkW = 0.5 + (val / 100) * 2;
+                const charge = -80 - (val / 100) * 120;
+                window.brainGraphInstance
+                    .linkDirectionalParticles(particles)
+                    .linkWidth(linkW)
+                    .d3Force('charge', window.brainGraphInstance.d3Force('charge').strength(charge));
+                window.brainGraphInstance.d3ReheatSimulation();
+            }
+        }, 300);
     });
     const changeFormationBtn = document.getElementById('change-formation-btn');
     const pausePlayBtn = document.getElementById('pause-play-btn');
