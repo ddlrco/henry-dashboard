@@ -655,6 +655,12 @@ const BRAIN_DATA = {
     {id:'skill_mkt',name:'market-analysis',group:'Brain',val:2},
     {id:'skill_img',name:'image-gen',group:'Brain',val:2},
     {id:'skill_corp',name:'sals-corporate',group:'Brain',val:2},
+    {id:'skill_brand',name:'sals-branded',group:'Brain',val:2},
+    {id:'skill_drone',name:'drone-shots',group:'Brain',val:2},
+    {id:'skill_real',name:'prompt-realism',group:'Brain',val:2},
+    {id:'skill_wea',name:'weather',group:'Brain',val:2},
+    {id:'mem_apr9',name:'memory/2026-04-09',group:'Brain',val:2},
+    {id:'mem_proj',name:'project-notes',group:'Brain',val:2},
     // Projects
     {id:'sals',name:"Sal's Famous",group:'Projects',val:6},
     {id:'mbp',name:'Matte Black Press',group:'Projects',val:6},
@@ -666,6 +672,14 @@ const BRAIN_DATA = {
     {id:'mbp_prints',name:'10 Prints',group:'Projects',val:3},
     {id:'mbp_shop',name:'Shopify Store',group:'Projects',val:3},
     {id:'ddlr_site',name:'ddlr.company',group:'Projects',val:3},
+    {id:'ddlr_dash',name:'Henry Dashboard',group:'Projects',val:4},
+    {id:'ddlr_brand',name:'DDLR Brand',group:'Projects',val:3},
+    {id:'mbp_ig',name:'@matteblackpress',group:'Projects',val:3},
+    {id:'mbp_printify',name:'Printify POD',group:'Projects',val:3},
+    {id:'sals_gibbons',name:'Gibbons HQ',group:'Projects',val:3},
+    {id:'sals_km',name:'K.Brothers Ltd',group:'Projects',val:4},
+    {id:'mf_free',name:'Free Tier',group:'Projects',val:2},
+    {id:'mf_pro',name:'Pro Tier',group:'Projects',val:2},
     // System
     {id:'openclaw',name:'OpenClaw',group:'System',val:7},
     {id:'telegram',name:'Telegram',group:'System',val:4},
@@ -681,6 +695,11 @@ const BRAIN_DATA = {
     {id:'whisper',name:'Whisper STT',group:'Media',val:3},
     {id:'waviboy',name:'Waviboy AICD',group:'Media',val:4},
     {id:'flux',name:'Flux Dev',group:'Media',val:3},
+    {id:'gpt5',name:'GPT-5',group:'Media',val:3},
+    {id:'sonnet',name:'Claude Sonnet',group:'Media',val:3},
+    {id:'opus',name:'Claude Opus',group:'Media',val:3},
+    {id:'gemini',name:'Gemini',group:'Media',val:3},
+    {id:'deepseek',name:'DeepSeek V3',group:'Media',val:2},
   ],
   links: [
     // Root to hubs
@@ -727,9 +746,26 @@ const BRAIN_DATA = {
     {source:'waviboy',target:'img_gen'},{source:'flux',target:'img_gen'},
     {source:'img_gen',target:'mbp_prints'},{source:'skill_img',target:'img_gen'},
     {source:'tts',target:'telegram'},{source:'whisper',target:'chat_ui'},
+    {source:'media',target:'gpt5'},{source:'media',target:'sonnet'},
+    {source:'media',target:'opus'},{source:'media',target:'gemini'},
+    {source:'media',target:'deepseek'},{source:'gpt5',target:'chat_api'},
+    {source:'sonnet',target:'brain'},{source:'opus',target:'projects'},
+    // New Brain skills
+    {source:'skills',target:'skill_brand'},{source:'skills',target:'skill_drone'},
+    {source:'skills',target:'skill_real'},{source:'skills',target:'skill_wea'},
+    {source:'memory',target:'mem_apr9'},{source:'memory',target:'mem_proj'},
+    {source:'skill_brand',target:'sals'},{source:'skill_drone',target:'vid_gen'},
+    {source:'skill_real',target:'img_gen'},
+    // New Projects
+    {source:'ddlr',target:'ddlr_dash'},{source:'ddlr',target:'ddlr_brand'},
+    {source:'mbp',target:'mbp_ig'},{source:'mbp',target:'mbp_printify'},
+    {source:'sals',target:'sals_gibbons'},{source:'sals',target:'sals_km'},
+    {source:'moneyflow',target:'mf_free'},{source:'moneyflow',target:'mf_pro'},
+    {source:'ddlr_dash',target:'frontend'},{source:'ddlr_site',target:'vercel'},
     // Cross-cluster
     {source:'market_w',target:'moneyflow'},{source:'openclaw',target:'backend'},
     {source:'brain',target:'system'},{source:'media',target:'projects'},
+    {source:'mem_proj',target:'sals'},{source:'mem_proj',target:'mbp'},
   ]
 };
 
@@ -743,7 +779,7 @@ function initBrainGraph() {
   container.style.display = 'block';
   if (!brainGraphInstance) {
     brainGraphInstance = ForceGraph3D()(document.getElementById('brain-graph'))
-      .backgroundColor('#050508')
+      .backgroundColor('rgba(0,0,0,0)')
       .nodeLabel('name')
       .nodeColor(n => GROUP_COLORS[n.group] || '#667eea')
       .nodeVal('val')
@@ -870,7 +906,7 @@ window.addEventListener('load', () => {
     </div>
     
     <!-- Crypto Node -->
-    <div class="data-node" id="crypto-node">
+    <!-- crypto removed --><div style="display:none" id="crypto-node">
         <div class="data-node-title" style="display:flex;justify-content:space-between;align-items:center;">CRYPTO <span id="crypto-expand" style="cursor:pointer;font-size:8px;color:rgba(102,126,234,0.6);letter-spacing:1px;">EXPAND ▼</span></div>
         <div id="crypto-list">
             <div class="crypto-row" data-coin="bitcoin"><span class="coin-name">BTC</span><span class="data-node-value-sm" id="p-bitcoin">--</span><span class="data-node-change" id="c-bitcoin"></span></div>
@@ -889,8 +925,7 @@ window.addEventListener('load', () => {
         </div>
     </div>
     
-    <!-- Metals Node -->
-    <div class="data-node" id="metals-node">
+    <!-- metals removed --><div style="display:none" id="metals-node">
         <div class="data-node-title">METALS</div>
         <div class="data-node-row">
             <span>GOLD</span>
@@ -2695,8 +2730,7 @@ document.addEventListener("keydown", (e) => {
         }
     }
     function init() {
-        // Only starfield renders (orb skipped, brain graph is main)
-        // createNetworkVisualization(config.currentFormation, config.densityFactor);
+        // Starfield only — no orb mesh created
         document.querySelectorAll('.theme-button').forEach(b => b.classList.remove('active'));
         document.querySelector(`.theme-button[data-theme="${config.activePaletteIndex}"]`).classList.add('active');
         animate();
@@ -2879,7 +2913,7 @@ document.addEventListener("keydown", (e) => {
 </script>
 <!-- Chat Bar & File Drop -->
 <style>
-.chat-container { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 90%; max-width: 800px; z-index: 200; padding: 1.5rem 0 2rem; }
+.chat-container { position: fixed; bottom: 2rem; right: 24px; width: 420px; max-width: 90vw; z-index: 200; padding: 0; }
 .chat-messages { max-height: 350px; overflow-y: auto; margin-bottom: 1rem; display: none; padding: 0 0.5rem; scrollbar-width: thin; scrollbar-color: rgba(102,126,234,0.3) transparent; }
 .chat-messages::-webkit-scrollbar { width: 4px; }
 .chat-messages::-webkit-scrollbar-track { background: transparent; }
