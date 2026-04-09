@@ -1461,24 +1461,43 @@ document.addEventListener("keydown", (e) => {
         }
         
         function generateKnowledgeGraph() {
+            // Real GitNexus graph data from henry-dashboard repo
             const KG_NODES = [
-              {label:'Memory',cluster:'Brain',r:220,theta:0.3,phi:1.2,size:2.0},
-              {label:'Skills',cluster:'Brain',r:200,theta:0.8,phi:0.8,size:1.8},
-              {label:'Market',cluster:'Brain',r:180,theta:1.4,phi:1.5,size:1.5},
-              {label:'Dashboard UI',cluster:'Frontend',r:210,theta:2.0,phi:0.5,size:1.8},
-              {label:'HUD',cluster:'Frontend',r:190,theta:2.5,phi:1.0,size:1.5},
-              {label:'Chat API',cluster:'Backend',r:200,theta:3.2,phi:0.7,size:1.6},
-              {label:'Auth API',cluster:'Backend',r:180,theta:3.8,phi:1.3,size:1.4},
-              {label:"Sal's Famous",cluster:'Projects',r:230,theta:4.5,phi:0.9,size:2.2},
-              {label:'Matte Black Press',cluster:'Projects',r:220,theta:5.0,phi:1.1,size:2.0},
-              {label:'DDLR.co',cluster:'Projects',r:210,theta:5.5,phi:0.6,size:1.9},
-              {label:'OpenClaw',cluster:'System',r:240,theta:1.0,phi:2.0,size:2.4},
-              {label:'Telegram',cluster:'System',r:190,theta:0.2,phi:2.5,size:1.6},
-              {label:'Heartbeat',cluster:'System',r:170,theta:1.8,phi:2.2,size:1.4},
+              // Files
+              {label:'index.html',cluster:'Frontend',r:240,theta:0.5,phi:0.8,size:2.5},
+              {label:'hud-code.js',cluster:'Frontend',r:200,theta:1.2,phi:1.1,size:1.8},
+              {label:'fix-orb.js',cluster:'Frontend',r:180,theta:1.8,phi:0.9,size:1.5},
+              // API
+              {label:'chat.js',cluster:'Backend',r:210,theta:2.5,phi:1.3,size:2.0},
+              {label:'auth.js',cluster:'Backend',r:195,theta:3.1,phi:0.7,size:1.9},
+              {label:'test.js',cluster:'Backend',r:175,theta:3.7,phi:1.5,size:1.4},
+              // Functions (real)
+              {label:'initHUD',cluster:'Code',r:160,theta:0.9,phi:1.8,size:1.3},
+              {label:'animateHUD',cluster:'Code',r:150,theta:1.5,phi:2.0,size:1.3},
+              {label:'drawBracket',cluster:'Code',r:155,theta:2.1,phi:1.6,size:1.2},
+              {label:'getIP',cluster:'Code',r:145,theta:2.8,phi:2.2,size:1.1},
+              {label:'checkRateLimit',cluster:'Code',r:160,theta:3.4,phi:1.9,size:1.2},
+              {label:'handler',cluster:'Code',r:155,theta:4.0,phi:2.1,size:1.3},
+              // Workspace knowledge
+              {label:'Memory',cluster:'Brain',r:230,theta:4.6,phi:0.6,size:2.2},
+              {label:'Skills',cluster:'Brain',r:210,theta:5.1,phi:1.0,size:2.0},
+              {label:'Market Watch',cluster:'Brain',r:190,theta:5.6,phi:0.8,size:1.6},
+              {label:"Sal's Famous",cluster:'Projects',r:235,theta:0.1,phi:1.4,size:2.3},
+              {label:'Matte Black Press',cluster:'Projects',r:220,theta:0.7,phi:1.7,size:2.1},
+              {label:'DDLR.co',cluster:'Projects',r:215,theta:1.3,phi:0.5,size:2.0},
+              {label:'OpenClaw',cluster:'System',r:245,theta:2.0,phi:2.3,size:2.5},
+              {label:'Telegram',cluster:'System',r:185,theta:2.7,phi:2.6,size:1.6},
+              {label:'Heartbeat',cluster:'System',r:170,theta:3.3,phi:2.4,size:1.5},
+            ];
+            // Real edges from GitNexus + logical knowledge connections
+            const KG_EDGES = [
+              [0,1],[0,3],[0,4],[1,6],[1,7],[1,8],[3,9],[4,10],[4,11],[4,9],
+              [3,4],[12,14],[12,15],[12,16],[12,17],[13,15],[13,16],[13,17],
+              [18,19],[18,20],[18,12],[18,13],[0,18],[3,18],[4,18]
             ];
             const CLUSTER_COLS = {
-              Brain:[0.65,0.54,1.0],Frontend:[0.51,0.71,1.0],
-              Backend:[0.20,0.83,0.60],Projects:[0.96,0.62,0.27],System:[0.38,0.65,0.95]
+              Frontend:[0.51,0.71,1.0],Backend:[0.20,0.83,0.60],Code:[0.4,0.49,0.92],
+              Brain:[0.65,0.54,1.0],Projects:[0.96,0.62,0.27],System:[0.38,0.65,0.95]
             };
             const nodePositions = [];
             const nodeSizes = [];
@@ -1501,9 +1520,10 @@ document.addEventListener("keydown", (e) => {
                 nodeColors.push(c[0]*0.7,c[1]*0.7,c[2]*0.7);
               }
             });
-            // Connection path particles between nodes
-            for(let i=0;i<KG_NODES.length;i++){
-              const a=KG_NODES[i], b=KG_NODES[(i+1)%KG_NODES.length];
+            // Connection path particles using real edges
+            for(let i=0;i<KG_EDGES.length;i++){
+              const a=KG_NODES[KG_EDGES[i][0]], b=KG_NODES[KG_EDGES[i][1]];
+              if(!a||!b) continue;
               const ax=a.r*Math.sin(a.phi)*Math.cos(a.theta),ay=a.r*Math.cos(a.phi),az=a.r*Math.sin(a.phi)*Math.sin(a.theta);
               const bx=b.r*Math.sin(b.phi)*Math.cos(b.theta),by=b.r*Math.cos(b.phi),bz=b.r*Math.sin(b.phi)*Math.sin(b.theta);
               for(let t=0;t<12;t++){
