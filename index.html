@@ -606,14 +606,14 @@ function toggleQA() {
 }
 </script>
 <!-- 3D Brain Graph -->
-<div id="brain-graph-container" style="display:block;position:fixed;inset:0;z-index:2;background:transparent;">
+<div id="brain-graph-container" style="display:block;position:fixed;inset:0;z-index:2;background:transparent;pointer-events:none;"><div style="position:absolute;inset:0;pointer-events:auto;">
   <div style="position:absolute;top:20px;left:50%;transform:translateX(-50%);text-align:center;z-index:10;pointer-events:none;">
     <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:4px;color:rgba(165,180,252,0.6);text-transform:uppercase;">HENRY — KNOWLEDGE GRAPH</div>
   </div>
   <div id="brain-graph" style="width:100%;height:100%;"></div>
-</div>
+</div></div>
 <script src="https://cdn.jsdelivr.net/npm/3d-force-graph@1.73.3/dist/3d-force-graph.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three-spritetext@1.9.1/dist/three-spritetext.min.js"></script>
+
 <script>
 let brainGraphActive = true;
 let brainGraphInstance = null;
@@ -669,22 +669,12 @@ function initBrainGraph() {
   container.style.display = 'block';
   if (!brainGraphInstance) {
     brainGraphInstance = ForceGraph3D()(document.getElementById('brain-graph'))
-      .backgroundColor('rgba(0,0,0,0)')
+      .backgroundColor('rgba(5,5,10,0.85)')
       .nodeLabel('name')
       .nodeColor(n => GROUP_COLORS[n.group] || '#667eea')
       .nodeVal('val')
       .nodeOpacity(0.9)
       .nodeResolution(16)
-      .nodeThreeObject(node => {
-        const sprite = new SpriteText(node.name);
-        sprite.color = GROUP_COLORS[node.group] || '#a5b4fc';
-        sprite.textHeight = node.group === 'root' ? 7 : 5;
-        sprite.backgroundColor = 'rgba(5,5,10,0.6)';
-        sprite.padding = 2;
-        sprite.borderRadius = 3;
-        return sprite;
-      })
-      .nodeThreeObjectExtend(true)
       .linkColor(l => {
         const g = typeof l.source === 'object' ? l.source.group : 'root';
         return GROUP_COLORS[g] || '#667eea';
