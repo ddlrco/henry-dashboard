@@ -1080,51 +1080,55 @@ window.addEventListener('load', () => {
         </div>
     </div>
     
-    <!-- Sub-Agents Node -->
+    <!-- Sub-Agents Radial Node -->
     <div class="data-node" id="agents-node">
         <div class="data-node-title">SUB-AGENTS</div>
-        <div class="agent-row">
-            <span class="agent-dot active"></span>
-            <span class="agent-name">CODEX</span>
-            <span class="agent-status">STANDBY</span>
-        </div>
-        <div class="agent-row">
-            <span class="agent-dot active"></span>
-            <span class="agent-name">CLAUDE CODE</span>
-            <span class="agent-status">STANDBY</span>
-        </div>
-        <div class="agent-row">
-            <span class="agent-dot active"></span>
-            <span class="agent-name">BROWSER</span>
-            <span class="agent-status">STANDBY</span>
-        </div>
-        <div class="agent-row">
-            <span class="agent-dot active"></span>
-            <span class="agent-name">WHISPER</span>
-            <span class="agent-status">STANDBY</span>
-        </div>
-        <div class="agent-row">
-            <span class="agent-dot active"></span>
-            <span class="agent-name">IMAGE GEN</span>
-            <span class="agent-status">STANDBY</span>
-        </div>
-        <div class="agent-row">
-            <span class="agent-dot active"></span>
-            <span class="agent-name">WEB SEARCH</span>
-            <span class="agent-status">STANDBY</span>
-        </div>
-        <div class="agent-row">
-            <span class="agent-dot active"></span>
-            <span class="agent-name">GITHUB</span>
-            <span class="agent-status">STANDBY</span>
-        </div>
-        <div class="agent-row">
-            <span class="agent-dot active"></span>
-            <span class="agent-name">EMAIL</span>
-            <span class="agent-status">STANDBY</span>
-        </div>
+        <canvas id="subagent-radial" width="180" height="180" style="display:block;margin:8px auto 4px;"></canvas>
+        <div style="text-align:center;font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-top:2px;">ALL STANDBY</div>
     </div>
 </div>
+<script>
+(function(){
+  const AGENTS=[
+    {name:'CODEX',color:'#818cf8'},{name:'CLAUDE',color:'#a78bfa'},
+    {name:'BROWSER',color:'#34d399'},{name:'WHISPER',color:'#60a5fa'},
+    {name:'IMG GEN',color:'#f59e0b'},{name:'SEARCH',color:'#f472b6'},
+    {name:'GITHUB',color:'#4ade80'},{name:'EMAIL',color:'#fb923c'},
+  ];
+  const c=document.getElementById('subagent-radial');
+  if(!c)return;
+  const ctx=c.getContext('2d');
+  const cx=90,cy=90;
+  let t=0;
+  function draw(){
+    ctx.clearRect(0,0,180,180);
+    const n=AGENTS.length;
+    AGENTS.forEach((ag,i)=>{
+      const a0=(i/n)*Math.PI*2-Math.PI/2;
+      const a1=((i+0.85)/n)*Math.PI*2-Math.PI/2;
+      const pulse=0.55+Math.sin(t*1.2+i*0.9)*0.45;
+      const r=30+(55*pulse);
+      ctx.beginPath();ctx.arc(cx,cy,r,a0,a1);
+      ctx.strokeStyle=ag.color+'30';ctx.lineWidth=8;ctx.stroke();
+      ctx.beginPath();ctx.arc(cx,cy,r,a0,a1);
+      ctx.strokeStyle=ag.color;ctx.lineWidth=2.5;
+      ctx.shadowColor=ag.color;ctx.shadowBlur=10;ctx.stroke();ctx.shadowBlur=0;
+      const mid=(a0+a1)/2;
+      ctx.fillStyle=ag.color+'dd';ctx.font='7px Outfit,Arial';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(ag.name,cx+Math.cos(mid)*(r+12),cy+Math.sin(mid)*(r+12));
+    });
+    ctx.beginPath();ctx.arc(cx,cy,16,0,Math.PI*2);
+    ctx.fillStyle='rgba(102,126,234,0.12)';ctx.fill();
+    ctx.strokeStyle='rgba(102,126,234,0.5)';ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,0.5)';ctx.font='bold 6px Outfit,Arial';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('AGENTS',cx,cy);
+    t+=0.018;requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
 
 <canvas id="neural-network-canvas"></canvas>
 
@@ -2644,22 +2648,14 @@ document.addEventListener("keydown", (e) => {
         clearTimeout(densityTimeout);
         densityTimeout = setTimeout(() => {
             if (window.brainGraphInstance) {
-                const f = val / 100; // 0.3 to 1.0
-                // Universal: affects all morph modes
+                const f = val / 100;
                 window.brainGraphInstance
-                    .linkDirectionalParticles(Math.round(f * 5))   // 1-5 particles
-                    .linkWidth(0.4 + f * 2.5)                       // 0.4-2.9 link width
-                    .linkDirectionalParticleWidth(1 + f * 2)         // 1-3 particle size
-                    .nodeVal(n => (n.val || 3) * (0.5 + f))         // node size scales
-                    .linkOpacity(0.3 + f * 0.6);                    // 0.3-0.9 opacity
-                // In Free mode only: also adjust charge
-                if (morphMode === 0) {
-                    const charge = window.brainGraphInstance.d3Force('charge');
-                    if (charge) charge.strength(-60 - f * 140);
-                    window.brainGraphInstance.d3ReheatSimulation();
-                }
+                    .linkDirectionalParticles(Math.round(f * 6))
+                    .linkWidth(0.3 + f * 3)
+                    .linkDirectionalParticleWidth(0.8 + f * 2.5)
+                    .nodeRelSize(4 + f * 4);
             }
-        }, 300);
+        }, 200);
     });
     const changeFormationBtn = document.getElementById('change-formation-btn');
     const pausePlayBtn = document.getElementById('pause-play-btn');
@@ -3091,7 +3087,7 @@ document.addEventListener("keydown", (e) => {
 <!-- Chat Bar & File Drop -->
 <style>
 .chat-container { position: fixed; bottom: 2rem; right: 24px; width: 420px; max-width: 90vw; z-index: 200; padding: 0; }
-.chat-messages { max-height: 350px; overflow-y: auto; margin-bottom: 1rem; display: none; padding: 0 0.5rem; scrollbar-width: thin; scrollbar-color: rgba(102,126,234,0.3) transparent; }
+.chat-messages { max-height: 45vh; overflow-y: auto; margin-bottom: 1rem; display: none; padding: 0 0.5rem; scrollbar-width: thin; scrollbar-color: rgba(102,126,234,0.3) transparent; }
 .chat-messages::-webkit-scrollbar { width: 4px; }
 .chat-messages::-webkit-scrollbar-track { background: transparent; }
 .chat-messages::-webkit-scrollbar-thumb { background: rgba(102,126,234,0.3); border-radius: 2px; }
