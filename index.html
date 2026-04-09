@@ -1274,6 +1274,7 @@ try {
     document.getElementById("pw-error").classList.add("show");
 }
 }
+sessionStorage.removeItem("henryAuth"); // always prompt on refresh
 if(sessionStorage.getItem("henryAuth")){
 document.addEventListener("DOMContentLoaded",function(){document.getElementById("pw-screen").classList.add("pw-hidden");});
 }
