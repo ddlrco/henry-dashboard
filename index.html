@@ -2659,22 +2659,77 @@ document.addEventListener("keydown", (e) => {
     const changeFormationBtn = document.getElementById('change-formation-btn');
     const pausePlayBtn = document.getElementById('pause-play-btn');
     const resetCameraBtn = document.getElementById('reset-camera-btn');
+    let morphMode = 0;
+    const CLUSTER_ORDER = ['root','Frontend','Backend','Brain','Projects','System','Media'];
     changeFormationBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (window.brainGraphInstance) {
-          // Scatter nodes to random positions then let force re-settle
-          const gd = window.brainGraphInstance.graphData();
+        if (!window.brainGraphInstance) return;
+        morphMode = (morphMode + 1) % 5;
+        const gd = window.brainGraphInstance.graphData();
+        const N = gd.nodes.length;
+
+        if (morphMode === 0) {
+          // Free force — unfix all and reheat
+          gd.nodes.forEach(n => { delete n.fx; delete n.fy; delete n.fz; });
+          window.brainGraphInstance.graphData(gd);
+          window.brainGraphInstance.d3Force('charge').strength(-120);
+          window.brainGraphInstance.d3ReheatSimulation();
+
+        } else if (morphMode === 1) {
+          // Radial shell — clusters on sphere surface
           gd.nodes.forEach(n => {
-            n.x = (Math.random()-0.5)*400;
-            n.y = (Math.random()-0.5)*400;
-            n.z = (Math.random()-0.5)*400;
-            n.vx = (Math.random()-0.5)*20;
-            n.vy = (Math.random()-0.5)*20;
-            n.vz = (Math.random()-0.5)*20;
+            const ci = CLUSTER_ORDER.indexOf(n.group);
+            const r = ci === 0 ? 0 : 80 + ci * 40;
+            const phi = Math.acos(1 - 2*(n.val||1)/15);
+            const theta = (CLUSTER_ORDER.indexOf(n.group) / CLUSTER_ORDER.length) * Math.PI * 2
+              + (Math.random()-0.5)*0.8;
+            n.fx = r * Math.sin(phi) * Math.cos(theta);
+            n.fy = r * Math.cos(phi);
+            n.fz = r * Math.sin(phi) * Math.sin(theta);
           });
           window.brainGraphInstance.graphData(gd);
-          window.brainGraphInstance.d3ReheatSimulation();
+
+        } else if (morphMode === 2) {
+          // Tree — hierarchical vertical layout
+          const clusterMap = {};
+          CLUSTER_ORDER.forEach((cl, ci) => clusterMap[cl] = ci);
+          gd.nodes.forEach((n, i) => {
+            const ci = clusterMap[n.group] || 0;
+            const clusterNodes = gd.nodes.filter(x => x.group === n.group);
+            const ni = clusterNodes.indexOf(n);
+            n.fx = (ci - 3) * 120;
+            n.fy = 150 - ni * 35;
+            n.fz = (Math.random()-0.5)*60;
+          });
+          window.brainGraphInstance.graphData(gd);
+
+        } else if (morphMode === 3) {
+          // Grid — 3D cube lattice
+          const side = Math.ceil(Math.cbrt(N));
+          gd.nodes.forEach((n, i) => {
+            const x = (i % side) - side/2;
+            const y = (Math.floor(i/side) % side) - side/2;
+            const z = Math.floor(i/(side*side)) - side/2;
+            n.fx = x * 60; n.fy = y * 60; n.fz = z * 60;
+          });
+          window.brainGraphInstance.graphData(gd);
+
+        } else if (morphMode === 4) {
+          // Galaxy spiral
+          gd.nodes.forEach((n, i) => {
+            const t = (i / N) * Math.PI * 6;
+            const r = 20 + i * 3;
+            const arm = Math.floor(i / (N/3)) * (Math.PI * 2/3);
+            n.fx = r * Math.cos(t + arm);
+            n.fy = (Math.random()-0.5) * 80;
+            n.fz = r * Math.sin(t + arm);
+          });
+          window.brainGraphInstance.graphData(gd);
         }
+
+        const labels = ['Free','Radial','Tree','Grid','Galaxy'];
+        changeFormationBtn.querySelector('span').textContent = labels[morphMode];
+        setTimeout(() => changeFormationBtn.querySelector('span').textContent = 'Morph', 1500);
     });
     pausePlayBtn.addEventListener('click', (e) => {
         e.stopPropagation();
