@@ -94,17 +94,21 @@ canvas {
     transition: 0.7s ease-in-out;
 }
 #instructions-container {
-    position: absolute;
-    top: 32px;
-    left: 32px;
-    z-index: 20;
-    padding: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 30;
+    padding: 32px 24px;
     border: none;
-    background: none;
-    backdrop-filter: none;
+    border-right: 1px solid rgba(255,255,255,0.05);
+    background: rgba(5,5,10,0.92);
+    backdrop-filter: blur(20px);
     box-shadow: none;
     border-radius: 0;
-    width: auto;
+    width: 220px;
+    overflow-y: auto;
+    scrollbar-width: none;
 }
 #instruction-title {
     font-weight: 500;
@@ -213,16 +217,7 @@ canvas {
     box-shadow: 0 0 20px rgba(255,255,255,1);
 }
 #control-buttons {
-    position: absolute;
-    left: 32px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    z-index: 20;
-    padding: 0;
-    min-width: 100px;
+    display: none;
 }
 .control-button {
     background: transparent;
@@ -1057,6 +1052,13 @@ window.addEventListener('load', () => {
             <span id="density-value" style="font-size: 10px; color: rgba(255,255,255,0.6);">100%</span>
         </div>
         <input type="range" min="30" max="100" value="100" class="density-slider" id="density-slider" style="width: 100%;" />
+    </div>
+
+    <!-- Controls -->
+    <div style="margin-top:20px;display:flex;gap:6px;flex-wrap:wrap;">
+      <button onclick="document.getElementById('change-formation-btn').click()" style="font-size:8px;letter-spacing:2px;padding:5px 10px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);cursor:pointer;font-family:Outfit,sans-serif;border-radius:4px;" id="morph-label">MORPH</button>
+      <button onclick="document.getElementById('pause-play-btn').click()" style="font-size:8px;letter-spacing:2px;padding:5px 10px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);cursor:pointer;font-family:Outfit,sans-serif;border-radius:4px;">FREEZE</button>
+      <button onclick="document.getElementById('reset-camera-btn').click()" style="font-size:8px;letter-spacing:2px;padding:5px 10px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);cursor:pointer;font-family:Outfit,sans-serif;border-radius:4px;">RESET</button>
     </div>
 
     <!-- Sub-Agents under complexity -->
