@@ -986,6 +986,21 @@ function toggleBrainGraph() {
   }
   window.addEventListener('load',()=>setTimeout(initCapRadial,600));
 
+  // Live knowledge graph growth
+  window.addBrainNode = function(name, group){
+    if (!window.brainGraphInstance || !window.BRAIN_DATA_FULL) return;
+    const id = 'dynamic_'+Date.now();
+    const color = {Frontend:'#818cf8',Backend:'#34d399',Brain:'#a78bfa',Projects:'#f59e0b',System:'#60a5fa',Media:'#f472b6'}[group]||'#667eea';
+    window.BRAIN_DATA_FULL.nodes.push({id,name,group,val:4});
+    window.BRAIN_DATA_FULL.links.push({source:group.toLowerCase(),target:id});
+    const gd = window.brainGraphInstance.graphData();
+    gd.nodes.push({id,name,group,val:4});
+    const hubNode = gd.nodes.find(n=>n.group===group&&n.id!==id);
+    if (hubNode) gd.links.push({source:hubNode.id,target:id});
+    window.brainGraphInstance.graphData(gd);
+    console.log('[Brain] New node added:', name, group);
+  };
+
   // Real sub-agent trigger
   window.triggerAgent = function(name){
     const bars=document.querySelectorAll('#subagent-bars > div');
@@ -3233,7 +3248,26 @@ async function sendChat() {
         
         const data = await response.json();
         addMsg(data.reply, 'ai');
-        
+
+        // Auto-trigger sub-agents based on response content
+        if (data.reply && window.triggerAgent) {
+          const r = data.reply.toLowerCase();
+          if (r.includes('generat') && (r.includes('image') || r.includes('print'))) window.triggerAgent('IMG GEN');
+          if (r.includes('search') || r.includes('web_search') || r.includes('perplexity')) window.triggerAgent('SEARCH');
+          if (r.includes('github') || r.includes('git push') || r.includes('git commit')) window.triggerAgent('GITHUB');
+          if (r.includes('transcri') || r.includes('whisper') || r.includes('audio')) window.triggerAgent('WHISPER');
+          if (r.includes('codex') || r.includes('coding agent')) window.triggerAgent('CODEX');
+          if (r.includes('claude code') || r.includes('claude opus')) window.triggerAgent('CLAUDE');
+          if (r.includes('email') || r.includes('himalaya')) window.triggerAgent('EMAIL');
+          if (r.includes('browser') || r.includes('canvas')) window.triggerAgent('BROWSER');
+        }
+
+        // Auto-grow knowledge graph for new info
+        if (data.reply && window.addBrainNode) {
+          const newProj = data.reply.match(/new project[:\s]+([\w\s]+)/i);
+          if (newProj) window.addBrainNode(newProj[1].trim(), 'Projects');
+        }
+
         // Update token count
         if (!window._totalTokens) window._totalTokens = 0;
         const tokensUsed = data.tokens || Math.round((data.reply ? data.reply.length / 4 : 0) + (msg ? msg.length / 4 : 0));
