@@ -605,6 +605,18 @@ function toggleQA() {
   toggle.style.left = open ? '0' : '160px';
 }
 </script>
+<!-- Knowledge Graph Overlay -->
+<canvas id="kg-edges" style="position:fixed;inset:0;pointer-events:none;z-index:5;"></canvas>
+<div id="kg-labels" style="position:fixed;inset:0;pointer-events:none;z-index:6;">
+  <div class="kg-label" style="display:none;">FRONTEND</div>
+  <div class="kg-label" style="display:none;">BACKEND</div>
+  <div class="kg-label" style="display:none;">BRAIN</div>
+  <div class="kg-label" style="display:none;">PROJECTS</div>
+  <div class="kg-label" style="display:none;">SYSTEM</div>
+</div>
+<style>
+.kg-label { position:absolute; font-family:'Outfit',sans-serif; font-size:9px; letter-spacing:3px; color:rgba(165,180,252,0.8); text-transform:uppercase; text-align:center; width:80px; pointer-events:none; }
+</style>
 <!-- End Quick Actions -->
 
 <div id="instructions-container">
@@ -1542,6 +1554,7 @@ document.addEventListener("keydown", (e) => {
 
             const clusterHubs = [];
             const allLeafNodes = [];
+            window._kgClusterPositions = [];
 
             CLUSTERS.forEach((cl, ci) => {
               // Hub node for cluster center
@@ -1551,6 +1564,7 @@ document.addEventListener("keydown", (e) => {
               hub.distanceFromRoot = hubPos.length();
               nodes.push(hub);
               clusterHubs.push(hub);
+              window._kgClusterPositions.push({x:cl.cx,y:cl.cy,z:cl.cz,name:cl.name});
               rootNode.addConnection(hub, 0.9);
 
               // Dense particle cloud around hub
@@ -2447,6 +2461,50 @@ document.addEventListener("keydown", (e) => {
         
         controls.update();
         composer.render();
+
+        // Knowledge graph overlay (labels + animated edges)
+        if (config.currentFormation === 4 && window._kgClusterPositions && camera) {
+          const W = window.innerWidth, H = window.innerHeight;
+          const labelDiv = document.getElementById('kg-labels');
+          const edgeCanvas = document.getElementById('kg-edges');
+          if (labelDiv && edgeCanvas) {
+            edgeCanvas.width = W; edgeCanvas.height = H;
+            const ctx = edgeCanvas.getContext('2d');
+            ctx.clearRect(0,0,W,H);
+            const INTER = [[0,2],[1,2],[0,4],[1,4],[2,3],[3,4]];
+            const projected = window._kgClusterPositions.map(cp => {
+              const v = new THREE.Vector3(cp.x, cp.y, cp.z);
+              v.project(camera);
+              return { sx: (v.x+1)/2*W, sy: (-v.y+1)/2*H, behind: v.z > 1 };
+            });
+            // Animated edge tracers
+            INTER.forEach(([ai,bi]) => {
+              const a = projected[ai], b = projected[bi];
+              if (!a||!b||a.behind||b.behind) return;
+              // Static edge
+              ctx.beginPath(); ctx.moveTo(a.sx,a.sy); ctx.lineTo(b.sx,b.sy);
+              ctx.strokeStyle='rgba(102,126,234,0.18)'; ctx.lineWidth=1; ctx.stroke();
+              // Tracer dot
+              const prog = (t*0.4 + ai*0.2) % 1;
+              const tx = a.sx+(b.sx-a.sx)*prog, ty = a.sy+(b.sy-a.sy)*prog;
+              ctx.beginPath(); ctx.arc(tx,ty,3,0,Math.PI*2);
+              ctx.fillStyle='#a5b4fc'; ctx.fill();
+            });
+            // Labels
+            const labels = document.querySelectorAll('.kg-label');
+            labels.forEach((el,i) => {
+              const p = projected[i];
+              if (!p||p.behind) { el.style.display='none'; return; }
+              el.style.display='block';
+              el.style.left=(p.sx-40)+'px';
+              el.style.top=(p.sy+8)+'px';
+            });
+          }
+        } else {
+          const edgeCanvas = document.getElementById('kg-edges');
+          if (edgeCanvas) { const c=edgeCanvas.getContext('2d'); c.clearRect(0,0,edgeCanvas.width,edgeCanvas.height); }
+          document.querySelectorAll('.kg-label').forEach(el => el.style.display='none');
+        }
     }
     function init() {
         createNetworkVisualization(config.currentFormation, config.densityFactor);
