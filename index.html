@@ -1034,6 +1034,14 @@ document.addEventListener("keydown", (e) => {
             new THREE.Color(0xffffff),
             new THREE.Color(0x00e676),
             new THREE.Color(0xc8ffd4)
+        ],
+        // Knowledge Graph — amber/teal/violet multi-cluster
+        [
+            new THREE.Color(0xf59e0b),
+            new THREE.Color(0x34d399),
+            new THREE.Color(0xa78bfa),
+            new THREE.Color(0x60a5fa),
+            new THREE.Color(0xfbbf24)
         ]
     ];
     const scene = new THREE.Scene();
@@ -2319,6 +2327,9 @@ document.addEventListener("keydown", (e) => {
     changeFormationBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         config.currentFormation = (config.currentFormation + 1) % config.numFormations;
+        // Auto-switch palette for knowledge graph formation
+        if (config.currentFormation === 4) { config.activePaletteIndex = 3; }
+        else if (config.activePaletteIndex === 3) { config.activePaletteIndex = 0; }
         startMorph(config.currentFormation, config.densityFactor);
         controls.autoRotate = false;
         setTimeout(() => { controls.autoRotate = true; }, 2500);
