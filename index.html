@@ -606,7 +606,7 @@ function toggleQA() {
 }
 </script>
 <!-- 3D Brain Graph -->
-<div id="brain-graph-container" style="display:none;position:fixed;inset:0;z-index:100;background:#050508;">
+<div id="brain-graph-container" style="display:block;position:fixed;inset:0;z-index:100;background:#050508;">
   <div style="position:absolute;top:20px;left:50%;transform:translateX(-50%);text-align:center;z-index:10;pointer-events:none;">
     <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:4px;color:rgba(165,180,252,0.6);text-transform:uppercase;">HENRY — KNOWLEDGE GRAPH</div>
   </div>
@@ -614,7 +614,7 @@ function toggleQA() {
 </div>
 <script src="https://cdn.jsdelivr.net/npm/3d-force-graph@1.73.3/dist/3d-force-graph.min.js"></script>
 <script>
-let brainGraphActive = false;
+let brainGraphActive = true;
 let brainGraphInstance = null;
 
 const BRAIN_DATA = {
@@ -663,14 +663,10 @@ const GROUP_COLORS = {
   Brain:'#a78bfa', Projects:'#f59e0b', System:'#60a5fa'
 };
 
-function toggleBrainGraph() {
-  brainGraphActive = !brainGraphActive;
+function initBrainGraph() {
   const container = document.getElementById('brain-graph-container');
-  const btn = document.getElementById('brain-btn');
-  container.style.display = brainGraphActive ? 'block' : 'none';
-  if (btn) btn.querySelector('span').textContent = brainGraphActive ? 'Close' : 'Brain';
-
-  if (brainGraphActive && !brainGraphInstance) {
+  container.style.display = 'block';
+  if (!brainGraphInstance) {
     brainGraphInstance = ForceGraph3D()(document.getElementById('brain-graph'))
       .backgroundColor('#050508')
       .nodeLabel('name')
@@ -687,11 +683,21 @@ function toggleBrainGraph() {
       .graphData(BRAIN_DATA)
       .onNodeClick(node => {
         const input = document.getElementById('chat-input');
-        if (input) { input.value = `Tell me about ${node.name} in Henry\'s knowledge graph.`; }
-        toggleBrainGraph();
+        if (input) { input.value = `Tell me about ${node.name} in Henry's knowledge graph.`; }
       });
   }
 }
+
+function toggleBrainGraph() {
+  brainGraphActive = !brainGraphActive;
+  const container = document.getElementById('brain-graph-container');
+  const btn = document.getElementById('brain-btn');
+  container.style.display = brainGraphActive ? 'block' : 'none';
+  if (btn) btn.querySelector('span').textContent = brainGraphActive ? 'Orb' : 'Brain';
+  if (brainGraphActive && !brainGraphInstance) initBrainGraph();
+}
+
+window.addEventListener('load', () => { setTimeout(initBrainGraph, 500); });
 </script>
 <!-- End Quick Actions -->
 
@@ -726,7 +732,7 @@ function toggleBrainGraph() {
     <button id="change-formation-btn" class="control-button"><span>Morph</span></button>
     <button id="pause-play-btn" class="control-button"><span>Freeze</span></button>
     <button id="reset-camera-btn" class="control-button"><span>Reset</span></button>
-    <button id="brain-btn" class="control-button" onclick="toggleBrainGraph()"><span>Brain</span></button>
+    <button id="brain-btn" class="control-button" onclick="toggleBrainGraph()"><span>Orb</span></button>
 
     
     <!-- Theme buttons -->
