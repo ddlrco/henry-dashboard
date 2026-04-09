@@ -938,44 +938,61 @@ function toggleBrainGraph() {
 // Capabilities radial
 (function(){
   const CAPS=[
-    {name:'CODE',val:95,color:'#818cf8'},{name:'VISION',val:88,color:'#a78bfa'},
-    {name:'VOICE',val:82,color:'#60a5fa'},{name:'DESIGN',val:90,color:'#f472b6'},
-    {name:'DATA',val:92,color:'#34d399'},{name:'OPS',val:85,color:'#4ade80'},
-    {name:'SEARCH',val:94,color:'#f59e0b'},{name:'FINANCE',val:87,color:'#fb923c'},
-    {name:'SECURITY',val:86,color:'#ef4444'},{name:'DEPLOY',val:91,color:'#06b6d4'},
-    {name:'MEDIA',val:89,color:'#d946ef'},{name:'AUTOMATE',val:93,color:'#8b5cf6'},
+    {name:'CODE',val:95,color:'#818cf8'},
+    {name:'VISION',val:88,color:'#a78bfa'},
+    {name:'VOICE',val:82,color:'#60a5fa'},
+    {name:'DESIGN',val:90,color:'#f472b6'},
+    {name:'DATA',val:92,color:'#34d399'},
+    {name:'OPS',val:85,color:'#4ade80'},
+    {name:'SEARCH',val:94,color:'#f59e0b'},
+    {name:'FINANCE',val:87,color:'#fb923c'},
+    {name:'SECURITY',val:86,color:'#ef4444'},
+    {name:'DEPLOY',val:91,color:'#06b6d4'},
+    {name:'MEDIA',val:89,color:'#d946ef'},
+    {name:'AUTOMATE',val:93,color:'#8b5cf6'},
   ];
   function initCapRadial(){
-    const c=document.getElementById('cap-radial');
-    if(!c)return;
-    const ctx=c.getContext('2d');
-    const cx=95,cy=95,n=CAPS.length;
-    let t=0;
+    const canvas=document.getElementById('cap-radial');
+    if(!canvas)return;
+    const ctx=canvas.getContext('2d');
+    const W=190,H=190,cx=95,cy=95;
+    const n=CAPS.length;
+    const minR=14, maxR=86;
+    const ringGap=(maxR-minR)/n;
+    const START=-Math.PI/2; // top
     window._capLevels=CAPS.map(c=>c.val/100);
     function draw(){
-      ctx.clearRect(0,0,190,190);
-      CAPS.forEach((cap,i)=>{
-        const a0=(i/n)*Math.PI*2-Math.PI/2;
-        const a1=((i+0.82)/n)*Math.PI*2-Math.PI/2;
-        const lv=window._capLevels[i];
-        const r=28+lv*58;
-        ctx.beginPath();ctx.arc(cx,cy,r,a0,a1);
-        ctx.strokeStyle=cap.color+'25';ctx.lineWidth=10;ctx.stroke();
-        ctx.beginPath();ctx.arc(cx,cy,r,a0,a0+(a1-a0)*lv);
-        ctx.strokeStyle=cap.color;ctx.lineWidth=4;
-        ctx.shadowColor=cap.color;ctx.shadowBlur=12;ctx.stroke();ctx.shadowBlur=0;
-        const mid=(a0+a0+(a1-a0)*lv)/2;
-        ctx.fillStyle=cap.color+'ee';ctx.font='6.5px Outfit,Arial';
+      ctx.clearRect(0,0,W,H);
+      // Draw rings from outside in
+      for(let i=0;i<n;i++){
+        const ri=n-1-i; // reverse: biggest ring = first cap
+        const r=minR+i*ringGap+ringGap/2;
+        const cap=CAPS[ri];
+        const lv=window._capLevels[ri];
+        const endAngle=START+lv*Math.PI*2;
+        // Track ring
+        ctx.beginPath();ctx.arc(cx,cy,r,START,START+Math.PI*2);
+        ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=2.5;ctx.stroke();
+        // Value arc
+        ctx.beginPath();ctx.arc(cx,cy,r,START,endAngle);
+        ctx.strokeStyle=cap.color;ctx.lineWidth=2.5;
+        ctx.shadowColor=cap.color;ctx.shadowBlur=8;ctx.stroke();ctx.shadowBlur=0;
+        // Dot at end
+        const dx=cx+Math.cos(endAngle)*r;
+        const dy=cy+Math.sin(endAngle)*r;
+        ctx.beginPath();ctx.arc(dx,dy,3.5,0,Math.PI*2);
+        ctx.fillStyle=cap.color;ctx.shadowColor=cap.color;ctx.shadowBlur=8;ctx.fill();ctx.shadowBlur=0;
+        // Label next to dot
+        const lx=cx+Math.cos(endAngle)*(r+12);
+        const ly=cy+Math.sin(endAngle)*(r+12);
+        ctx.fillStyle=cap.color+'cc';ctx.font='6px Outfit,Arial';
         ctx.textAlign='center';ctx.textBaseline='middle';
-        ctx.fillText(cap.name,cx+Math.cos(mid)*(r+14),cy+Math.sin(mid)*(r+14));
-      });
-      ctx.beginPath();ctx.arc(cx,cy,18,0,Math.PI*2);
-      ctx.fillStyle='rgba(102,126,234,0.12)';ctx.fill();
-      ctx.strokeStyle='rgba(102,126,234,0.4)';ctx.lineWidth=1;ctx.stroke();
-      ctx.fillStyle='rgba(255,255,255,0.5)';ctx.font='bold 5.5px Outfit,Arial';
-      ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.fillText('HENRY',cx,cy);
-      t+=0.015;requestAnimationFrame(draw);
+        ctx.fillText(cap.name,lx,ly);
+      }
+      // Center dot
+      ctx.beginPath();ctx.arc(cx,cy,7,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,255,255,0.15)';ctx.fill();
+      requestAnimationFrame(draw);
     }
     draw();
   }
