@@ -828,6 +828,7 @@ const BRAIN_DATA = {
     {source:'docker',target:'docker_compose'},{source:'system',target:'nginx'},
     {source:'system',target:'cloudflare'},{source:'system',target:'openrouter'},
     {source:'hostinger',target:'vps'},{source:'vps',target:'docker'},
+    {source:'vps',target:'pm2'},{source:'system',target:'pm2'},
     {source:'brain',target:'session_logs'},{source:'brain',target:'vector_db'},
     {source:'brain',target:'fts'},{source:'brain',target:'heartbeat_state'},
     {source:'skills',target:'skill_tmux'},{source:'skills',target:'skill_gh'},
@@ -866,22 +867,39 @@ function initBrainGraph() {
       .nodeColor(n => GROUP_COLORS[n.group] || '#667eea')
       .nodeVal('val')
       .nodeThreeObject(node => {
+        const group = new THREE.Group();
+        if (node.id === 'henry') {
+          // Glowing octahedron for root node
+          const geo = new THREE.OctahedronGeometry(node.val * 1.2);
+          const mat = new THREE.MeshStandardMaterial({
+            color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 2.5,
+            metalness: 0.1, roughness: 0.1, transparent: true, opacity: 0.95
+          });
+          const mesh = new THREE.Mesh(geo, mat);
+          group.add(mesh);
+          // Outer glow ring
+          const ringGeo = new THREE.TorusGeometry(node.val * 1.8, 0.5, 8, 32);
+          const ringMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 });
+          group.add(new THREE.Mesh(ringGeo, ringMat));
+        }
+        // Label sprite for all nodes
         const canvas = document.createElement('canvas');
         canvas.width = 256; canvas.height = 48;
         const ctx = canvas.getContext('2d');
-        ctx.font = 'bold 20px Arial';
-        ctx.fillStyle = GROUP_COLORS[node.group] || '#a5b4fc';
+        ctx.font = node.id === 'henry' ? 'bold 24px Arial' : 'bold 18px Arial';
+        ctx.fillStyle = node.id === 'henry' ? '#ffffff' : (GROUP_COLORS[node.group] || '#a5b4fc');
         ctx.textAlign = 'center';
-        ctx.shadowColor = '#000'; ctx.shadowBlur = 6;
+        ctx.shadowColor = '#000'; ctx.shadowBlur = 8;
         ctx.fillText(node.name, 128, 32);
         const texture = new THREE.CanvasTexture(canvas);
         const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthWrite: false, transparent: true }));
-        const s = Math.max(node.val || 4, 3) * 2.5;
+        const s = Math.max(node.val || 4, 3) * (node.id === 'henry' ? 4 : 2.5);
         sprite.scale.set(s, s / 3, 1);
-        sprite.position.set(0, (node.val || 4) + 3, 0);
-        return sprite;
+        sprite.position.set(0, (node.val || 4) + 4, 0);
+        group.add(sprite);
+        return group;
       })
-      .nodeThreeObjectExtend(true)
+      .nodeThreeObjectExtend(false)
       .nodeOpacity(0.9)
       .nodeResolution(16)
       .linkColor(l => {
@@ -900,9 +918,13 @@ function initBrainGraph() {
         if (input) { input.value = `Tell me about ${node.name} in Henry's knowledge graph.`; }
       });
     window.brainGraphInstance = brainGraphInstance;
-    // Add lighting so sphere colors show correctly
-    brainGraphInstance.scene().add(new THREE.AmbientLight(0xffffff, 2.5));
-    brainGraphInstance.scene().add(new THREE.DirectionalLight(0xffffff, 1.5));
+    // Add lighting
+    brainGraphInstance.scene().add(new THREE.AmbientLight(0xffffff, 3));
+    const dLight = new THREE.DirectionalLight(0xffffff, 2);
+    dLight.position.set(100,100,100);
+    brainGraphInstance.scene().add(dLight);
+    const ptLight = new THREE.PointLight(0xffffff, 4, 200);
+    brainGraphInstance.scene().add(ptLight); // white glow at center
   }
 }
 
