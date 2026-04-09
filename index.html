@@ -606,7 +606,7 @@ function toggleQA() {
 }
 </script>
 <!-- 3D Brain Graph -->
-<div id="brain-graph-container" style="display:block;position:fixed;inset:0;z-index:2;background:transparent;pointer-events:none;"><div style="position:absolute;inset:0;pointer-events:auto;">
+<div id="brain-graph-container" style="display:block;position:fixed;inset:0;z-index:2;background:transparent;pointer-events:none;"><div style="position:absolute;inset:0;pointer-events:auto;background:transparent;">
   <div style="position:absolute;top:20px;left:50%;transform:translateX(-50%);text-align:center;z-index:10;pointer-events:none;">
     <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:4px;color:rgba(165,180,252,0.6);text-transform:uppercase;">HENRY — KNOWLEDGE GRAPH</div>
   </div>
@@ -620,48 +620,122 @@ let brainGraphInstance = null;
 
 const BRAIN_DATA = {
   nodes: [
-    {id:'henry',name:'HENRY',group:'root',val:12},
-    {id:'frontend',name:'Frontend',group:'Frontend',val:8},
-    {id:'backend',name:'Backend',group:'Backend',val:8},
-    {id:'brain',name:'Brain',group:'Brain',val:8},
-    {id:'projects',name:'Projects',group:'Projects',val:8},
-    {id:'system',name:'System',group:'System',val:8},
+    // Root
+    {id:'henry',name:'HENRY',group:'root',val:14},
+    // Cluster hubs
+    {id:'frontend',name:'Frontend',group:'Frontend',val:9},
+    {id:'backend',name:'Backend',group:'Backend',val:9},
+    {id:'brain',name:'Brain',group:'Brain',val:9},
+    {id:'projects',name:'Projects',group:'Projects',val:9},
+    {id:'system',name:'System',group:'System',val:9},
+    {id:'media',name:'Media',group:'Media',val:8},
+    // Frontend
     {id:'index',name:'index.html',group:'Frontend',val:4},
-    {id:'hud',name:'hud-code.js',group:'Frontend',val:3},
-    {id:'orb',name:'fix-orb.js',group:'Frontend',val:3},
-    {id:'chat',name:'chat.js',group:'Backend',val:4},
-    {id:'auth',name:'auth.js',group:'Backend',val:4},
-    {id:'geip',name:'getIP()',group:'Backend',val:2},
-    {id:'rate',name:'checkRateLimit()',group:'Backend',val:2},
+    {id:'hud',name:'HUD System',group:'Frontend',val:3},
+    {id:'orb',name:'Neural Orb',group:'Frontend',val:3},
+    {id:'chat_ui',name:'Chat UI',group:'Frontend',val:3},
+    {id:'qa_panel',name:'Quick Actions',group:'Frontend',val:3},
+    {id:'theme',name:'Theme Engine',group:'Frontend',val:2},
+    {id:'audio',name:'Audio Analysis',group:'Frontend',val:2},
+    // Backend
+    {id:'chat_api',name:'chat.js',group:'Backend',val:4},
+    {id:'auth_api',name:'auth.js',group:'Backend',val:4},
+    {id:'test_api',name:'test.js',group:'Backend',val:3},
+    {id:'getip',name:'getIP()',group:'Backend',val:2},
+    {id:'ratelimit',name:'rateLimit()',group:'Backend',val:2},
     {id:'handler',name:'handler()',group:'Backend',val:2},
-    {id:'memory',name:'Memory',group:'Brain',val:5},
-    {id:'skills',name:'Skills',group:'Brain',val:5},
-    {id:'market',name:'Market Watch',group:'Brain',val:4},
-    {id:'sals',name:"Sal's Famous",group:'Projects',val:5},
-    {id:'mbp',name:'Matte Black Press',group:'Projects',val:5},
-    {id:'ddlr',name:'DDLR.co',group:'Projects',val:5},
-    {id:'openclaw',name:'OpenClaw',group:'System',val:6},
+    {id:'token',name:'Token Auth',group:'Backend',val:2},
+    // Brain
+    {id:'memory',name:'Memory',group:'Brain',val:6},
+    {id:'skills',name:'Skills',group:'Brain',val:6},
+    {id:'market_w',name:'Market Watch',group:'Brain',val:4},
+    {id:'heartbeat',name:'Heartbeat',group:'Brain',val:4},
+    {id:'mem_2024',name:'memory/2026-04',group:'Brain',val:2},
+    {id:'mem_sal',name:'sals-notes',group:'Brain',val:2},
+    {id:'skill_mkt',name:'market-analysis',group:'Brain',val:2},
+    {id:'skill_img',name:'image-gen',group:'Brain',val:2},
+    {id:'skill_corp',name:'sals-corporate',group:'Brain',val:2},
+    // Projects
+    {id:'sals',name:"Sal's Famous",group:'Projects',val:6},
+    {id:'mbp',name:'Matte Black Press',group:'Projects',val:6},
+    {id:'ddlr',name:'DDLR.co',group:'Projects',val:6},
+    {id:'moneyflow',name:'MoneyFlow',group:'Projects',val:5},
+    {id:'sals_82',name:'82nd Street',group:'Projects',val:3},
+    {id:'sals_mor',name:'Morinville',group:'Projects',val:3},
+    {id:'sals_bar',name:'Barrhead NDA',group:'Projects',val:3},
+    {id:'mbp_prints',name:'10 Prints',group:'Projects',val:3},
+    {id:'mbp_shop',name:'Shopify Store',group:'Projects',val:3},
+    {id:'ddlr_site',name:'ddlr.company',group:'Projects',val:3},
+    // System
+    {id:'openclaw',name:'OpenClaw',group:'System',val:7},
     {id:'telegram',name:'Telegram',group:'System',val:4},
-    {id:'heartbeat',name:'Heartbeat',group:'System',val:3},
+    {id:'vercel',name:'Vercel',group:'System',val:4},
+    {id:'vps',name:'VPS / Docker',group:'System',val:4},
+    {id:'tailscale',name:'Tailscale',group:'System',val:3},
+    {id:'fal',name:'FAL.ai',group:'System',val:3},
+    {id:'github',name:'GitHub',group:'System',val:3},
+    // Media
+    {id:'img_gen',name:'Image Gen',group:'Media',val:5},
+    {id:'vid_gen',name:'Video Gen',group:'Media',val:4},
+    {id:'tts',name:'TTS Voice',group:'Media',val:3},
+    {id:'whisper',name:'Whisper STT',group:'Media',val:3},
+    {id:'waviboy',name:'Waviboy AICD',group:'Media',val:4},
+    {id:'flux',name:'Flux Dev',group:'Media',val:3},
   ],
   links: [
+    // Root to hubs
     {source:'henry',target:'frontend'},{source:'henry',target:'backend'},
     {source:'henry',target:'brain'},{source:'henry',target:'projects'},
-    {source:'henry',target:'system'},
-    {source:'frontend',target:'index'},{source:'frontend',target:'hud'},{source:'frontend',target:'orb'},
-    {source:'backend',target:'chat'},{source:'backend',target:'auth'},
-    {source:'auth',target:'geip'},{source:'auth',target:'rate'},{source:'auth',target:'handler'},
-    {source:'brain',target:'memory'},{source:'brain',target:'skills'},{source:'brain',target:'market'},
-    {source:'memory',target:'sals'},{source:'memory',target:'mbp'},{source:'memory',target:'ddlr'},
-    {source:'projects',target:'sals'},{source:'projects',target:'mbp'},{source:'projects',target:'ddlr'},
-    {source:'system',target:'openclaw'},{source:'system',target:'telegram'},{source:'system',target:'heartbeat'},
-    {source:'openclaw',target:'brain'},{source:'frontend',target:'backend'},{source:'index',target:'chat'},
+    {source:'henry',target:'system'},{source:'henry',target:'media'},
+    // Frontend
+    {source:'frontend',target:'index'},{source:'frontend',target:'hud'},
+    {source:'frontend',target:'orb'},{source:'frontend',target:'chat_ui'},
+    {source:'frontend',target:'qa_panel'},{source:'frontend',target:'theme'},
+    {source:'frontend',target:'audio'},{source:'index',target:'chat_ui'},
+    {source:'index',target:'hud'},{source:'audio',target:'orb'},
+    // Backend
+    {source:'backend',target:'chat_api'},{source:'backend',target:'auth_api'},
+    {source:'backend',target:'test_api'},{source:'auth_api',target:'getip'},
+    {source:'auth_api',target:'ratelimit'},{source:'auth_api',target:'handler'},
+    {source:'auth_api',target:'token'},{source:'chat_api',target:'handler'},
+    {source:'index',target:'chat_api'},{source:'index',target:'auth_api'},
+    // Brain
+    {source:'brain',target:'memory'},{source:'brain',target:'skills'},
+    {source:'brain',target:'market_w'},{source:'brain',target:'heartbeat'},
+    {source:'memory',target:'mem_2024'},{source:'memory',target:'mem_sal'},
+    {source:'skills',target:'skill_mkt'},{source:'skills',target:'skill_img'},
+    {source:'skills',target:'skill_corp'},{source:'heartbeat',target:'market_w'},
+    // Projects
+    {source:'projects',target:'sals'},{source:'projects',target:'mbp'},
+    {source:'projects',target:'ddlr'},{source:'projects',target:'moneyflow'},
+    {source:'sals',target:'sals_82'},{source:'sals',target:'sals_mor'},
+    {source:'sals',target:'sals_bar'},{source:'mbp',target:'mbp_prints'},
+    {source:'mbp',target:'mbp_shop'},{source:'ddlr',target:'ddlr_site'},
+    {source:'mem_sal',target:'sals'},{source:'skill_corp',target:'sals'},
+    // System
+    {source:'system',target:'openclaw'},{source:'system',target:'telegram'},
+    {source:'system',target:'vercel'},{source:'system',target:'vps'},
+    {source:'system',target:'tailscale'},{source:'system',target:'fal'},
+    {source:'system',target:'github'},{source:'openclaw',target:'telegram'},
+    {source:'openclaw',target:'brain'},{source:'vps',target:'openclaw'},
+    {source:'tailscale',target:'vps'},{source:'vercel',target:'ddlr_site'},
+    {source:'github',target:'ddlr_site'},{source:'fal',target:'img_gen'},
+    // Media
+    {source:'media',target:'img_gen'},{source:'media',target:'vid_gen'},
+    {source:'media',target:'tts'},{source:'media',target:'whisper'},
+    {source:'media',target:'waviboy'},{source:'media',target:'flux'},
+    {source:'waviboy',target:'img_gen'},{source:'flux',target:'img_gen'},
+    {source:'img_gen',target:'mbp_prints'},{source:'skill_img',target:'img_gen'},
+    {source:'tts',target:'telegram'},{source:'whisper',target:'chat_ui'},
+    // Cross-cluster
+    {source:'market_w',target:'moneyflow'},{source:'openclaw',target:'backend'},
+    {source:'brain',target:'system'},{source:'media',target:'projects'},
   ]
 };
 
 const GROUP_COLORS = {
   root:'#ffffff', Frontend:'#818cf8', Backend:'#34d399',
-  Brain:'#a78bfa', Projects:'#f59e0b', System:'#60a5fa'
+  Brain:'#a78bfa', Projects:'#f59e0b', System:'#60a5fa', Media:'#f472b6'
 };
 
 function initBrainGraph() {
@@ -669,7 +743,7 @@ function initBrainGraph() {
   container.style.display = 'block';
   if (!brainGraphInstance) {
     brainGraphInstance = ForceGraph3D()(document.getElementById('brain-graph'))
-      .backgroundColor('rgba(5,5,10,0.85)')
+      .backgroundColor('rgba(0,0,0,0)')
       .nodeLabel('name')
       .nodeColor(n => GROUP_COLORS[n.group] || '#667eea')
       .nodeVal('val')
@@ -2600,7 +2674,7 @@ document.addEventListener("keydown", (e) => {
         }
     }
     function init() {
-        // Skip orb — brain graph is the main visualization, only starfield needed
+        // Only starfield renders (orb skipped, brain graph is main)
         // createNetworkVisualization(config.currentFormation, config.densityFactor);
         document.querySelectorAll('.theme-button').forEach(b => b.classList.remove('active'));
         document.querySelector(`.theme-button[data-theme="${config.activePaletteIndex}"]`).classList.add('active');
