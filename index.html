@@ -743,7 +743,7 @@ function initBrainGraph() {
   container.style.display = 'block';
   if (!brainGraphInstance) {
     brainGraphInstance = ForceGraph3D()(document.getElementById('brain-graph'))
-      .backgroundColor('rgba(0,0,0,0)')
+      .backgroundColor('#050508')
       .nodeLabel('name')
       .nodeColor(n => GROUP_COLORS[n.group] || '#667eea')
       .nodeVal('val')
