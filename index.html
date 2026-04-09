@@ -2675,74 +2675,64 @@ document.addEventListener("keydown", (e) => {
         const gd = window.brainGraphInstance.graphData();
         const N = gd.nodes.length;
 
+        const bg = window.brainGraphInstance;
+
         if (morphMode === 0) {
-          // Free force — unfix all and reheat
+          // Free — unfix, default charge
           gd.nodes.forEach(n => { delete n.fx; delete n.fy; delete n.fz; });
-          window.brainGraphInstance.graphData(gd);
-          window.brainGraphInstance.d3Force('charge').strength(-120);
-          window.brainGraphInstance.d3ReheatSimulation();
+          bg.graphData(gd);
+          bg.d3Force('charge').strength(-120);
+          bg.d3Force('link').distance(40);
+          bg.d3AlphaDecay(0.02);
+          bg.d3ReheatSimulation();
 
         } else if (morphMode === 1) {
-          // Radial shell — launch nodes to cluster positions, then free
-          const clusterCenters = {
-            root:{x:0,y:0,z:0}, Frontend:{x:400,y:0,z:0}, Backend:{x:-400,y:0,z:0},
-            Brain:{x:0,y:400,z:0}, Projects:{x:0,y:-300,z:300},
-            System:{x:0,y:-300,z:-300}, Media:{x:280,y:280,z:280}
-          };
+          // Radial — cluster bubbles, very weak charge so they stay clustered
+          const CC = {root:{x:0,y:0,z:0},Frontend:{x:350,y:0,z:0},Backend:{x:-350,y:0,z:0},
+            Brain:{x:0,y:350,z:0},Projects:{x:0,y:-250,z:250},System:{x:0,y:-250,z:-250},Media:{x:240,y:240,z:240}};
           gd.nodes.forEach(n => {
-            const c = clusterCenters[n.group] || {x:0,y:0,z:0};
-            const clNodes = gd.nodes.filter(x=>x.group===n.group);
-            const ni = clNodes.indexOf(n);
-            const angle = (ni/Math.max(clNodes.length,1))*Math.PI*2;
-            const r = n.id==='henry' ? 0 : 80;
-            n.x = c.x + r*Math.cos(angle); n.y = c.y + r*Math.sin(angle); n.z = c.z + (Math.random()-0.5)*60;
-            delete n.fx; delete n.fy; delete n.fz;
+            const c=CC[n.group]||{x:0,y:0,z:0};
+            const cn=gd.nodes.filter(x=>x.group===n.group);
+            const ni=cn.indexOf(n);
+            const ang=(ni/Math.max(cn.length,1))*Math.PI*2;
+            const r=n.id==='henry'?0:70;
+            n.fx=c.x+r*Math.cos(ang); n.fy=c.y+r*Math.sin(ang); n.fz=c.z+(Math.random()-0.5)*50;
           });
-          window.brainGraphInstance.graphData(gd);
-          window.brainGraphInstance.d3ReheatSimulation();
+          bg.graphData(gd); bg.d3ReheatSimulation();
 
         } else if (morphMode === 2) {
-          // Tree — wide columns per cluster, then free
-          CLUSTER_ORDER.forEach((cl, ci) => {
-            const clNodes = gd.nodes.filter(n=>n.group===cl);
-            const xOff = (ci - Math.floor(CLUSTER_ORDER.length/2)) * 220;
-            clNodes.forEach((n, ni) => {
-              n.x = xOff + (Math.random()-0.5)*80;
-              n.y = 300 - ni * (550/Math.max(clNodes.length,1));
-              n.z = (Math.random()-0.5)*100;
-              delete n.fx; delete n.fy; delete n.fz;
+          // Tree — fixed vertical columns, very ordered
+          CLUSTER_ORDER.forEach((cl,ci) => {
+            const cn=gd.nodes.filter(n=>n.group===cl);
+            const xOff=(ci-Math.floor(CLUSTER_ORDER.length/2))*200;
+            cn.forEach((n,ni) => {
+              n.fx=xOff; n.fy=280-ni*(520/Math.max(cn.length,1)); n.fz=(Math.random()-0.5)*40;
             });
           });
-          window.brainGraphInstance.graphData(gd);
-          window.brainGraphInstance.d3ReheatSimulation();
+          bg.graphData(gd); bg.d3ReheatSimulation();
 
         } else if (morphMode === 3) {
-          // Grid — 3D cube lattice, then free
-          const side = Math.ceil(Math.cbrt(N));
-          gd.nodes.forEach((n, i) => {
-            n.x = ((i % side) - side/2) * 100;
-            n.y = (Math.floor(i/side) % side - side/2) * 100;
-            n.z = (Math.floor(i/(side*side)) - side/2) * 100;
-            delete n.fx; delete n.fy; delete n.fz;
+          // Grid — strict 3D lattice
+          const side=Math.ceil(Math.cbrt(N));
+          gd.nodes.forEach((n,i) => {
+            n.fx=((i%side)-side/2)*90;
+            n.fy=(Math.floor(i/side)%side-side/2)*90;
+            n.fz=(Math.floor(i/(side*side))-side/2)*90;
           });
-          window.brainGraphInstance.graphData(gd);
-          window.brainGraphInstance.d3ReheatSimulation();
+          bg.graphData(gd); bg.d3ReheatSimulation();
 
         } else if (morphMode === 4) {
-          // Galaxy spiral — 3 arms, then free
-          const arms = 3;
-          gd.nodes.forEach((n, i) => {
-            const arm = i % arms;
-            const t = (i / N) * Math.PI * 8;
-            const r = 40 + (i/N) * 400;
-            const armOffset = (arm / arms) * Math.PI * 2;
-            n.x = r * Math.cos(t + armOffset);
-            n.y = (Math.random()-0.5) * 200;
-            n.z = r * Math.sin(t + armOffset);
-            delete n.fx; delete n.fy; delete n.fz;
+          // Galaxy — fixed spiral arms, flat disc
+          const arms=3;
+          gd.nodes.forEach((n,i) => {
+            const arm=i%arms;
+            const t=(i/N)*Math.PI*10;
+            const r=30+(i/N)*380;
+            n.fx=r*Math.cos(t+(arm/arms)*Math.PI*2);
+            n.fy=(Math.random()-0.5)*80;
+            n.fz=r*Math.sin(t+(arm/arms)*Math.PI*2);
           });
-          window.brainGraphInstance.graphData(gd);
-          window.brainGraphInstance.d3ReheatSimulation();
+          bg.graphData(gd); bg.d3ReheatSimulation();
         }
 
         const labels = ['Free','Radial','Tree','Grid','Galaxy'];
