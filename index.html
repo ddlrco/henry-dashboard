@@ -606,7 +606,7 @@ function toggleQA() {
 }
 </script>
 <!-- 3D Brain Graph -->
-<div id="brain-graph-container" style="display:block;position:fixed;inset:0;z-index:2;background:transparent;">
+<div id="brain-graph-container" style="display:block;position:fixed;inset:0;z-index:5;background:#050508;">
   <div style="position:absolute;top:20px;left:50%;transform:translateX(-50%);text-align:center;z-index:10;pointer-events:none;">
     <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:4px;color:rgba(165,180,252,0.6);text-transform:uppercase;">HENRY — KNOWLEDGE GRAPH</div>
   </div>
@@ -669,7 +669,7 @@ function initBrainGraph() {
   container.style.display = 'block';
   if (!brainGraphInstance) {
     brainGraphInstance = ForceGraph3D()(document.getElementById('brain-graph'))
-      .backgroundColor('rgba(0,0,0,0)')
+      .backgroundColor('#050508')
       .nodeLabel('name')
       .nodeColor(n => GROUP_COLORS[n.group] || '#667eea')
       .nodeVal('val')
