@@ -1515,85 +1515,105 @@ document.addEventListener("keydown", (e) => {
         
         function generateKnowledgeGraph() {
             rootNode = new Node(new THREE.Vector3(0, 0, 0), 0, 0);
-            rootNode.size = 2.5;
+            rootNode.size = 3.0;
             nodes.push(rootNode);
 
-            const KG_DEF = [
-              {r:18,theta:0.5,phi:0.8,size:2.2,level:1},   // index.html
-              {r:15,theta:1.2,phi:1.1,size:1.8,level:1},   // hud-code.js
-              {r:14,theta:1.8,phi:0.9,size:1.5,level:1},   // fix-orb.js
-              {r:16,theta:2.5,phi:1.3,size:2.0,level:1},   // chat.js
-              {r:15,theta:3.1,phi:0.7,size:1.9,level:1},   // auth.js
-              {r:13,theta:3.7,phi:1.5,size:1.4,level:1},   // test.js
-              {r:11,theta:0.9,phi:1.8,size:1.3,level:2},   // initHUD
-              {r:10,theta:1.5,phi:2.0,size:1.3,level:2},   // animateHUD
-              {r:11,theta:2.1,phi:1.6,size:1.2,level:2},   // drawBracket
-              {r:10,theta:2.8,phi:2.2,size:1.1,level:2},   // getIP
-              {r:11,theta:3.4,phi:1.9,size:1.2,level:2},   // checkRateLimit
-              {r:10,theta:4.0,phi:2.1,size:1.3,level:2},   // handler
-              {r:20,theta:4.6,phi:0.6,size:2.2,level:1},   // Memory
-              {r:19,theta:5.1,phi:1.0,size:2.0,level:1},   // Skills
-              {r:17,theta:5.6,phi:0.8,size:1.6,level:2},   // Market Watch
-              {r:21,theta:0.1,phi:1.4,size:2.3,level:1},   // Sal's Famous
-              {r:20,theta:0.7,phi:1.7,size:2.1,level:1},   // Matte Black Press
-              {r:19,theta:1.3,phi:0.5,size:2.0,level:1},   // DDLR.co
-              {r:22,theta:2.0,phi:2.3,size:2.5,level:1},   // OpenClaw
-              {r:16,theta:2.7,phi:2.6,size:1.6,level:2},   // Telegram
-              {r:14,theta:3.3,phi:2.4,size:1.5,level:2},   // Heartbeat
-            ];
-            const KG_EDGES = [
-              [0,1],[0,3],[0,4],[1,6],[1,7],[1,8],[3,9],[4,10],[4,11],
-              [12,14],[12,15],[12,16],[13,15],[13,16],[13,17],
-              [18,19],[18,20],[18,12],[18,13],[0,18],[3,18]
+            // 5 cluster centers evenly distributed on a sphere
+            const CLUSTERS = [
+              { name:'Frontend', cx:16, cy:0,  cz:0,
+                members:['index.html','hud-code.js','fix-orb.js'] },
+              { name:'Backend',  cx:-16,cy:0,  cz:0,
+                members:['chat.js','auth.js','test.js','getIP','checkRateLimit','handler'] },
+              { name:'Brain',    cx:0,  cy:16, cz:0,
+                members:['Memory','Skills','Market Watch','initHUD','animateHUD','drawBracket'] },
+              { name:'Projects', cx:0,  cy:-12,cz:12,
+                members:["Sal's Famous",'Matte Black Press','DDLR.co'] },
+              { name:'System',   cx:0,  cy:-12,cz:-12,
+                members:['OpenClaw','Telegram','Heartbeat'] },
             ];
 
-            const kgNodes = [];
-            KG_DEF.forEach(def => {
-              const x = def.r * Math.sin(def.phi) * Math.cos(def.theta);
-              const y = def.r * Math.cos(def.phi);
-              const z = def.r * Math.sin(def.phi) * Math.sin(def.theta);
-              const node = new Node(new THREE.Vector3(x,y,z), def.level, def.level===2?1:0);
-              node.size = def.size;
-              node.distanceFromRoot = def.r;
-              nodes.push(node);
-              kgNodes.push(node);
-              rootNode.addConnection(node, 0.9 - def.level * 0.2);
-              // Satellite particles
-              for(let s=0;s<6*densityFactor;s++) {
-                const sr = 1.5 + Math.random()*2;
-                const sa = Math.random()*Math.PI*2, sb = Math.acos(2*Math.random()-1);
-                const sp = new THREE.Vector3(
-                  x + sr*Math.sin(sb)*Math.cos(sa),
-                  y + sr*Math.cos(sb),
-                  z + sr*Math.sin(sb)*Math.sin(sa)
+            const clusterHubs = [];
+            const allLeafNodes = [];
+
+            CLUSTERS.forEach((cl, ci) => {
+              // Hub node for cluster center
+              const hubPos = new THREE.Vector3(cl.cx, cl.cy, cl.cz);
+              const hub = new Node(hubPos, 1, 0);
+              hub.size = 2.8;
+              hub.distanceFromRoot = hubPos.length();
+              nodes.push(hub);
+              clusterHubs.push(hub);
+              rootNode.addConnection(hub, 0.9);
+
+              // Dense particle cloud around hub
+              for (let p = 0; p < Math.floor(30 * densityFactor); p++) {
+                const r = 2 + Math.random() * 4;
+                const a = Math.random() * Math.PI * 2, b = Math.acos(2 * Math.random() - 1);
+                const pp = new THREE.Vector3(
+                  cl.cx + r * Math.sin(b) * Math.cos(a),
+                  cl.cy + r * Math.cos(b),
+                  cl.cz + r * Math.sin(b) * Math.sin(a)
                 );
-                const sat = new Node(sp, def.level+1, 1);
-                sat.size = 0.3 + Math.random()*0.5;
-                sat.distanceFromRoot = sp.length();
-                nodes.push(sat);
-                node.addConnection(sat, 0.5);
+                const cloud = new Node(pp, 2, 1);
+                cloud.size = 0.3 + Math.random() * 0.6;
+                cloud.distanceFromRoot = pp.length();
+                nodes.push(cloud);
+                hub.addConnection(cloud, 0.6);
               }
-            });
 
-            KG_EDGES.forEach(([ai,bi]) => {
-              if(kgNodes[ai] && kgNodes[bi]) kgNodes[ai].addConnection(kgNodes[bi], 0.6);
-            });
-
-            // Connection path particles
-            KG_EDGES.forEach(([ai,bi]) => {
-              if(!kgNodes[ai]||!kgNodes[bi]) return;
-              const a=kgNodes[ai].position, b=kgNodes[bi].position;
-              for(let t=0;t<8;t++) {
-                const p = t/7;
-                const pos = new THREE.Vector3(
-                  a.x+(b.x-a.x)*p+(Math.random()-0.5)*0.8,
-                  a.y+(b.y-a.y)*p+(Math.random()-0.5)*0.8,
-                  a.z+(b.z-a.z)*p+(Math.random()-0.5)*0.8
+              // Member leaf nodes orbiting the hub
+              cl.members.forEach((name, mi) => {
+                const angle = (mi / cl.members.length) * Math.PI * 2;
+                const lr = 7 + Math.random() * 2;
+                const lp = new THREE.Vector3(
+                  cl.cx + lr * Math.cos(angle),
+                  cl.cy + (Math.random() - 0.5) * 4,
+                  cl.cz + lr * Math.sin(angle)
                 );
-                const pathNode = new Node(pos, 3, 1);
-                pathNode.size = 0.25 + Math.random()*0.3;
-                pathNode.distanceFromRoot = pos.length();
-                nodes.push(pathNode);
+                const leaf = new Node(lp, 2, 1);
+                leaf.size = 1.8 + Math.random() * 0.8;
+                leaf.distanceFromRoot = lp.length();
+                nodes.push(leaf);
+                allLeafNodes.push(leaf);
+                hub.addConnection(leaf, 0.75);
+
+                // Small satellite around each leaf
+                for (let s = 0; s < Math.floor(8 * densityFactor); s++) {
+                  const sr = 1 + Math.random() * 2;
+                  const sa = Math.random() * Math.PI * 2, sb = Math.acos(2 * Math.random() - 1);
+                  const sp = new THREE.Vector3(
+                    lp.x + sr * Math.sin(sb) * Math.cos(sa),
+                    lp.y + sr * Math.cos(sb),
+                    lp.z + sr * Math.sin(sb) * Math.sin(sa)
+                  );
+                  const sat = new Node(sp, 3, 1);
+                  sat.size = 0.2 + Math.random() * 0.4;
+                  sat.distanceFromRoot = sp.length();
+                  nodes.push(sat);
+                  leaf.addConnection(sat, 0.5);
+                }
+              });
+            });
+
+            // Inter-cluster connections (edges between hubs)
+            const INTER = [[0,2],[1,2],[0,4],[1,4],[2,3],[3,4]];
+            INTER.forEach(([a,b]) => {
+              if (clusterHubs[a] && clusterHubs[b]) {
+                clusterHubs[a].addConnection(clusterHubs[b], 0.5);
+                // Path particles along edge
+                const pa = clusterHubs[a].position, pb = clusterHubs[b].position;
+                for (let t = 0; t < Math.floor(12 * densityFactor); t++) {
+                  const f = t / 11;
+                  const pp = new THREE.Vector3(
+                    pa.x + (pb.x - pa.x) * f + (Math.random() - 0.5) * 1.5,
+                    pa.y + (pb.y - pa.y) * f + (Math.random() - 0.5) * 1.5,
+                    pa.z + (pb.z - pa.z) * f + (Math.random() - 0.5) * 1.5
+                  );
+                  const pp2 = new Node(pp, 2, 1);
+                  pp2.size = 0.2 + Math.random() * 0.3;
+                  pp2.distanceFromRoot = pp.length();
+                  nodes.push(pp2);
+                }
               }
             });
         }
