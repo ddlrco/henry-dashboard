@@ -1064,6 +1064,12 @@ window.addEventListener('load', () => {
       <div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.35);margin-bottom:10px;">Sub-Agents</div>
       <div id="subagent-bars" style="display:flex;flex-direction:column;gap:6px;"></div>
     </div>
+
+    <!-- Capabilities radial under sub-agents -->
+    <div style="margin-top:24px;">
+      <div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.35);margin-bottom:8px;">Capabilities</div>
+      <canvas id="cap-radial" width="190" height="190" style="display:block;margin:0 auto;"></canvas>
+    </div>
 </div>
 
 <!-- Live Data Nodes -->
@@ -1111,11 +1117,8 @@ window.addEventListener('load', () => {
         <canvas id="silver-chart" class="spark-chart" width="160" height="28"></canvas>
     </div>
     
-    <!-- Capabilities Radial Node -->
-    <div class="data-node" id="skills-node">
-        <div class="data-node-title">CAPABILITIES</div>
-        <canvas id="cap-radial" width="190" height="190" style="display:block;margin:8px auto 4px;"></canvas>
-    </div>
+    <!-- Capabilities Radial (hidden - moved to left panel) -->
+    <div class="data-node" id="skills-node" style="display:none;"></div>
     
     <!-- Sub-Agents Radial Node (hidden - moved to left panel) -->
     <div class="data-node" id="agents-node" style="display:none;">
