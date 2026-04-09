@@ -605,18 +605,94 @@ function toggleQA() {
   toggle.style.left = open ? '0' : '160px';
 }
 </script>
-<!-- Knowledge Graph Overlay -->
-<canvas id="kg-edges" style="position:fixed;inset:0;pointer-events:none;z-index:5;"></canvas>
-<div id="kg-labels" style="position:fixed;inset:0;pointer-events:none;z-index:6;">
-  <div class="kg-label" style="display:none;">FRONTEND</div>
-  <div class="kg-label" style="display:none;">BACKEND</div>
-  <div class="kg-label" style="display:none;">BRAIN</div>
-  <div class="kg-label" style="display:none;">PROJECTS</div>
-  <div class="kg-label" style="display:none;">SYSTEM</div>
+<!-- 3D Brain Graph -->
+<div id="brain-graph-container" style="display:none;position:fixed;inset:0;z-index:100;background:#050508;">
+  <div style="position:absolute;top:20px;left:50%;transform:translateX(-50%);text-align:center;z-index:10;pointer-events:none;">
+    <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:4px;color:rgba(165,180,252,0.6);text-transform:uppercase;">HENRY — KNOWLEDGE GRAPH</div>
+  </div>
+  <div id="brain-graph" style="width:100%;height:100%;"></div>
 </div>
-<style>
-.kg-label { position:absolute; font-family:'Outfit',sans-serif; font-size:9px; letter-spacing:3px; color:rgba(165,180,252,0.8); text-transform:uppercase; text-align:center; width:80px; pointer-events:none; }
-</style>
+<script src="https://cdn.jsdelivr.net/npm/3d-force-graph@1.73.3/dist/3d-force-graph.min.js"></script>
+<script>
+let brainGraphActive = false;
+let brainGraphInstance = null;
+
+const BRAIN_DATA = {
+  nodes: [
+    {id:'henry',name:'HENRY',group:'root',val:12},
+    {id:'frontend',name:'Frontend',group:'Frontend',val:8},
+    {id:'backend',name:'Backend',group:'Backend',val:8},
+    {id:'brain',name:'Brain',group:'Brain',val:8},
+    {id:'projects',name:'Projects',group:'Projects',val:8},
+    {id:'system',name:'System',group:'System',val:8},
+    {id:'index',name:'index.html',group:'Frontend',val:4},
+    {id:'hud',name:'hud-code.js',group:'Frontend',val:3},
+    {id:'orb',name:'fix-orb.js',group:'Frontend',val:3},
+    {id:'chat',name:'chat.js',group:'Backend',val:4},
+    {id:'auth',name:'auth.js',group:'Backend',val:4},
+    {id:'geip',name:'getIP()',group:'Backend',val:2},
+    {id:'rate',name:'checkRateLimit()',group:'Backend',val:2},
+    {id:'handler',name:'handler()',group:'Backend',val:2},
+    {id:'memory',name:'Memory',group:'Brain',val:5},
+    {id:'skills',name:'Skills',group:'Brain',val:5},
+    {id:'market',name:'Market Watch',group:'Brain',val:4},
+    {id:'sals',name:"Sal's Famous",group:'Projects',val:5},
+    {id:'mbp',name:'Matte Black Press',group:'Projects',val:5},
+    {id:'ddlr',name:'DDLR.co',group:'Projects',val:5},
+    {id:'openclaw',name:'OpenClaw',group:'System',val:6},
+    {id:'telegram',name:'Telegram',group:'System',val:4},
+    {id:'heartbeat',name:'Heartbeat',group:'System',val:3},
+  ],
+  links: [
+    {source:'henry',target:'frontend'},{source:'henry',target:'backend'},
+    {source:'henry',target:'brain'},{source:'henry',target:'projects'},
+    {source:'henry',target:'system'},
+    {source:'frontend',target:'index'},{source:'frontend',target:'hud'},{source:'frontend',target:'orb'},
+    {source:'backend',target:'chat'},{source:'backend',target:'auth'},
+    {source:'auth',target:'geip'},{source:'auth',target:'rate'},{source:'auth',target:'handler'},
+    {source:'brain',target:'memory'},{source:'brain',target:'skills'},{source:'brain',target:'market'},
+    {source:'memory',target:'sals'},{source:'memory',target:'mbp'},{source:'memory',target:'ddlr'},
+    {source:'projects',target:'sals'},{source:'projects',target:'mbp'},{source:'projects',target:'ddlr'},
+    {source:'system',target:'openclaw'},{source:'system',target:'telegram'},{source:'system',target:'heartbeat'},
+    {source:'openclaw',target:'brain'},{source:'frontend',target:'backend'},{source:'index',target:'chat'},
+  ]
+};
+
+const GROUP_COLORS = {
+  root:'#ffffff', Frontend:'#818cf8', Backend:'#34d399',
+  Brain:'#a78bfa', Projects:'#f59e0b', System:'#60a5fa'
+};
+
+function toggleBrainGraph() {
+  brainGraphActive = !brainGraphActive;
+  const container = document.getElementById('brain-graph-container');
+  const btn = document.getElementById('brain-btn');
+  container.style.display = brainGraphActive ? 'block' : 'none';
+  if (btn) btn.querySelector('span').textContent = brainGraphActive ? 'Close' : 'Brain';
+
+  if (brainGraphActive && !brainGraphInstance) {
+    brainGraphInstance = ForceGraph3D()(document.getElementById('brain-graph'))
+      .backgroundColor('#050508')
+      .nodeLabel('name')
+      .nodeColor(n => GROUP_COLORS[n.group] || '#667eea')
+      .nodeVal('val')
+      .nodeOpacity(0.9)
+      .nodeResolution(16)
+      .linkColor(() => 'rgba(102,126,234,0.3)')
+      .linkWidth(0.5)
+      .linkDirectionalParticles(3)
+      .linkDirectionalParticleWidth(1.5)
+      .linkDirectionalParticleColor(l => GROUP_COLORS[typeof l.source === 'object' ? l.source.group : 'root'] || '#a5b4fc')
+      .linkDirectionalParticleSpeed(0.005)
+      .graphData(BRAIN_DATA)
+      .onNodeClick(node => {
+        const input = document.getElementById('chat-input');
+        if (input) { input.value = `Tell me about ${node.name} in Henry\'s knowledge graph.`; }
+        toggleBrainGraph();
+      });
+  }
+}
+</script>
 <!-- End Quick Actions -->
 
 <div id="instructions-container">
@@ -650,6 +726,7 @@ function toggleQA() {
     <button id="change-formation-btn" class="control-button"><span>Morph</span></button>
     <button id="pause-play-btn" class="control-button"><span>Freeze</span></button>
     <button id="reset-camera-btn" class="control-button"><span>Reset</span></button>
+    <button id="brain-btn" class="control-button" onclick="toggleBrainGraph()"><span>Brain</span></button>
 
     
     <!-- Theme buttons -->
