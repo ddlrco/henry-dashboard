@@ -917,6 +917,7 @@ function initBrainGraph() {
         if (input) { input.value = `Tell me about ${node.name} in Henry's knowledge graph.`; }
       });
     window.brainGraphInstance = brainGraphInstance;
+    window.BRAIN_DATA_FULL = JSON.parse(JSON.stringify(BRAIN_DATA)); // store original
     // Auto-rotate
     brainGraphInstance.controls().autoRotate = true;
     brainGraphInstance.controls().autoRotateSpeed = 0.6;
@@ -2653,15 +2654,22 @@ document.addEventListener("keydown", (e) => {
         densityValue.textContent = `${val}%`;
         clearTimeout(densityTimeout);
         densityTimeout = setTimeout(() => {
-            if (window.brainGraphInstance) {
+            if (window.brainGraphInstance && window.BRAIN_DATA_FULL) {
                 const f = val / 100;
+                // Filter nodes by importance (val)
+                const minVal = f < 0.5 ? 8 : f < 0.75 ? 4 : f < 0.9 ? 3 : 2;
+                const visibleNodes = window.BRAIN_DATA_FULL.nodes.filter(n => (n.val||2) >= minVal);
+                const visibleIds = new Set(visibleNodes.map(n => n.id));
+                const visibleLinks = window.BRAIN_DATA_FULL.links.filter(
+                    l => visibleIds.has(typeof l.source==='object'?l.source.id:l.source)
+                      && visibleIds.has(typeof l.target==='object'?l.target.id:l.target)
+                );
+                window.brainGraphInstance.graphData({nodes:[...visibleNodes],links:[...visibleLinks]});
                 window.brainGraphInstance
-                    .linkDirectionalParticles(Math.round(f * 6))
-                    .linkWidth(0.3 + f * 3)
-                    .linkDirectionalParticleWidth(0.8 + f * 2.5)
-                    .nodeRelSize(4 + f * 4);
+                    .linkDirectionalParticles(Math.round(f * 4))
+                    .linkWidth(0.3 + f * 2);
             }
-        }, 200);
+        }, 300);
     });
     const changeFormationBtn = document.getElementById('change-formation-btn');
     const pausePlayBtn = document.getElementById('pause-play-btn');
