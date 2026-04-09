@@ -2644,15 +2644,20 @@ document.addEventListener("keydown", (e) => {
         clearTimeout(densityTimeout);
         densityTimeout = setTimeout(() => {
             if (window.brainGraphInstance) {
-                // Scale: particle count, link width, force charge
-                const particles = Math.round(val / 25); // 1-4
-                const linkW = 0.5 + (val / 100) * 2;
-                const charge = -80 - (val / 100) * 120;
+                const f = val / 100; // 0.3 to 1.0
+                // Universal: affects all morph modes
                 window.brainGraphInstance
-                    .linkDirectionalParticles(particles)
-                    .linkWidth(linkW)
-                    .d3Force('charge', window.brainGraphInstance.d3Force('charge').strength(charge));
-                window.brainGraphInstance.d3ReheatSimulation();
+                    .linkDirectionalParticles(Math.round(f * 5))   // 1-5 particles
+                    .linkWidth(0.4 + f * 2.5)                       // 0.4-2.9 link width
+                    .linkDirectionalParticleWidth(1 + f * 2)         // 1-3 particle size
+                    .nodeVal(n => (n.val || 3) * (0.5 + f))         // node size scales
+                    .linkOpacity(0.3 + f * 0.6);                    // 0.3-0.9 opacity
+                // In Free mode only: also adjust charge
+                if (morphMode === 0) {
+                    const charge = window.brainGraphInstance.d3Force('charge');
+                    if (charge) charge.strength(-60 - f * 140);
+                    window.brainGraphInstance.d3ReheatSimulation();
+                }
             }
         }, 300);
     });
