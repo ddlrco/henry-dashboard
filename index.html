@@ -1139,42 +1139,10 @@ window.addEventListener('load', () => {
     </div>
 </div>
 
-<div id="control-buttons">
+<div id="control-buttons" style="display:none;">
     <button id="change-formation-btn" class="control-button"><span>Morph</span></button>
     <button id="pause-play-btn" class="control-button"><span>Freeze</span></button>
     <button id="reset-camera-btn" class="control-button"><span>Reset</span></button>
-
-
-    
-
-    
-    <!-- Complexity slider -->
-    <div style="margin-top: 16px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.4);">Complexity</span>
-            <span id="density-value" style="font-size: 10px; color: rgba(255,255,255,0.6);">100%</span>
-        </div>
-        <input type="range" min="30" max="100" value="100" class="density-slider" id="density-slider" style="width: 100%;" />
-    </div>
-
-    <!-- Controls -->
-    <div style="margin-top:20px;display:flex;gap:6px;flex-wrap:wrap;">
-      <button onclick="document.getElementById('change-formation-btn').click()" style="font-size:8px;letter-spacing:2px;padding:5px 10px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);cursor:pointer;font-family:Outfit,sans-serif;border-radius:4px;" id="morph-label">MORPH</button>
-      <button onclick="document.getElementById('pause-play-btn').click()" style="font-size:8px;letter-spacing:2px;padding:5px 10px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);cursor:pointer;font-family:Outfit,sans-serif;border-radius:4px;">FREEZE</button>
-      <button onclick="document.getElementById('reset-camera-btn').click()" style="font-size:8px;letter-spacing:2px;padding:5px 10px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);cursor:pointer;font-family:Outfit,sans-serif;border-radius:4px;">RESET</button>
-    </div>
-
-    <!-- Sub-Agents under complexity -->
-    <div style="margin-top:20px;">
-      <div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.35);margin-bottom:10px;">Sub-Agents</div>
-      <div id="subagent-bars" style="display:flex;flex-direction:column;gap:6px;"></div>
-    </div>
-
-    <!-- Capabilities radial under sub-agents -->
-    <div style="margin-top:24px;">
-      <div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.35);margin-bottom:8px;">Capabilities</div>
-      <canvas id="cap-radial" width="190" height="190" style="display:block;margin:0 auto;"></canvas>
-    </div>
 </div>
 
 <!-- Live Data Nodes -->
