@@ -650,20 +650,17 @@ function initBrainGraph() {
         if (input) { input.value = `Tell me about ${node.name} in Henry's knowledge graph.`; }
       });
     window.brainGraphInstance = brainGraphInstance;
-    window.BRAIN_DATA_FULL = JSON.parse(JSON.stringify(BRAIN_DATA)); // store original
-    // Strong center gravity to prevent nodes drifting away
-    brainGraphInstance.d3Force('charge').strength(-60);
-    brainGraphInstance.d3Force('link').distance(30).strength(1);
-    const d3 = window.d3 || null;
-    // Add center force
-    try {
-      brainGraphInstance.d3Force('center', brainGraphInstance.d3Force('center')?.strength ? 
-        brainGraphInstance.d3Force('center').strength(0.5) : null);
-    } catch(e) {}
-    brainGraphInstance.d3ReheatSimulation();
-    // Auto-rotate
-    brainGraphInstance.controls().autoRotate = true;
-    brainGraphInstance.controls().autoRotateSpeed = 0.6;
+    window.BRAIN_DATA_FULL = JSON.parse(JSON.stringify(BRAIN_DATA));
+    // Post-init config with safety
+    setTimeout(() => {
+      try { brainGraphInstance.d3Force('charge').strength(-80); } catch(e) {}
+      try { brainGraphInstance.d3Force('link').distance(25); } catch(e) {}
+      try { brainGraphInstance.d3ReheatSimulation(); } catch(e) {}
+      try {
+        const ctrl = brainGraphInstance.controls();
+        if (ctrl) { ctrl.autoRotate = true; ctrl.autoRotateSpeed = 0.5; }
+      } catch(e) {}
+    }, 1000);
     // Add lighting (with safety check for THREE)
     try {
       if (window.THREE) {
