@@ -1001,21 +1001,19 @@ function toggleBrainGraph() {
     const canvas=document.getElementById('cap-radial-2');
     if(!canvas)return;
     const ctx=canvas.getContext('2d');
-    const W=190,H=190,cx=95,cy=95,n=CAPS.length,minR=14,maxR=86;
+    const W=160,H=160,cx=80,cy=80,n=CAPS.length,minR=10,maxR=72;
     const ringGap=(maxR-minR)/n,START=-Math.PI/2;
     window._capLevels2=CAPS.map(c=>c.val/100);
     function draw2(){
       ctx.clearRect(0,0,W,H);
       for(let i=0;i<n;i++){
         const ri=n-1-i,r=minR+i*ringGap+ringGap/2,cap=CAPS[ri],lv=window._capLevels2[ri],endAngle=START+lv*Math.PI*2;
-        ctx.beginPath();ctx.arc(cx,cy,r,START,START+Math.PI*2);ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=2.5;ctx.stroke();
-        ctx.beginPath();ctx.arc(cx,cy,r,START,endAngle);ctx.strokeStyle=cap.color;ctx.lineWidth=2.5;ctx.shadowColor=cap.color;ctx.shadowBlur=8;ctx.stroke();ctx.shadowBlur=0;
+        ctx.beginPath();ctx.arc(cx,cy,r,START,START+Math.PI*2);ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=2;ctx.stroke();
+        ctx.beginPath();ctx.arc(cx,cy,r,START,endAngle);ctx.strokeStyle=cap.color;ctx.lineWidth=2;ctx.shadowBlur=0;ctx.stroke();
         const dx=cx+Math.cos(endAngle)*r,dy=cy+Math.sin(endAngle)*r;
-        ctx.beginPath();ctx.arc(dx,dy,3.5,0,Math.PI*2);ctx.fillStyle=cap.color;ctx.shadowColor=cap.color;ctx.shadowBlur=8;ctx.fill();ctx.shadowBlur=0;
-        ctx.fillStyle=cap.color+'cc';ctx.font='6px Outfit,Arial';ctx.textAlign='center';ctx.textBaseline='middle';
-        ctx.fillText(cap.name,cx+Math.cos(endAngle)*(r+13),cy+Math.sin(endAngle)*(r+13));
+        ctx.beginPath();ctx.arc(dx,dy,2.5,0,Math.PI*2);ctx.fillStyle=cap.color;ctx.fill();
       }
-      ctx.beginPath();ctx.arc(cx,cy,7,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,0.15)';ctx.fill();
+      ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,0.2)';ctx.fill();
       requestAnimationFrame(draw2);
     }
     draw2();
@@ -1131,7 +1129,7 @@ window.addEventListener('load', () => {
     <!-- Capabilities radial -->
     <div style="margin-top:24px;padding-bottom:32px;">
       <div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.35);margin-bottom:8px;">Capabilities</div>
-      <canvas id="cap-radial-2" width="190" height="190" style="display:block;margin:0 auto;"></canvas>
+      <canvas id="cap-radial-2" width="160" height="160" style="display:block;margin:0 auto;width:160px;height:160px;"></canvas>
     </div>
 </div>
 
