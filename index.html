@@ -626,8 +626,8 @@ function initBrainGraph() {
   const container = document.getElementById('brain-graph-container');
   container.style.display = 'block';
   if (!brainGraphInstance) {
-    brainGraphInstance = ForceGraph3D({alpha:true})(document.getElementById('brain-graph'))
-      .backgroundColor('rgba(0,0,0,0)')
+    brainGraphInstance = ForceGraph3D()(document.getElementById('brain-graph'))
+      .backgroundColor('#050508')
       .nodeLabel('name')
       .nodeColor(n => GROUP_COLORS[n.group] || '#667eea')
       .nodeVal('val')
@@ -783,8 +783,11 @@ function toggleBrainGraph() {
     draw();
   }
   function initCapRadial2(){
-    const canvas=document.getElementById('cap-radial-2');
-    if(!canvas)return;
+    const placeholder=document.getElementById('cap-placeholder');
+    if(!placeholder)return;
+    const canvas=document.createElement('canvas');
+    canvas.width=160;canvas.height=160;canvas.style.cssText='display:block;';
+    placeholder.appendChild(canvas);
     const ctx=canvas.getContext('2d');
     const W=160,H=160,cx=80,cy=80,n=CAPS.length,minR=10,maxR=72;
     const ringGap=(maxR-minR)/n,START=-Math.PI/2;
@@ -905,10 +908,10 @@ window.addEventListener('load', () => {
       <input type="range" min="30" max="100" value="100" class="density-slider" id="density-slider-2" style="width:100%;" />
     </div>
 
-    <!-- Capabilities radial -->
+    <!-- Capabilities placeholder -->
     <div style="margin-top:20px;">
       <div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.35);margin-bottom:8px;">Capabilities</div>
-      <canvas id="cap-radial-2" width="160" height="160" style="display:block;margin:0 auto;width:160px;height:160px;"></canvas>
+      <div id="cap-placeholder" style="width:160px;height:160px;margin:0 auto;"></div>
     </div>
 
     <!-- Sub-Agents -->
