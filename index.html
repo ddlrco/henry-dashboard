@@ -997,7 +997,60 @@ function toggleBrainGraph() {
     }
     draw();
   }
-  window.addEventListener('load',()=>setTimeout(initCapRadial,600));
+  function initCapRadial2(){
+    const canvas=document.getElementById('cap-radial-2');
+    if(!canvas)return;
+    const ctx=canvas.getContext('2d');
+    const W=190,H=190,cx=95,cy=95,n=CAPS.length,minR=14,maxR=86;
+    const ringGap=(maxR-minR)/n,START=-Math.PI/2;
+    window._capLevels2=CAPS.map(c=>c.val/100);
+    function draw2(){
+      ctx.clearRect(0,0,W,H);
+      for(let i=0;i<n;i++){
+        const ri=n-1-i,r=minR+i*ringGap+ringGap/2,cap=CAPS[ri],lv=window._capLevels2[ri],endAngle=START+lv*Math.PI*2;
+        ctx.beginPath();ctx.arc(cx,cy,r,START,START+Math.PI*2);ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=2.5;ctx.stroke();
+        ctx.beginPath();ctx.arc(cx,cy,r,START,endAngle);ctx.strokeStyle=cap.color;ctx.lineWidth=2.5;ctx.shadowColor=cap.color;ctx.shadowBlur=8;ctx.stroke();ctx.shadowBlur=0;
+        const dx=cx+Math.cos(endAngle)*r,dy=cy+Math.sin(endAngle)*r;
+        ctx.beginPath();ctx.arc(dx,dy,3.5,0,Math.PI*2);ctx.fillStyle=cap.color;ctx.shadowColor=cap.color;ctx.shadowBlur=8;ctx.fill();ctx.shadowBlur=0;
+        ctx.fillStyle=cap.color+'cc';ctx.font='6px Outfit,Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillText(cap.name,cx+Math.cos(endAngle)*(r+13),cy+Math.sin(endAngle)*(r+13));
+      }
+      ctx.beginPath();ctx.arc(cx,cy,7,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,0.15)';ctx.fill();
+      requestAnimationFrame(draw2);
+    }
+    draw2();
+  }
+
+  // Sub-agents for new panel
+  function initSubAgents2(){
+    const container=document.getElementById('subagent-bars-2');
+    if(!container)return;
+    const bars2=[];
+    AGENTS.forEach(ag=>{
+      const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:6px;';
+      const label=document.createElement('span');label.style.cssText=`font-size:8px;letter-spacing:1px;color:${ag.color};width:54px;text-align:right;flex-shrink:0;font-family:Outfit,sans-serif;`;label.textContent=ag.name;
+      const track=document.createElement('div');track.style.cssText='flex:1;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;';
+      const fill=document.createElement('div');fill.style.cssText=`height:100%;background:${ag.color};border-radius:2px;box-shadow:0 0 6px ${ag.color};width:82%;transition:width 0.3s;`;
+      track.appendChild(fill);row.appendChild(label);row.appendChild(track);container.appendChild(row);bars2.push({fill,ag});
+    });
+    const BASE2=[82,91,76,88,94,71,85,79];
+    bars2.forEach((b,i)=>b.fill.style.width=BASE2[i]+'%');
+    setInterval(()=>{
+      const i=Math.floor(Math.random()*bars2.length);
+      bars2[i].fill.style.width=Math.min(100,BASE2[i]+Math.floor(Math.random()*12))+'%';
+      setTimeout(()=>bars2[i].fill.style.width=BASE2[i]+'%',600);
+    },2200);
+    // Wire trigger
+    const origTrigger=window.triggerAgent;
+    window.triggerAgent=function(name){
+      if(origTrigger)origTrigger(name);
+      const NAMES=['CODEX','CLAUDE','BROWSER','WHISPER','IMG GEN','SEARCH','GITHUB','EMAIL'];
+      const idx=NAMES.findIndex(n=>name.toUpperCase().includes(n.split(' ')[0]));
+      if(idx>=0&&bars2[idx]){const f=bars2[idx].fill;f.style.width='100%';setTimeout(()=>f.style.width=BASE2[idx]+'%',1500);}
+    };
+  }
+
+  window.addEventListener('load',()=>setTimeout(()=>{initCapRadial();initCapRadial2();initSubAgents2();},700));
 
   // Live knowledge graph growth
   window.addBrainNode = function(name, group){
@@ -1051,6 +1104,34 @@ window.addEventListener('load', () => {
         <div id="token-count" style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px;letter-spacing:1px;">TOKENS: 0</div>
         <button id="invert-btn" onclick="toggleInvert()" style="margin-top:12px;background:none;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.4);padding:6px 14px;border-radius:4px;font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.3s;">SHIFT</button>
         <button id="logout-btn" onclick="henryLogout()" style="margin-top:8px;background:none;border:1px solid rgba(248,113,113,0.3);color:rgba(248,113,113,0.6);padding:6px 14px;border-radius:4px;font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.3s;">KILL LINK</button>
+    </div>
+
+    <!-- Controls -->
+    <div style="margin-top:20px;display:flex;gap:6px;flex-wrap:wrap;">
+      <button onclick="document.getElementById('change-formation-btn').click()" id="morph-label" style="font-size:8px;letter-spacing:2px;padding:5px 10px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);cursor:pointer;font-family:Outfit,sans-serif;border-radius:4px;">FREE</button>
+      <button onclick="document.getElementById('pause-play-btn').click()" style="font-size:8px;letter-spacing:2px;padding:5px 10px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);cursor:pointer;font-family:Outfit,sans-serif;border-radius:4px;">FREEZE</button>
+      <button onclick="document.getElementById('reset-camera-btn').click()" style="font-size:8px;letter-spacing:2px;padding:5px 10px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);cursor:pointer;font-family:Outfit,sans-serif;border-radius:4px;">RESET</button>
+    </div>
+
+    <!-- Complexity slider -->
+    <div style="margin-top:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.4);">Complexity</span>
+        <span id="density-value" style="font-size:9px;color:rgba(255,255,255,0.6);">100%</span>
+      </div>
+      <input type="range" min="30" max="100" value="100" class="density-slider" id="density-slider-2" style="width:100%;" />
+    </div>
+
+    <!-- Sub-Agents -->
+    <div style="margin-top:20px;">
+      <div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.35);margin-bottom:10px;">Sub-Agents</div>
+      <div id="subagent-bars-2" style="display:flex;flex-direction:column;gap:6px;"></div>
+    </div>
+
+    <!-- Capabilities radial -->
+    <div style="margin-top:24px;padding-bottom:32px;">
+      <div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.35);margin-bottom:8px;">Capabilities</div>
+      <canvas id="cap-radial-2" width="190" height="190" style="display:block;margin:0 auto;"></canvas>
     </div>
 </div>
 
@@ -2690,7 +2771,7 @@ document.addEventListener("keydown", (e) => {
             btn.classList.add('active');
         });
     });
-    const densitySlider = document.getElementById('density-slider');
+    const densitySlider = document.getElementById('density-slider-2') || document.getElementById('density-slider');
     const densityValue = document.getElementById('density-value');
     let densityTimeout;
     densitySlider.addEventListener('input', (e) => {
