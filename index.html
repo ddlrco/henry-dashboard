@@ -683,6 +683,16 @@ function initBrainGraph() {
       });
     window.brainGraphInstance = brainGraphInstance;
     window.BRAIN_DATA_FULL = JSON.parse(JSON.stringify(BRAIN_DATA)); // store original
+    // Strong center gravity to prevent nodes drifting away
+    brainGraphInstance.d3Force('charge').strength(-60);
+    brainGraphInstance.d3Force('link').distance(30).strength(1);
+    const d3 = window.d3 || null;
+    // Add center force
+    try {
+      brainGraphInstance.d3Force('center', brainGraphInstance.d3Force('center')?.strength ? 
+        brainGraphInstance.d3Force('center').strength(0.5) : null);
+    } catch(e) {}
+    brainGraphInstance.d3ReheatSimulation();
     // Auto-rotate
     brainGraphInstance.controls().autoRotate = true;
     brainGraphInstance.controls().autoRotateSpeed = 0.6;
@@ -823,7 +833,7 @@ function toggleBrainGraph() {
     };
   }
 
-  window.addEventListener('load',()=>setTimeout(()=>{initCapRadial();initCapRadial2();initSubAgents2();},700));
+  window.addEventListener('load',()=>setTimeout(()=>{initCapRadial2();initSubAgents2();},700));
 
   // Live knowledge graph growth
   window.addBrainNode = function(name, group){
