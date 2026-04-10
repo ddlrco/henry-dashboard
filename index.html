@@ -631,39 +631,7 @@ function initBrainGraph() {
       .nodeLabel('name')
       .nodeColor(n => GROUP_COLORS[n.group] || '#667eea')
       .nodeVal('val')
-      .nodeThreeObject(node => {
-        const group = new THREE.Group();
-        if (node.id === 'henry') {
-          // Large glowing white sphere for root
-          const geo = new THREE.SphereGeometry(node.val * 1.8, 32, 32);
-          const mat = new THREE.MeshStandardMaterial({
-            color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 3,
-            transparent: true, opacity: 0.95
-          });
-          group.add(new THREE.Mesh(geo, mat));
-          // Outer shell
-          const shellGeo = new THREE.SphereGeometry(node.val * 2.4, 16, 16);
-          const shellMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.08, wireframe: true });
-          group.add(new THREE.Mesh(shellGeo, shellMat));
-        }
-        // Label sprite
-        const canvas = document.createElement('canvas');
-        canvas.width = 512; canvas.height = 80;
-        const ctx = canvas.getContext('2d');
-        ctx.font = node.id === 'henry' ? 'bold 52px Arial' : 'bold 40px Arial';
-        ctx.fillStyle = node.id === 'henry' ? '#ffffff' : (GROUP_COLORS[node.group] || '#a5b4fc');
-        ctx.textAlign = 'center';
-        ctx.shadowColor = '#000000'; ctx.shadowBlur = 10;
-        ctx.fillText(node.name, 256, 56);
-        const texture = new THREE.CanvasTexture(canvas);
-        const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthWrite: false, transparent: true }));
-        const s = Math.max(node.val || 4, 3) * (node.id === 'henry' ? 9 : 6);
-        sprite.scale.set(s, s / 4, 1);
-        sprite.position.set(0, (node.val || 4) * (node.id === 'henry' ? 2.5 : 1.5) + 3, 0);
-        group.add(sprite);
-        return group;
-      })
-      .nodeThreeObjectExtend(true)
+      .nodeLabel('name')
       .nodeOpacity(0.9)
       .nodeResolution(16)
       .linkColor(l => {
@@ -696,13 +664,15 @@ function initBrainGraph() {
     // Auto-rotate
     brainGraphInstance.controls().autoRotate = true;
     brainGraphInstance.controls().autoRotateSpeed = 0.6;
-    // Add lighting
-    brainGraphInstance.scene().add(new THREE.AmbientLight(0xffffff, 3));
-    const dLight = new THREE.DirectionalLight(0xffffff, 2);
-    dLight.position.set(100,100,100);
-    brainGraphInstance.scene().add(dLight);
-    const ptLight = new THREE.PointLight(0xffffff, 4, 200);
-    brainGraphInstance.scene().add(ptLight); // white glow at center
+    // Add lighting (with safety check for THREE)
+    try {
+      if (window.THREE) {
+        brainGraphInstance.scene().add(new THREE.AmbientLight(0xffffff, 3));
+        const dLight = new THREE.DirectionalLight(0xffffff, 2);
+        dLight.position.set(100,100,100);
+        brainGraphInstance.scene().add(dLight);
+      }
+    } catch(e) { console.warn('Light add failed:', e); }
   }
 }
 
@@ -786,7 +756,7 @@ function toggleBrainGraph() {
     const placeholder=document.getElementById('cap-placeholder');
     if(!placeholder)return;
     const canvas=document.createElement('canvas');
-    canvas.width=160;canvas.height=160;canvas.style.cssText='display:block;';
+    canvas.width=160;canvas.height=160;canvas.style.cssText='display:block;width:160px;height:160px;';
     placeholder.appendChild(canvas);
     const ctx=canvas.getContext('2d');
     const W=160,H=160,cx=80,cy=80,n=CAPS.length,minR=10,maxR=72;
