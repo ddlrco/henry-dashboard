@@ -749,33 +749,131 @@ function toggleBrainGraph() {
     }
     draw();
   }
-  function initCapRadial2(){
-    const placeholder=document.getElementById('cap-placeholder');
-    if(!placeholder)return;
-    const canvas=document.createElement('canvas');
-    canvas.width=160;canvas.height=160;canvas.style.cssText='display:block;width:160px;height:160px;';
-    placeholder.appendChild(canvas);
-    const ctx=canvas.getContext('2d');
-    const W=160,H=160,cx=80,cy=80,n=CAPS.length,minR=10,maxR=72;
-    const ringGap=(maxR-minR)/n,START=-Math.PI/2;
-    window._capLevels2=CAPS.map(c=>c.val/100);
-    function draw2(){
-      ctx.clearRect(0,0,W,H);
-      for(let i=0;i<n;i++){
-        const ri=n-1-i,r=minR+i*ringGap+ringGap/2,cap=CAPS[ri],lv=window._capLevels2[ri],endAngle=START+lv*Math.PI*2;
-        ctx.beginPath();ctx.arc(cx,cy,r,START,START+Math.PI*2);ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=2;ctx.stroke();
-        ctx.beginPath();ctx.arc(cx,cy,r,START,endAngle);ctx.strokeStyle=cap.color;ctx.lineWidth=2;ctx.shadowBlur=0;ctx.stroke();
-        const dx=cx+Math.cos(endAngle)*r,dy=cy+Math.sin(endAngle)*r;
-        ctx.beginPath();ctx.arc(dx,dy,2.5,0,Math.PI*2);ctx.fillStyle=cap.color;ctx.fill();
-      }
-      ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,0.2)';ctx.fill();
-      requestAnimationFrame(draw2);
+  // Real-time radar chart for capabilities
+  const RADAR_CAPS = [
+    {name:'CODE',base:0.95,color:'#818cf8'},
+    {name:'VISION',base:0.88,color:'#a78bfa'},
+    {name:'VOICE',base:0.82,color:'#60a5fa'},
+    {name:'DESIGN',base:0.90,color:'#f472b6'},
+    {name:'DATA',base:0.92,color:'#34d399'},
+    {name:'OPS',base:0.85,color:'#4ade80'},
+    {name:'SEARCH',base:0.94,color:'#f59e0b'},
+    {name:'MEDIA',base:0.89,color:'#d946ef'},
+  ];
+  let radarLevels = RADAR_CAPS.map(c => c.base);
+  let radarTargets = [...radarLevels];
+  let radarActive = Array(RADAR_CAPS.length).fill(0);
+
+  window.triggerCapability = function(name) {
+    const idx = RADAR_CAPS.findIndex(c => c.name === name.toUpperCase());
+    if (idx >= 0) {
+      radarTargets[idx] = 1.0;
+      radarActive[idx] = 1.0;
+      setTimeout(() => { radarTargets[idx] = RADAR_CAPS[idx].base; }, 1200);
     }
-    draw2();
+  };
+
+  function initCapRadar() {
+    const canvas = document.getElementById('cap-radar-main');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = 200, H = 200, cx = 100, cy = 100;
+    const n = RADAR_CAPS.length;
+    const maxR = 72;
+
+    function drawRadar() {
+      ctx.clearRect(0, 0, W, H);
+
+      // Lerp levels toward targets
+      for (let i = 0; i < n; i++) {
+        radarLevels[i] += (radarTargets[i] - radarLevels[i]) * 0.08;
+        radarActive[i] *= 0.93;
+      }
+
+      // Grid rings
+      for (let r = 1; r <= 4; r++) {
+        ctx.beginPath();
+        for (let i = 0; i < n; i++) {
+          const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+          const rr = (r / 4) * maxR;
+          const x = cx + Math.cos(angle) * rr;
+          const y = cy + Math.sin(angle) * rr;
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // Axis lines
+      for (let i = 0; i < n; i++) {
+        const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(angle) * maxR, cy + Math.sin(angle) * maxR);
+        ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // Filled polygon
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+        const r = radarLevels[i] * maxR;
+        const x = cx + Math.cos(angle) * r;
+        const y = cy + Math.sin(angle) * r;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(102,126,234,0.12)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(102,126,234,0.6)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Points + glow on active
+      for (let i = 0; i < n; i++) {
+        const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+        const r = radarLevels[i] * maxR;
+        const x = cx + Math.cos(angle) * r;
+        const y = cy + Math.sin(angle) * r;
+
+        if (radarActive[i] > 0.05) {
+          ctx.beginPath();
+          ctx.arc(x, y, 4 + radarActive[i] * 8, 0, Math.PI * 2);
+          ctx.fillStyle = RADAR_CAPS[i].color + Math.floor(radarActive[i] * 60).toString(16).padStart(2,'0');
+          ctx.fill();
+        }
+
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = RADAR_CAPS[i].color;
+        ctx.fill();
+
+        // Label
+        const lx = cx + Math.cos(angle) * (maxR + 14);
+        const ly = cy + Math.sin(angle) * (maxR + 14);
+        ctx.fillStyle = radarActive[i] > 0.1 ? RADAR_CAPS[i].color : 'rgba(255,255,255,0.45)';
+        ctx.font = `${radarActive[i] > 0.1 ? 'bold ' : ''}7px Outfit,Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(RADAR_CAPS[i].name, lx, ly);
+      }
+
+      // Center dot
+      ctx.beginPath();
+      ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.3)';
+      ctx.fill();
+
+      requestAnimationFrame(drawRadar);
+    }
+    drawRadar();
   }
 
-  // Sub-agents for new panel
-  function initSubAgents2(){
+    function initSubAgents2(){
     const container=document.getElementById('subagent-bars-2');
     if(!container)return;
     const bars2=[];
@@ -803,7 +901,7 @@ function toggleBrainGraph() {
     };
   }
 
-  window.addEventListener('load',()=>setTimeout(()=>{initCapRadial2();initSubAgents2();},700));
+  window.addEventListener('load',()=>setTimeout(()=>{initCapRadar();initSubAgents2();},700));
 
   // Live knowledge graph growth
   window.addBrainNode = function(name, group){
@@ -875,10 +973,10 @@ window.addEventListener('load', () => {
       <input type="range" min="30" max="100" value="100" class="density-slider" id="density-slider-2" style="width:100%;" />
     </div>
 
-    <!-- Capabilities placeholder -->
+    <!-- Capabilities Radar -->
     <div style="margin-top:20px;">
-      <div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.35);margin-bottom:8px;">Capabilities</div>
-      <div id="cap-placeholder" style="width:160px;height:160px;margin:0 auto;"></div>
+      <div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.35);margin-bottom:6px;">Capabilities</div>
+      <canvas id="cap-radar-main" width="200" height="200" style="display:block;width:200px;height:200px;cursor:crosshair;"></canvas>
     </div>
 
     <!-- Sub-Agents -->
@@ -3073,11 +3171,11 @@ async function sendChat() {
         // Auto-trigger sub-agents based on response content
         if (data.reply && window.triggerAgent) {
           const r = data.reply.toLowerCase();
-          if (r.includes('generat') && (r.includes('image') || r.includes('print'))) window.triggerAgent('IMG GEN');
-          if (r.includes('search') || r.includes('web_search') || r.includes('perplexity')) window.triggerAgent('SEARCH');
-          if (r.includes('github') || r.includes('git push') || r.includes('git commit')) window.triggerAgent('GITHUB');
+          if (r.includes('generat') && (r.includes('image') || r.includes('print'))) { window.triggerAgent('IMG GEN'); if(window.triggerCapability) window.triggerCapability('MEDIA'); }
+          if (r.includes('search') || r.includes('web_search') || r.includes('perplexity')) { window.triggerAgent('SEARCH'); if(window.triggerCapability) window.triggerCapability('SEARCH'); }
+          if (r.includes('github') || r.includes('git push') || r.includes('git commit')) { window.triggerAgent('GITHUB'); if(window.triggerCapability) window.triggerCapability('OPS'); }
           if (r.includes('transcri') || r.includes('whisper') || r.includes('audio')) window.triggerAgent('WHISPER');
-          if (r.includes('codex') || r.includes('coding agent')) window.triggerAgent('CODEX');
+          if (r.includes('codex') || r.includes('coding agent')) { window.triggerAgent('CODEX'); if(window.triggerCapability) window.triggerCapability('CODE'); }
           if (r.includes('claude code') || r.includes('claude opus')) window.triggerAgent('CLAUDE');
           if (r.includes('email') || r.includes('himalaya')) window.triggerAgent('EMAIL');
           if (r.includes('browser') || r.includes('canvas')) window.triggerAgent('BROWSER');
