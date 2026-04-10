@@ -106,9 +106,10 @@ canvas {
     backdrop-filter: blur(20px);
     box-shadow: none;
     border-radius: 0;
-    width: 220px;
+    width: 240px;
     overflow-y: auto;
-    scrollbar-width: none;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(102,126,234,0.3) transparent;
 }
 #instruction-title {
     font-weight: 500;
@@ -1094,11 +1095,7 @@ window.addEventListener('load', () => {
 <!-- Live Data Nodes -->
 <div id="data-nodes" style="position: fixed; right: 32px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 16px; z-index: 20;">
     <!-- Weather Node -->
-    <div class="data-node" id="weather-node">
-        <div class="data-node-title">WEATHER</div>
-        <div class="data-node-value" id="weather-value">--°</div>
-        <div class="data-node-sub" id="weather-location">Loading...</div>
-    </div>
+    <div style="display:none" id="weather-node"></div>
     
     <!-- Crypto Node -->
     <!-- crypto removed --><div style="display:none" id="crypto-node">
