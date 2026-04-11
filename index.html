@@ -3453,11 +3453,10 @@ function highlightNodes(query) {
         if (activeNodeIds.size > 0) {
             pulseStart = Date.now();
             // Apply white pulsing to nodes
-            // Direct THREE.js material update — bypasses cache
+            // Only light up matched nodes white — leave everything else untouched
             gd.nodes.forEach(node => {
-                if (node.__threeObj) {
-                    const color = activeNodeIds.has(node.id) ? 0xffffff : parseInt((GROUP_COLORS[node.group]||'#b084f0').replace('#',''), 16);
-                    node.__threeObj.traverse(obj => { if (obj.material && obj.material.color) obj.material.color.setHex(color); });
+                if (activeNodeIds.has(node.id) && node.__threeObj) {
+                    node.__threeObj.traverse(obj => { if (obj.material && obj.material.color) { obj.material._origColor = obj.material.color.getHex(); obj.material.color.setHex(0xffffff); }});
                 }
             });
             window.brainGraphInstance
@@ -3469,11 +3468,11 @@ function highlightNodes(query) {
                 activeNodeIds.clear();
                 activeLinkSet.clear();
                 window.brainGraphInstance
+                    // Restore only the nodes that were changed
                     const gd2 = window.brainGraphInstance.graphData();
                     gd2.nodes.forEach(node => {
-                        if (node.__threeObj) {
-                            const col = parseInt((node.id==='henry'?'#ffffff':(GROUP_COLORS[node.group]||'#b084f0')).replace('#',''),16);
-                            node.__threeObj.traverse(obj => { if (obj.material && obj.material.color) obj.material.color.setHex(col); });
+                        if (activeNodeIds.has(node.id) && node.__threeObj) {
+                            node.__threeObj.traverse(obj => { if (obj.material && obj.material._origColor !== undefined) { obj.material.color.setHex(obj.material._origColor); delete obj.material._origColor; }});
                         }
                     });
                     window.brainGraphInstance
