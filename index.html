@@ -674,14 +674,17 @@ function initBrainGraph() {
     window.BRAIN_DATA_FULL = JSON.parse(JSON.stringify(BRAIN_DATA));
     // Post-init config with safety
     setTimeout(() => {
-      try { brainGraphInstance.d3Force('charge').strength(-80); } catch(e) {}
-      try { brainGraphInstance.d3Force('link').distance(25); } catch(e) {}
+      try { brainGraphInstance.d3Force('charge').strength(-60); } catch(e) {}
+      try { brainGraphInstance.d3Force('link').distance(20); } catch(e) {}
       try { brainGraphInstance.d3ReheatSimulation(); } catch(e) {}
+    }, 500);
+    // Auto-rotate — delayed to ensure controls are ready
+    setTimeout(() => {
       try {
         const ctrl = brainGraphInstance.controls();
-        if (ctrl) { ctrl.autoRotate = true; ctrl.autoRotateSpeed = 0.5; }
-      } catch(e) {}
-    }, 1000);
+        if (ctrl) { ctrl.autoRotate = true; ctrl.autoRotateSpeed = 0.4; }
+      } catch(e) { console.warn('autoRotate:', e); }
+    }, 2000);
     // Add lighting (with safety check for THREE)
     try {
       if (window.THREE) {
@@ -2664,49 +2667,57 @@ document.addEventListener("keydown", (e) => {
           bg.d3ReheatSimulation();
 
         } else if (morphMode === 1) {
-          // Radial — cluster bubbles, very weak charge so they stay clustered
-          const CC = {root:{x:0,y:0,z:0},Frontend:{x:350,y:0,z:0},Backend:{x:-350,y:0,z:0},
-            Brain:{x:0,y:350,z:0},Projects:{x:0,y:-250,z:250},System:{x:0,y:-250,z:-250},Media:{x:240,y:240,z:240}};
+          // Radial — spread by group into sphere clusters
+          const allGroups = [...new Set(gd.nodes.map(n=>n.group))];
+          const groupCenters = {};
+          allGroups.forEach((grp,gi) => {
+            const ang = (gi/allGroups.length)*Math.PI*2;
+            const r = grp==='root' ? 0 : 500;
+            groupCenters[grp] = {x:r*Math.cos(ang), y:(Math.random()-0.5)*200, z:r*Math.sin(ang)};
+          });
           gd.nodes.forEach(n => {
-            const c=CC[n.group]||{x:0,y:0,z:0};
+            const c=groupCenters[n.group]||{x:0,y:0,z:0};
             const cn=gd.nodes.filter(x=>x.group===n.group);
             const ni=cn.indexOf(n);
             const ang=(ni/Math.max(cn.length,1))*Math.PI*2;
-            const r=n.id==='henry'?0:70;
-            n.fx=c.x+r*Math.cos(ang); n.fy=c.y+r*Math.sin(ang); n.fz=c.z+(Math.random()-0.5)*50;
+            const r=n.id==='henry'?0:120;
+            n.fx=c.x+r*Math.cos(ang); n.fy=c.y+r*Math.sin(ang); n.fz=c.z+(Math.random()-0.5)*80;
           });
           bg.graphData(gd); bg.d3ReheatSimulation();
 
         } else if (morphMode === 2) {
-          // Tree — fixed vertical columns, very ordered
-          CLUSTER_ORDER.forEach((cl,ci) => {
+          // Tree — columns by group, tall spread for many nodes
+          const allGroups = [...new Set(gd.nodes.map(n=>n.group))];
+          allGroups.forEach((cl,ci) => {
             const cn=gd.nodes.filter(n=>n.group===cl);
-            const xOff=(ci-Math.floor(CLUSTER_ORDER.length/2))*200;
+            const xOff=(ci-Math.floor(allGroups.length/2))*160;
             cn.forEach((n,ni) => {
-              n.fx=xOff; n.fy=280-ni*(520/Math.max(cn.length,1)); n.fz=(Math.random()-0.5)*40;
+              n.fx=xOff+(Math.random()-0.5)*40;
+              n.fy=600-ni*(1200/Math.max(cn.length,1));
+              n.fz=(Math.random()-0.5)*60;
             });
           });
           bg.graphData(gd); bg.d3ReheatSimulation();
 
         } else if (morphMode === 3) {
-          // Grid — strict 3D lattice
+          // Grid — 3D cube, spaced for 476 nodes
           const side=Math.ceil(Math.cbrt(N));
           gd.nodes.forEach((n,i) => {
-            n.fx=((i%side)-side/2)*90;
-            n.fy=(Math.floor(i/side)%side-side/2)*90;
-            n.fz=(Math.floor(i/(side*side))-side/2)*90;
+            n.fx=((i%side)-side/2)*50;
+            n.fy=(Math.floor(i/side)%side-side/2)*50;
+            n.fz=(Math.floor(i/(side*side))-side/2)*50;
           });
           bg.graphData(gd); bg.d3ReheatSimulation();
 
         } else if (morphMode === 4) {
-          // Galaxy — fixed spiral arms, flat disc
-          const arms=3;
+          // Galaxy — 5 arms, wide disc
+          const arms=5;
           gd.nodes.forEach((n,i) => {
             const arm=i%arms;
-            const t=(i/N)*Math.PI*10;
-            const r=30+(i/N)*380;
+            const t=(i/N)*Math.PI*12;
+            const r=40+(i/N)*600;
             n.fx=r*Math.cos(t+(arm/arms)*Math.PI*2);
-            n.fy=(Math.random()-0.5)*80;
+            n.fy=(Math.random()-0.5)*120;
             n.fz=r*Math.sin(t+(arm/arms)*Math.PI*2);
           });
           bg.graphData(gd); bg.d3ReheatSimulation();
@@ -2714,6 +2725,9 @@ document.addEventListener("keydown", (e) => {
 
         const labels = ['Free','Radial','Tree','Grid','Galaxy'];
         changeFormationBtn.querySelector('span').textContent = labels[morphMode];
+        // Also update the visible morph button in left panel
+        const morphLabel = document.getElementById('morph-label');
+        if (morphLabel) morphLabel.textContent = labels[morphMode];
     });
     pausePlayBtn.addEventListener('click', (e) => {
         e.stopPropagation();
