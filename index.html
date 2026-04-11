@@ -3419,5 +3419,19 @@ function initKG() {
 
 <!-- Capabilities radar fixed overlay -->
 <canvas id="cap-radar-main" width="200" height="200" style="position:fixed;left:20px;top:390px;width:200px;height:200px;z-index:31;pointer-events:none;"></canvas>
+<script>
+// Position radar canvas under the cap-anchor div
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const anchor = document.getElementById('cap-anchor');
+    const canvas = document.getElementById('cap-radar-main');
+    if (anchor && canvas) {
+      const rect = anchor.getBoundingClientRect();
+      canvas.style.top = rect.top + 'px';
+      canvas.style.left = '20px';
+    }
+  }, 900);
+});
+</script>
 </body>
 </html>
