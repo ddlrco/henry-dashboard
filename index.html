@@ -666,7 +666,7 @@ function initBrainGraph() {
         } catch(e) { return null; }
       })
       .nodeThreeObjectExtend(true)
-      .nodeColor(node => node.id==='henry' ? '#ffffff' : (GROUP_COLORS[node.group] || '#b084f0'))
+      .nodeColor(node => node.color || (node.id==='henry' ? '#ffffff' : (GROUP_COLORS[node.group] || '#b084f0')))
       .nodeVal('val')
       .nodeLabel('name')
       
@@ -726,8 +726,8 @@ function initBrainGraph() {
     setTimeout(() => {
       try {
         // Obsidian-style: tight clusters, strong attraction between linked nodes
-        brainGraphInstance.d3Force('charge').strength(-60);
-        brainGraphInstance.d3Force('link').distance(25).strength(1.2);
+        brainGraphInstance.d3Force('charge').strength(-25);
+        brainGraphInstance.d3Force('link').distance(15).strength(1.8);
         brainGraphInstance.d3ReheatSimulation();
       } catch(e) {}
     }, 500);
@@ -3277,20 +3277,23 @@ function addMsg(text, type) {
 }
 
 function highlightNodes(query) {
-    if (!window.brainGraphInstance || !query) return;
+    if (!window.brainGraphInstance || !window.BRAIN_DATA_FULL || !query) return;
     const q = query.toLowerCase();
     try {
-        window.brainGraphInstance.nodeColor(node => {
-            const match = node.name && node.name.toLowerCase().includes(q);
-            if (node.id === 'henry') return '#ffffff';
-            return match ? '#ffdd00' : (GROUP_COLORS[node.group] || '#b084f0');
+        const gd = window.brainGraphInstance.graphData();
+        let matched = 0;
+        gd.nodes.forEach(node => {
+            const hit = node.name && node.name.toLowerCase().includes(q);
+            if (hit) { node._origColor = node.color; node.color = '#ffdd00'; matched++; }
         });
-        setTimeout(() => {
-            window.brainGraphInstance.nodeColor(node =>
-                node.id === 'henry' ? '#ffffff' : (GROUP_COLORS[node.group] || '#b084f0')
-            );
-        }, 4000);
-    } catch(e) {}
+        if (matched > 0) {
+            window.brainGraphInstance.graphData(gd);
+            setTimeout(() => {
+                gd.nodes.forEach(node => { if (node._origColor) { node.color = node._origColor; delete node._origColor; } });
+                window.brainGraphInstance.graphData(gd);
+            }, 4000);
+        }
+    } catch(e) { console.warn('highlight error', e); }
 }
 
 async function sendChat() {
