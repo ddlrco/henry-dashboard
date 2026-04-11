@@ -1291,35 +1291,47 @@ function pulseFromHenry() {
     if (!window.brainGraphInstance) return;
     try {
         const gd = window.brainGraphInstance.graphData();
-        const total = gd.nodes.length;
-        let step = 0;
-        const steps = 6;
-        const interval = setInterval(() => {
-            const progress = step / steps;
+        const henry = gd.nodes.find(n => n.id === 'henry');
+        if (!henry) return;
+        // Calculate distance from HENRY for each node
+        gd.nodes.forEach(node => {
+            const dx = (node.x||0) - (henry.x||0);
+            const dy = (node.y||0) - (henry.y||0);
+            const dz = (node.z||0) - (henry.z||0);
+            node._dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+        });
+        const maxDist = Math.max(...gd.nodes.map(n => n._dist));
+        const duration = 1800; // ms for full pulse
+        const waveWidth = 0.25; // fraction of max dist
+        let startTime = null;
+        function animatePulse(ts) {
+            if (!startTime) startTime = ts;
+            const elapsed = ts - startTime;
+            const waveFront = (elapsed / duration) * maxDist;
             window.brainGraphInstance
                 .nodeColor(node => {
                     if (node.id === 'henry') return '#ffffff';
-                    // Wave effect based on node index
-                    const idx = gd.nodes.indexOf(node);
-                    const wave = Math.abs(Math.sin((idx / total * Math.PI * 2) + progress * Math.PI * 2));
-                    if (wave > 0.7) return '#ffffff';
+                    const inWave = node._dist <= waveFront && node._dist >= waveFront - maxDist * waveWidth;
+                    if (inWave) return '#ffffff';
                     return node.color || (GROUP_COLORS[node.group] || '#b084f0');
                 })
                 .linkColor(link => {
-                    const progress2 = step / steps;
-                    return progress2 > 0.3 && progress2 < 0.8 ? 'rgba(255,255,255,0.8)' : (GROUP_COLORS[typeof link.source==='object'?link.source.group:'root'] || '#667eea');
+                    const s = typeof link.source==='object' ? link.source : gd.nodes.find(n=>n.id===link.source);
+                    const inWave = s && s._dist <= waveFront && s._dist >= waveFront - maxDist * waveWidth;
+                    return inWave ? '#ffffff' : (GROUP_COLORS[typeof link.source==='object'?link.source.group:'root'] || '#667eea');
                 })
                 .refresh();
-            step++;
-            if (step > steps) {
-                clearInterval(interval);
-                // Restore colors
+            if (elapsed < duration + 200) {
+                requestAnimationFrame(animatePulse);
+            } else {
+                // Restore
                 window.brainGraphInstance
                     .nodeColor(node => node.color || (node.id==='henry' ? '#ffffff' : (GROUP_COLORS[node.group] || '#b084f0')))
                     .linkColor(l => { const g = typeof l.source==='object'?l.source.group:'root'; return GROUP_COLORS[g] || '#667eea'; })
                     .refresh();
             }
-        }, 150);
+        }
+        requestAnimationFrame(animatePulse);
     } catch(e) { console.warn('pulse error', e); }
 }
 
