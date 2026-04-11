@@ -585,7 +585,7 @@ body.inverted #logout-btn { border-color: rgba(220,38,38,0.3); color: rgba(220,3
 <!-- Quick Actions Left Panel -->
 
 <div id="quick-actions" style="position:fixed;right:0;bottom:140px;z-index:300;width:380px;max-width:42vw;max-height:70vh;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px 12px 0 0;padding:16px 12px;display:none;flex-direction:column;gap:2px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.15) transparent;backdrop-filter:blur(20px);">
-  <div style="font-size:8px;letter-spacing:3px;color:rgba(255,255,255,0.25);text-transform:uppercase;margin-bottom:8px;padding-left:4px;">QUICK ACTIONS</div>
+  <div style="font-size:9px;letter-spacing:3px;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-bottom:10px;text-align:center;">QUICK ACTIONS</div>
   <div style="font-size:8px;letter-spacing:2px;color:rgba(102,126,234,0.7);text-transform:uppercase;margin:6px 0 3px 4px;">MARKET</div>
   <button class="qa-btn" onclick="fillPrompt('Analyze the current trends in the market focusing on [input sector or stock]. Identify emerging patterns and potential investment opportunities.')">Trend Analysis</button>
   <button class="qa-btn" onclick="fillPrompt('Using technical analysis, evaluate the stock of [input stock]. Analyze price movements, volume, and key indicators. Provide a buy, sell, or hold recommendation.')">Technical Analysis</button>
@@ -617,7 +617,7 @@ body.inverted #logout-btn { border-color: rgba(220,38,38,0.3); color: rgba(220,3
 </div>
 <style>
 #quick-actions::-webkit-scrollbar { display:none; }
-.qa-btn { width:100%; text-align:left; font-size:9.5px; padding:5px 8px; background:transparent; border:none; border-left:1px solid transparent; color:rgba(255,255,255,0.4); font-family:'Outfit',sans-serif; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:all 0.15s; letter-spacing:0.3px; border-radius:0; }
+.qa-btn { width:100%; text-align:center; font-size:10px; padding:7px 10px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:rgba(255,255,255,0.7); font-family:'Outfit',sans-serif; cursor:pointer; white-space:normal; word-wrap:break-word; transition:all 0.15s; letter-spacing:0.5px; border-radius:6px; font-style:normal; }
 .qa-btn:hover { color:#a5b4fc; border-left-color:rgba(102,126,234,0.5); background:rgba(102,126,234,0.07); }
 </style>
 <script>
