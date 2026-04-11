@@ -474,6 +474,25 @@ canvas {
       pointer-events: none !important;
       z-index: 9999 !important;
     }
+
+    #node-tooltip {
+      position: fixed;
+      display: none;
+      background: rgba(10,10,25,0.95);
+      color: #fff;
+      border: 1px solid rgba(102,126,234,0.5);
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      pointer-events: none;
+      z-index: 9999;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      transform: translate(-50%, -130%);
+    }
 </style>
 <style>
 .password-overlay{position:fixed;inset:0;background:#030305;display:flex;align-items:center;justify-content:center;z-index:9999;font-family:"Outfit",sans-serif;overflow:hidden}
@@ -617,7 +636,8 @@ function toggleQA() {
   <div style="position:absolute;top:20px;left:50%;transform:translateX(-50%);text-align:center;z-index:10;pointer-events:none;">
     <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:4px;color:rgba(165,180,252,0.6);text-transform:uppercase;">HENRY — KNOWLEDGE GRAPH</div>
   </div>
-  <div id="brain-graph" style="width:100vw;height:100vh;"></div>
+  <div id="node-tooltip"></div>
+<div id="brain-graph" style="width:100vw;height:100vh;"></div>
 </div></div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.166.1/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/3d-force-graph@1.73.3/dist/3d-force-graph.min.js"></script>
@@ -640,7 +660,7 @@ function initBrainGraph() {
   if (!brainGraphInstance) {
     brainGraphInstance = ForceGraph3D({antialias:true, alpha:true})(document.getElementById('brain-graph'))
       .backgroundColor('#050508')
-      .nodeLabel('name')
+      .nodeLabel(node => '')
       .nodeColor(n => GROUP_COLORS[n.group] || '#667eea')
             .nodeThreeObject(node => {
         try {
@@ -681,7 +701,7 @@ function initBrainGraph() {
       .nodeColor(node => node.color || (node.id==='henry' ? '#ffffff' : (GROUP_COLORS[node.group] || '#b084f0')))
       .nodeVal(node => node.id==='henry' ? 8 : Math.max(1.5, Math.min((node.val||1) * 1.5, 4)))
       .nodeResolution(16)
-      .nodeLabel('name')
+      .nodeLabel(node => '')
       
       .linkColor(l => {
         const g = typeof l.source === 'object' ? l.source.group : 'root';
@@ -695,6 +715,16 @@ function initBrainGraph() {
       .linkDirectionalParticleColor(l => GROUP_COLORS[typeof l.source === 'object' ? l.source.group : 'root'] || '#a5b4fc')
       .linkDirectionalParticleSpeed(0.006)
       .graphData(BRAIN_DATA)
+      .onNodeHover(node => {
+        const tip = document.getElementById('node-tooltip');
+        if (!tip) return;
+        if (node) {
+            tip.textContent = node.name;
+            tip.style.display = 'block';
+        } else {
+            tip.style.display = 'none';
+        }
+      })
       .onNodeClick(node => {
         const input = document.getElementById('chat-input');
         if (input) { input.value = `Tell me about ${node.name} in Henry's knowledge graph.`; }
@@ -3703,6 +3733,16 @@ window.addEventListener('load', () => {
   }
   setTimeout(positionCapRadar, 900);
   setTimeout(positionCapRadar, 1800); // retry
+});
+</script>
+
+<script>
+document.addEventListener('mousemove', (e) => {
+    const tip = document.getElementById('node-tooltip');
+    if (tip && tip.style.display !== 'none') {
+        tip.style.left = e.clientX + 'px';
+        tip.style.top = e.clientY + 'px';
+    }
 });
 </script>
 </body>
