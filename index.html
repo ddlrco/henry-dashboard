@@ -564,8 +564,8 @@ body.inverted #logout-btn { border-color: rgba(220,38,38,0.3); color: rgba(220,3
 </div>
 </div>
 <!-- Quick Actions Left Panel -->
-<button onclick="toggleQA()" style="position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:51;background:#05050a;border:none;border-left:1px solid rgba(102,126,234,0.3);border-top:1px solid rgba(102,126,234,0.15);border-bottom:1px solid rgba(102,126,234,0.15);color:rgba(102,126,234,0.7);font-family:'Outfit',sans-serif;font-size:8px;letter-spacing:2px;writing-mode:vertical-rl;text-orientation:mixed;padding:12px 5px;cursor:pointer;transition:all 0.2s;" id="qa-toggle">ACTIONS</button>
-<div id="quick-actions" style="position:fixed;right:0;top:0;bottom:0;z-index:50;width:160px;background:#05050a;border-left:1px solid rgba(102,126,234,0.2);padding:16px 10px 16px 8px;display:none;flex-direction:column;gap:2px;overflow-y:auto;scrollbar-width:none;">
+
+<div id="quick-actions" style="position:fixed;right:0;bottom:140px;z-index:300;width:380px;max-width:42vw;max-height:70vh;background:rgba(5,5,15,0.97);border:1px solid rgba(102,126,234,0.25);border-radius:12px 12px 0 0;padding:16px 12px;display:none;flex-direction:column;gap:2px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(102,126,234,0.3) transparent;backdrop-filter:blur(20px);">
   <div style="font-size:8px;letter-spacing:3px;color:rgba(255,255,255,0.25);text-transform:uppercase;margin-bottom:8px;padding-left:4px;">QUICK ACTIONS</div>
   <div style="font-size:8px;letter-spacing:2px;color:rgba(102,126,234,0.7);text-transform:uppercase;margin:6px 0 3px 4px;">MARKET</div>
   <button class="qa-btn" onclick="fillPrompt('Analyze the current trends in the market focusing on [input sector or stock]. Identify emerging patterns and potential investment opportunities.')">Trend Analysis</button>
@@ -608,10 +608,8 @@ function fillPrompt(text) {
 }
 function toggleQA() {
   const panel = document.getElementById('quick-actions');
-  const toggle = document.getElementById('qa-toggle');
   const open = panel.style.display === 'flex';
   panel.style.display = open ? 'none' : 'flex';
-  toggle.style.right = open ? '160px' : '0';
 }
 </script>
 <!-- 3D Brain Graph -->
