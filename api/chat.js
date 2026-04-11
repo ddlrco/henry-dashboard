@@ -63,7 +63,7 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer cLVJRZ4dM4QEOQxZbBqc94jWevmBEtoI'
+        'Authorization': `Bearer ${process.env.OPENCLAW_TOKEN}`
       },
       body: JSON.stringify({ model: 'openclaw', messages, stream: false }),
       signal: controller.signal

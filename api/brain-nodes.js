@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     // VPS pushes new nodes here
     const { nodes, token } = req.body || {};
-    if (token !== process.env.OPENCLAW_TOKEN && token !== 'cLVJRZ4dM4QEOQxZbBqc94jWevmBEtoI') {
+    if (token !== process.env.OPENCLAW_TOKEN) {
       return res.status(401).json({ error: 'unauthorized' });
     }
     if (Array.isArray(nodes)) {
