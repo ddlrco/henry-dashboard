@@ -2667,63 +2667,61 @@ document.addEventListener("keydown", (e) => {
           bg.d3ReheatSimulation();
 
         } else if (morphMode === 1) {
-          // Radial — spread by group into sphere clusters
-          const allGroups = [...new Set(gd.nodes.map(n=>n.group))];
-          const groupCenters = {};
-          allGroups.forEach((grp,gi) => {
-            const ang = (gi/allGroups.length)*Math.PI*2;
-            const r = grp==='root' ? 0 : 500;
-            groupCenters[grp] = {x:r*Math.cos(ang), y:(Math.random()-0.5)*200, z:r*Math.sin(ang)};
-          });
-          gd.nodes.forEach(n => {
-            const c=groupCenters[n.group]||{x:0,y:0,z:0};
-            const cn=gd.nodes.filter(x=>x.group===n.group);
-            const ni=cn.indexOf(n);
-            const ang=(ni/Math.max(cn.length,1))*Math.PI*2;
-            const r=n.id==='henry'?0:120;
-            n.fx=c.x+r*Math.cos(ang); n.fy=c.y+r*Math.sin(ang); n.fz=c.z+(Math.random()-0.5)*80;
+          // SOLAR SYSTEM — HENRY center, rings by node importance (val)
+          gd.nodes.forEach((n,i) => {
+            if (n.id === 'henry') { n.fx=0; n.fy=0; n.fz=0; return; }
+            // Ring based on val (importance)
+            const ring = Math.max(1, Math.min(5, Math.floor((10-n.val)/2)));
+            const ringR = ring * 120;
+            // Spread evenly within ring using golden angle
+            const goldenAng = i * 2.399963;
+            const lat = Math.asin(-1 + (2*i)/N);
+            n.fx = ringR * Math.cos(goldenAng) * Math.cos(lat);
+            n.fy = ringR * Math.sin(lat);
+            n.fz = ringR * Math.sin(goldenAng) * Math.cos(lat);
           });
           bg.graphData(gd); bg.d3ReheatSimulation();
 
         } else if (morphMode === 2) {
-          // Tree — columns by group, tall spread for many nodes
-          const allGroups = [...new Set(gd.nodes.map(n=>n.group))];
-          allGroups.forEach((cl,ci) => {
-            const cn=gd.nodes.filter(n=>n.group===cl);
-            const xOff=(ci-Math.floor(allGroups.length/2))*160;
-            cn.forEach((n,ni) => {
-              n.fx=xOff+(Math.random()-0.5)*40;
-              n.fy=600-ni*(1200/Math.max(cn.length,1));
-              n.fz=(Math.random()-0.5)*60;
-            });
+          // DNA HELIX — two intertwining spirals
+          gd.nodes.forEach((n,i) => {
+            const strand = i % 2;
+            const t = (i / N) * Math.PI * 16;
+            const r = 200;
+            const offset = strand * Math.PI;
+            n.fx = r * Math.cos(t + offset);
+            n.fy = -400 + (i / N) * 800;
+            n.fz = r * Math.sin(t + offset);
           });
           bg.graphData(gd); bg.d3ReheatSimulation();
 
         } else if (morphMode === 3) {
-          // Grid — 3D cube, spaced for 476 nodes
-          const side=Math.ceil(Math.cbrt(N));
+          // SPHERE SURFACE — Fibonacci lattice on sphere
+          const R = 350;
           gd.nodes.forEach((n,i) => {
-            n.fx=((i%side)-side/2)*50;
-            n.fy=(Math.floor(i/side)%side-side/2)*50;
-            n.fz=(Math.floor(i/(side*side))-side/2)*50;
+            if (n.id === 'henry') { n.fx=0; n.fy=0; n.fz=0; return; }
+            const phi = Math.acos(1 - 2*(i+0.5)/N);
+            const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+            n.fx = R * Math.sin(phi) * Math.cos(theta);
+            n.fy = R * Math.cos(phi);
+            n.fz = R * Math.sin(phi) * Math.sin(theta);
           });
           bg.graphData(gd); bg.d3ReheatSimulation();
 
         } else if (morphMode === 4) {
-          // Galaxy — 5 arms, wide disc
-          const arms=5;
+          // VORTEX — nodes spiral inward toward center
           gd.nodes.forEach((n,i) => {
-            const arm=i%arms;
-            const t=(i/N)*Math.PI*12;
-            const r=40+(i/N)*600;
-            n.fx=r*Math.cos(t+(arm/arms)*Math.PI*2);
-            n.fy=(Math.random()-0.5)*120;
-            n.fz=r*Math.sin(t+(arm/arms)*Math.PI*2);
+            const t = (i/N) * Math.PI * 20;
+            const r = 30 + (1 - i/N) * 500;
+            const height = (i/N - 0.5) * 600;
+            n.fx = r * Math.cos(t);
+            n.fy = height;
+            n.fz = r * Math.sin(t);
           });
           bg.graphData(gd); bg.d3ReheatSimulation();
         }
 
-        const labels = ['Free','Radial','Tree','Grid','Galaxy'];
+        const labels = ['Free','Solar','Helix','Sphere','Vortex'];
         changeFormationBtn.querySelector('span').textContent = labels[morphMode];
         // Also update the visible morph button in left panel
         const morphLabel = document.getElementById('morph-label');
