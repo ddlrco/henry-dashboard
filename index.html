@@ -695,6 +695,10 @@ function initBrainGraph() {
         const ctrl = brainGraphInstance.controls();
         if (ctrl && ctrl.autoRotate !== undefined) {
           ctrl.autoRotate = true; ctrl.autoRotateSpeed = 0.4;
+          // Resume rotation after 3s of inactivity
+          let rotateTimer;
+          ctrl.addEventListener('start', () => { ctrl.autoRotate = false; clearTimeout(rotateTimer); });
+          ctrl.addEventListener('end', () => { rotateTimer = setTimeout(() => { ctrl.autoRotate = true; }, 3000); });
         } else if (attempts > 0) { setTimeout(() => enableAutoRotate(attempts-1), 1000); }
       } catch(e) { if (attempts > 0) setTimeout(() => enableAutoRotate(attempts-1), 1000); }
     }
