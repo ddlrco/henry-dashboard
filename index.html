@@ -1301,8 +1301,8 @@ function pulseFromHenry() {
             node._dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
         });
         const maxDist = Math.max(...gd.nodes.map(n => n._dist));
-        const duration = 1800; // ms for full pulse
-        const waveWidth = 0.25; // fraction of max dist
+        const duration = 900; // ms for full pulse
+        const waveWidth = 0.15; // tighter wave band
         let startTime = null;
         function animatePulse(ts) {
             if (!startTime) startTime = ts;
