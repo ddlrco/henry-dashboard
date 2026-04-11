@@ -728,6 +728,14 @@ function initBrainGraph() {
         // Obsidian-style: tight clusters, strong attraction between linked nodes
         brainGraphInstance.d3Force('charge').strength(-25);
         brainGraphInstance.d3Force('link').distance(15).strength(1.8);
+        // Gravity: pull all nodes toward center so clusters don't drift apart
+        brainGraphInstance.d3Force('gravity', alpha => {
+          brainGraphInstance.graphData().nodes.forEach(node => {
+            node.vx = (node.vx || 0) - node.x * 0.01 * alpha;
+            node.vy = (node.vy || 0) - node.y * 0.01 * alpha;
+            node.vz = (node.vz || 0) - (node.z||0) * 0.01 * alpha;
+          });
+        });
         brainGraphInstance.d3ReheatSimulation();
       } catch(e) {}
     }, 500);
