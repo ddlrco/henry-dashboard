@@ -3236,12 +3236,12 @@ document.addEventListener("keydown", (e) => {
 
     <div class="chat-input-row" style="flex-direction:column;gap:0.5rem;">
         <textarea class="chat-input" id="chat-input" placeholder="Enter command..." autocomplete="off" rows="2" style="resize:none;overflow:hidden;width:100%;"></textarea>
-        <div style="display:flex;gap:0.5rem;align-items:center;">
-            <button class="chat-btn" id="mic-toggle" title="Toggle microphone" style="font-size:1rem;">MIC</button>
-            <label class="file-label chat-btn" title="Upload file">📎<input type="file" id="file-input" multiple></label>
-            <button class="chat-btn" onclick="toggleQA()" style="font-size:0.65rem;letter-spacing:1px;flex:1;">ACTIONS</button>
-            <button class="chat-btn" id="chat-clear" title="Clear chat" style="font-size:0.7rem;letter-spacing:1px;">CLR</button>
-            <button class="chat-btn" id="chat-send" title="Send" onclick="sendChat()">→</button>
+        <div style="display:flex;gap:0.5rem;align-items:center;width:100%;">
+            <button class="chat-btn" id="mic-toggle" title="Toggle microphone" style="font-size:1rem;flex:1;">MIC</button>
+            <label class="file-label chat-btn" title="Upload file" style="flex:1;justify-content:center;">📎<input type="file" id="file-input" multiple></label>
+            <button class="chat-btn" onclick="toggleQA()" style="font-size:0.65rem;letter-spacing:1px;flex:2;">ACTIONS</button>
+            <button class="chat-btn" id="chat-clear" title="Clear chat" style="font-size:0.7rem;letter-spacing:1px;flex:1;">CLR</button>
+            <button class="chat-btn" id="chat-send" title="Send" onclick="sendChat()" style="flex:1;">→</button>
         </div>
     </div>
 </div>
