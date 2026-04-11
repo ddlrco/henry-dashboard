@@ -650,15 +650,15 @@ function initBrainGraph() {
           ctx.fillText(node.name, 128, 30);
           const texture = new THREE.CanvasTexture(canvas);
           const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthWrite: false, transparent: true, opacity: 1.0 }));
-          const s = Math.max(node.val || 3, 3) * (node.id === 'henry' ? 8 : 4);
+          const s = Math.max(node.val || 3, 3) * (node.id === 'henry' ? 4 : 2.5);
           sprite.scale.set(s, s / 4, 1);
           sprite.position.set(0, (node.val || 3) * (node.id === 'henry' ? 4 : 1.5) + 4, 0);
           if (node.id === 'henry') {
             const grp = new THREE.Group();
-            const geo = new THREE.SphereGeometry(28, 32, 32);
+            const geo = new THREE.SphereGeometry(16, 32, 32);
             const mat = new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.95});
             grp.add(new THREE.Mesh(geo, mat));
-            const halo = new THREE.Mesh(new THREE.SphereGeometry(38, 16, 16), new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.08, wireframe:true}));
+            const halo = new THREE.Mesh(new THREE.SphereGeometry(22, 16, 16), new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.08, wireframe:true}));
             grp.add(halo);
             grp.add(sprite);
             return grp;
@@ -698,6 +698,8 @@ function initBrainGraph() {
         brainGraphInstance.d3ReheatSimulation();
       } catch(e) {}
     }, 500);
+    // Start camera further back
+    try { brainGraphInstance.cameraPosition({x:0,y:0,z:600}); } catch(e) {}
     // Auto-rotate with retry
     function enableAutoRotate(attempts) {
       try {
