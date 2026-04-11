@@ -677,8 +677,9 @@ function initBrainGraph() {
       })
       .linkOpacity(0.5)
       .linkWidth(1.5)
-      .linkDirectionalParticles(4)
-      .linkDirectionalParticleWidth(2)
+      .linkDirectionalParticles(2)
+      .linkDirectionalParticleWidth(1.5)
+      .linkDirectionalParticleSpeed(0.004)
       .linkDirectionalParticleColor(l => GROUP_COLORS[typeof l.source === 'object' ? l.source.group : 'root'] || '#a5b4fc')
       .linkDirectionalParticleSpeed(0.006)
       .graphData(BRAIN_DATA)
@@ -690,9 +691,12 @@ function initBrainGraph() {
     window.BRAIN_DATA_FULL = JSON.parse(JSON.stringify(BRAIN_DATA));
     // Post-init config with safety
     setTimeout(() => {
-      try { brainGraphInstance.d3Force('charge').strength(-60); } catch(e) {}
-      try { brainGraphInstance.d3Force('link').distance(20); } catch(e) {}
-      try { brainGraphInstance.d3ReheatSimulation(); } catch(e) {}
+      try {
+        // Obsidian-style: tight clusters, strong attraction between linked nodes
+        brainGraphInstance.d3Force('charge').strength(-30);
+        brainGraphInstance.d3Force('link').distance(8).strength(2.0);
+        brainGraphInstance.d3ReheatSimulation();
+      } catch(e) {}
     }, 500);
     // Auto-rotate with retry
     function enableAutoRotate(attempts) {
