@@ -3467,9 +3467,16 @@ chatInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
 });
 // Auto-expand textarea
+let highlightDebounce;
 chatInput.addEventListener('input', () => {
     chatInput.style.height = 'auto';
     chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+    // Real-time node firing as you type
+    clearTimeout(highlightDebounce);
+    highlightDebounce = setTimeout(() => {
+        const q = chatInput.value.trim();
+        if (q.length >= 2) highlightNodes(q);
+    }, 300);
 });
 
 // File Upload
