@@ -976,6 +976,18 @@ function toggleBrainGraph() {
   };
 })();
 
+// Poll for new nodes from VPS every 12 seconds
+setInterval(async () => {
+  try {
+    const res = await fetch('/api/brain-nodes');
+    const data = await res.json();
+    if (data.nodes && data.nodes.length > 0 && window.addBrainNode) {
+      data.nodes.forEach(n => window.addBrainNode(n.name, n.group || 'Brain'));
+      console.log('[Brain] Added', data.nodes.length, 'new nodes from VPS');
+    }
+  } catch(e) {}
+}, 12000);
+
 window.addEventListener('load', () => {
   setTimeout(() => {
     initBrainGraph();
@@ -3251,10 +3263,41 @@ async function sendChat() {
           if (r.includes('browser') || r.includes('canvas')) window.triggerAgent('BROWSER');
         }
 
-        // Auto-grow knowledge graph for new info
+        // Auto-grow knowledge graph from every response
         if (data.reply && window.addBrainNode) {
-          const newProj = data.reply.match(/new project[:\s]+([\w\s]+)/i);
-          if (newProj) window.addBrainNode(newProj[1].trim(), 'Projects');
+          const r = data.reply;
+          const rl = r.toLowerCase();
+          const ts = Date.now();
+          // New projects/features mentioned
+          const projMatch = r.match(/(?:new project|building|created|launched)[:\s]+([A-Z][\w\s]{3,30})/i);
+          if (projMatch) window.addBrainNode(projMatch[1].trim(), 'Projects');
+          // Files/code created
+          const fileMatch = r.match(/(?:created|wrote|saved|pushed)[:\s]+([\w-]+\.(?:js|ts|py|md|html|css))/i);
+          if (fileMatch) window.addBrainNode(fileMatch[1], 'Frontend');
+          // Memory saves
+          if (rl.includes('memory') && (rl.includes('saved') || rl.includes('updated') || rl.includes('noted'))) {
+            window.addBrainNode('mem_'+ts, 'Brain');
+          }
+          // Search queries
+          if (rl.includes('search') || rl.includes('found') || rl.includes('web_search')) {
+            window.addBrainNode('search_'+ts, 'Brain');
+          }
+          // Image generation
+          if ((rl.includes('generat') || rl.includes('fal') || rl.includes('flux')) && rl.includes('image')) {
+            window.addBrainNode('img_'+ts, 'Media');
+          }
+          // API calls
+          if (rl.includes('api') && (rl.includes('calling') || rl.includes('request') || rl.includes('fetch'))) {
+            window.addBrainNode('api_'+ts, 'Backend');
+          }
+          // Git operations
+          if (rl.includes('git push') || rl.includes('committed') || rl.includes('deployed')) {
+            window.addBrainNode('deploy_'+ts, 'System');
+          }
+          // Tasks completed
+          if (rl.includes('done') || rl.includes('complete') || rl.includes('finished')) {
+            window.addBrainNode('task_'+ts, 'Brain');
+          }
         }
 
         // Update token count
