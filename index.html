@@ -727,8 +727,10 @@ function initBrainGraph() {
         if (node) {
             tip.textContent = node.name;
             tip.style.display = 'block';
+            window._focusNode = { name: node.name, group: node.group, id: node.id };
         } else {
             tip.style.display = 'none';
+            window._focusNode = null;
         }
       })
       .onNodeClick(node => {
@@ -3510,7 +3512,7 @@ async function sendChat() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ message: msg, history: chatHistory.slice(-6) })
+            body: JSON.stringify({ message: msg, history: chatHistory.slice(-6), focusNode: window._focusNode || null })
         });
         
         if (!response.ok) throw new Error('API request failed');
