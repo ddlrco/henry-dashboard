@@ -1020,10 +1020,8 @@ window.addEventListener('load', () => {
 
     <!-- Capabilities label only (canvas is fixed overlay) -->
     <div style="margin-top:20px;">
-      <div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.35);margin-bottom:6px;">Capabilities</div>
-      <div style="width:200px;height:200px;display:flex;align-items:center;justify-content:center;">
-        <div id="cap-anchor" style="width:1px;height:1px;"></div>
-      </div>
+      <div id="cap-label-ref" style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.35);margin-bottom:4px;">Capabilities</div>
+      <div style="height:162px;"></div>
     </div>
 
     <!-- Sub-Agents -->
@@ -3472,15 +3470,17 @@ function initKG() {
 <script>
 // Position radar canvas under the cap-anchor div
 window.addEventListener('load', () => {
-  setTimeout(() => {
-    const anchor = document.getElementById('cap-anchor');
+  function positionCapRadar() {
+    const label = document.getElementById('cap-label-ref');
     const canvas = document.getElementById('cap-radar-main');
-    if (anchor && canvas) {
-      const rect = anchor.getBoundingClientRect();
-      canvas.style.top = rect.top + 'px';
+    if (label && canvas) {
+      const rect = label.getBoundingClientRect();
+      canvas.style.top = (rect.bottom + 4) + 'px';
       canvas.style.left = '20px';
     }
-  }, 900);
+  }
+  setTimeout(positionCapRadar, 900);
+  setTimeout(positionCapRadar, 1800); // retry
 });
 </script>
 </body>
