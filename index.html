@@ -3286,53 +3286,60 @@ function addMsg(text, type) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// Highlight nodes by adding glowing spheres to the scene
-let highlightMeshes = [];
-function clearHighlights() {
-    if (!window.brainGraphInstance) return;
-    try {
-        const scene = window.brainGraphInstance.scene();
-        highlightMeshes.forEach(m => scene.remove(m));
-        highlightMeshes = [];
-    } catch(e) {}
-}
+// Neuron-firing highlight: matched nodes + their links pulse white
+let activeNodeIds = new Set();
+let activeLinkSet = new Set();
+let pulseStart = 0;
+
 function highlightNodes(query) {
     if (!window.brainGraphInstance || !query) return;
-    clearHighlights();
+    activeNodeIds.clear();
+    activeLinkSet.clear();
     const q = query.toLowerCase();
     try {
-        const scene = window.brainGraphInstance.scene();
         const gd = window.brainGraphInstance.graphData();
-        let matched = 0;
+        // Find matched nodes
         gd.nodes.forEach(node => {
-            if (!node.name || !node.name.toLowerCase().includes(q)) return;
-            if (node.x === undefined) return;
-            const r = Math.sqrt(node.val || 3) * 1.5 + 4;
-            const geo = new THREE.SphereGeometry(r, 16, 16);
-            const mat = new THREE.MeshBasicMaterial({color: 0xffdd00, transparent: true, opacity: 0.35, wireframe: false});
-            const mesh = new THREE.Mesh(geo, mat);
-            mesh.position.set(node.x, node.y, node.z || 0);
-            // Attach to node for position tracking
-            mesh._node = node;
-            scene.add(mesh);
-            highlightMeshes.push(mesh);
-            matched++;
+            if (node.name && node.name.toLowerCase().includes(q)) {
+                activeNodeIds.add(node.id);
+            }
         });
-        if (matched > 0) {
-            setTimeout(clearHighlights, 5000);
+        // Find connected nodes (1 hop)
+        gd.links.forEach(link => {
+            const srcId = typeof link.source === 'object' ? link.source.id : link.source;
+            const tgtId = typeof link.target === 'object' ? link.target.id : link.target;
+            if (activeNodeIds.has(srcId) || activeNodeIds.has(tgtId)) {
+                activeLinkSet.add(link);
+                activeNodeIds.add(srcId);
+                activeNodeIds.add(tgtId);
+            }
+        });
+        if (activeNodeIds.size > 0) {
+            pulseStart = Date.now();
+            // Apply white pulsing to nodes
+            window.brainGraphInstance
+                .nodeColor(node => {
+                    if (activeNodeIds.has(node.id)) return '#ffffff';
+                    return node.color || (node.id==='henry' ? '#ffffff' : (GROUP_COLORS[node.group] || '#b084f0'));
+                })
+                .linkColor(link => activeLinkSet.has(link) ? '#ffffff' : 'rgba(255,255,255,0.15)')
+                .linkWidth(link => activeLinkSet.has(link) ? 2.5 : 0.8)
+                .linkDirectionalParticles(link => activeLinkSet.has(link) ? 6 : 1)
+                .linkDirectionalParticleColor(link => activeLinkSet.has(link) ? '#ffffff' : 'rgba(180,180,255,0.4)');
+            // Reset after 4 seconds
+            setTimeout(() => {
+                activeNodeIds.clear();
+                activeLinkSet.clear();
+                window.brainGraphInstance
+                    .nodeColor(node => node.color || (node.id==='henry' ? '#ffffff' : (GROUP_COLORS[node.group] || '#b084f0')))
+                    .linkColor(() => 'rgba(255,255,255,0.15)')
+                    .linkWidth(0.8)
+                    .linkDirectionalParticles(1)
+                    .linkDirectionalParticleColor(l => GROUP_COLORS[typeof l.source==='object'?l.source.group:'root'] || '#a5b4fc');
+            }, 4000);
         }
     } catch(e) { console.warn('highlight error', e); }
 }
-// Update highlight mesh positions each frame
-function trackHighlights() {
-    highlightMeshes.forEach(m => {
-        if (m._node && m._node.x !== undefined) {
-            m.position.set(m._node.x, m._node.y, m._node.z || 0);
-        }
-    });
-    requestAnimationFrame(trackHighlights);
-}
-trackHighlights();
 
 async function sendChat() {
     const msg = chatInput.value.trim();
