@@ -3366,9 +3366,9 @@ function highlightNodes(query) {
                 activeLinkSet.clear();
                 window.brainGraphInstance
                     .nodeColor(node => node.color || (node.id==='henry' ? '#ffffff' : (GROUP_COLORS[node.group] || '#b084f0')))
-                    .linkColor(() => 'rgba(255,255,255,0.15)')
-                    .linkWidth(0.8)
-                    .linkDirectionalParticles(1)
+                    .linkColor(l => { const g = typeof l.source==='object'?l.source.group:'root'; return GROUP_COLORS[g] || '#667eea'; })
+                    .linkWidth(1.5)
+                    .linkDirectionalParticles(2)
                     .linkDirectionalParticleColor(l => GROUP_COLORS[typeof l.source==='object'?l.source.group:'root'] || '#a5b4fc');
             }, 4000);
         }
