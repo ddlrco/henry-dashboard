@@ -630,6 +630,26 @@ function initBrainGraph() {
       .backgroundColor('rgba(5,5,10,0.88)')
       .nodeLabel('name')
       .nodeColor(n => GROUP_COLORS[n.group] || '#667eea')
+      .nodeThreeObject(node => {
+        try {
+          if (!window.THREE) return null;
+          const canvas = document.createElement('canvas');
+          canvas.width = 256; canvas.height = 48;
+          const ctx = canvas.getContext('2d');
+          ctx.font = node.id === 'henry' ? 'bold 26px Arial' : '16px Arial';
+          ctx.fillStyle = node.id === 'henry' ? '#ffffff' : (GROUP_COLORS[node.group] || '#a5b4fc');
+          ctx.textAlign = 'center';
+          ctx.shadowColor = '#000000'; ctx.shadowBlur = 8;
+          ctx.fillText(node.name, 128, 30);
+          const texture = new THREE.CanvasTexture(canvas);
+          const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthWrite: false, transparent: true }));
+          const s = Math.max(node.val || 3, 3) * (node.id === 'henry' ? 5 : 3.5);
+          sprite.scale.set(s, s / 4, 1);
+          sprite.position.set(0, (node.val || 3) + 3, 0);
+          return sprite;
+        } catch(e) { return null; }
+      })
+      .nodeThreeObjectExtend(true)
       .nodeVal('val')
       .nodeLabel('name')
       .nodeOpacity(0.9)
