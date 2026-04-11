@@ -1268,9 +1268,8 @@ function randomizeColors() {
             .nodeColor(node => node.color || (node.id==='henry' ? '#ffffff' : (GROUP_COLORS[node.group] || seed[0])))
             .linkColor(l => { const g = typeof l.source==='object'?l.source.group:'root'; return GROUP_COLORS[g] || seed[0]; })
             .linkDirectionalParticleColor(l => GROUP_COLORS[typeof l.source==='object'?l.source.group:'root'] || seed[0]);
-        // Refresh node THREE objects to pick up new colors
-        const gd = window.brainGraphInstance.graphData();
-        window.brainGraphInstance.graphData({nodes:[...gd.nodes], links:[...gd.links]});
+        // Refresh just the node color — no simulation reset
+        window.brainGraphInstance.refresh();
     }
 }
 
