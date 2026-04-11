@@ -3239,7 +3239,7 @@ document.addEventListener("keydown", (e) => {
         <div style="display:flex;gap:0.5rem;align-items:center;">
             <button class="chat-btn" id="mic-toggle" title="Toggle microphone" style="font-size:1rem;">MIC</button>
             <label class="file-label chat-btn" title="Upload file">📎<input type="file" id="file-input" multiple></label>
-            <div style="flex:1;"></div>
+            <button class="chat-btn" onclick="toggleQA()" style="font-size:0.65rem;letter-spacing:1px;flex:1;">ACTIONS</button>
             <button class="chat-btn" id="chat-clear" title="Clear chat" style="font-size:0.7rem;letter-spacing:1px;">CLR</button>
             <button class="chat-btn" id="chat-send" title="Send" onclick="sendChat()">→</button>
         </div>
