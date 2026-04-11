@@ -699,7 +699,7 @@ function initBrainGraph() {
       .nodeThreeObjectExtend(true)
       .nodeLabel(node => node.name)
       .nodeColor(node => node.color || (node.id==='henry' ? '#ffffff' : (GROUP_COLORS[node.group] || '#b084f0')))
-      .nodeVal(node => node.id==='henry' ? 8 : Math.max(1.5, Math.min((node.val||1) * 1.5, 4)))
+      .nodeVal(node => node.id==='henry' ? 4 : Math.max(0.5, Math.min((node.val||1) * 0.6, 2)))
       .nodeResolution(16)
       .nodeLabel(node => '')
       
