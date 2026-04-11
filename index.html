@@ -726,8 +726,13 @@ function initBrainGraph() {
         }
       })
       .onNodeClick(node => {
-        const input = document.getElementById('chat-input');
-        if (input) { input.value = `Tell me about ${node.name} in Henry's knowledge graph.`; }
+        if (node.id === 'henry') {
+          // Pulse ripple through all nodes from HENRY
+          pulseFromHenry();
+        } else {
+          const input = document.getElementById('chat-input');
+          if (input) { input.value = `Tell me about ${node.name} in Henry's knowledge graph.`; }
+        }
       });
     // Set 2D canvas size
     // Set initial camera back
@@ -1282,6 +1287,42 @@ function toggleInvert(){
     const btn = document.getElementById('invert-btn');
     btn.textContent = inverted ? 'SHIFT ◀' : 'SHIFT ▶';
 }
+function pulseFromHenry() {
+    if (!window.brainGraphInstance) return;
+    try {
+        const gd = window.brainGraphInstance.graphData();
+        const total = gd.nodes.length;
+        let step = 0;
+        const steps = 6;
+        const interval = setInterval(() => {
+            const progress = step / steps;
+            window.brainGraphInstance
+                .nodeColor(node => {
+                    if (node.id === 'henry') return '#ffffff';
+                    // Wave effect based on node index
+                    const idx = gd.nodes.indexOf(node);
+                    const wave = Math.abs(Math.sin((idx / total * Math.PI * 2) + progress * Math.PI * 2));
+                    if (wave > 0.7) return '#ffffff';
+                    return node.color || (GROUP_COLORS[node.group] || '#b084f0');
+                })
+                .linkColor(link => {
+                    const progress2 = step / steps;
+                    return progress2 > 0.3 && progress2 < 0.8 ? 'rgba(255,255,255,0.8)' : (GROUP_COLORS[typeof link.source==='object'?link.source.group:'root'] || '#667eea');
+                })
+                .refresh();
+            step++;
+            if (step > steps) {
+                clearInterval(interval);
+                // Restore colors
+                window.brainGraphInstance
+                    .nodeColor(node => node.color || (node.id==='henry' ? '#ffffff' : (GROUP_COLORS[node.group] || '#b084f0')))
+                    .linkColor(l => { const g = typeof l.source==='object'?l.source.group:'root'; return GROUP_COLORS[g] || '#667eea'; })
+                    .refresh();
+            }
+        }, 150);
+    } catch(e) { console.warn('pulse error', e); }
+}
+
 function randomizeColors() {
     const palette = [
         ['#ff6b9d','#c084fc','#60a5fa','#34d399','#fbbf24','#f87171','#a78bfa','#38bdf8'],
