@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 25000); // 25s timeout
 
-    const response = await fetch('https://preview-airlines-newport-perfect.trycloudflare.com/v1/chat/completions', {
+    const response = await fetch('https://srv1406906.tail01747e.ts.net/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
