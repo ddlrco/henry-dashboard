@@ -1321,17 +1321,56 @@ async function startMicAnalysis() {
 // Mic only activates via the mic toggle button — no auto-start
 
 window.voiceRecog = "webkitSpeechRecognition" in window ? new webkitSpeechRecognition() : ("SpeechRecognition" in window ? new SpeechRecognition() : null);
+// Wake word detection — always listening for "Hey Henry"
+let wakeWordRecog = null;
+let wakeWordActive = false;
+function startWakeWordListening() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) return;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    wakeWordRecog = new SpeechRecognition();
+    wakeWordRecog.continuous = true;
+    wakeWordRecog.interimResults = false;
+    wakeWordRecog.lang = "en-US";
+    wakeWordRecog.onresult = (ev) => {
+        const transcript = ev.results[ev.results.length - 1][0].transcript.toLowerCase().trim();
+        if (transcript.includes('hey henry') || transcript.includes('henry')) {
+            if (wakeWordActive) return;
+            wakeWordActive = true;
+            // Flash HENRY node
+            if (window.brainGraphInstance) {
+                try {
+                    window.brainGraphInstance.nodeColor(node =>
+                        node.id === 'henry' ? '#00ff88' : (GROUP_COLORS[node.group] || '#b084f0')
+                    );
+                    setTimeout(() => window.brainGraphInstance.nodeColor(node =>
+                        node.id === 'henry' ? '#ffffff' : (GROUP_COLORS[node.group] || '#b084f0')
+                    ), 1500);
+                } catch(e) {}
+            }
+            // Start command mic
+            setTimeout(() => {
+                if (window.voiceRecog) {
+                    try { window.voiceRecog.start(); } catch(e) {}
+                }
+                wakeWordActive = false;
+            }, 300);
+        }
+    };
+    wakeWordRecog.onend = () => { setTimeout(startWakeWordListening, 1000); };
+    try { wakeWordRecog.start(); } catch(e) {}
+}
+// Start wake word on page load
+setTimeout(startWakeWordListening, 3000);
+
 if (window.voiceRecog) {
     window.voiceRecog.continuous = false;
     window.voiceRecog.lang = "en-US";
     window.voiceRecog.onstart = () => startMicAnalysis();
     window.voiceRecog.onresult = (ev) => {
         const text = ev.results[0][0].transcript;
-        // Fill the chat input and send
         const chatInput = document.getElementById('chat-input');
         if (chatInput) {
             chatInput.value = text;
-            // Trigger send
             const sendBtn = document.getElementById('chat-send');
             if (sendBtn) sendBtn.click();
         }
