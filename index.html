@@ -657,7 +657,7 @@ function initBrainGraph() {
         const g = typeof l.source === 'object' ? l.source.group : 'root';
         return GROUP_COLORS[g] || '#667eea';
       })
-      .linkOpacity(0.5)
+      
       .linkWidth(1.5)
       .linkDirectionalParticles(2)
       .linkDirectionalParticleWidth(1.5)
@@ -669,6 +669,8 @@ function initBrainGraph() {
         const input = document.getElementById('chat-input');
         if (input) { input.value = `Tell me about ${node.name} in Henry's knowledge graph.`; }
       });
+    // Set 2D canvas size
+    brainGraphInstance.width(window.innerWidth).height(window.innerHeight);
     window.brainGraphInstance = brainGraphInstance;
     window.BRAIN_DATA_FULL = JSON.parse(JSON.stringify(BRAIN_DATA));
     // Post-init config with safety
