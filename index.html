@@ -608,7 +608,7 @@ function toggleQA() {
   </div>
   <div id="brain-graph" style="width:100vw;height:100vh;"></div>
 </div></div>
-<script src="https://cdn.jsdelivr.net/npm/3d-force-graph@1.73.3/dist/3d-force-graph.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/force-graph@1.43.5/dist/force-graph.min.js"></script>
 
 <script>
 let brainGraphActive = true;
@@ -626,51 +626,33 @@ function initBrainGraph() {
   const container = document.getElementById('brain-graph-container');
   container.style.display = 'block';
   if (!brainGraphInstance) {
-    brainGraphInstance = ForceGraph3D({antialias:true, alpha:true})(document.getElementById('brain-graph'))
-      .backgroundColor('rgba(0,0,0,0)')
+    brainGraphInstance = ForceGraph()(document.getElementById('brain-graph'))
+      .backgroundColor('#050508')
       .nodeLabel('name')
       .nodeColor(n => GROUP_COLORS[n.group] || '#667eea')
-      .nodeThreeObject(node => {
-        try {
-          if (!window.THREE) return null;
-          const canvas = document.createElement('canvas');
-          canvas.width = 256; canvas.height = 48;
-          const ctx = canvas.getContext('2d');
-          ctx.font = node.id === 'henry' ? 'bold 32px Arial' : 'bold 20px Arial';
-          ctx.textAlign = 'center';
-          // Dark pill background for readability
-          const metrics = ctx.measureText(node.name);
-          const pad = 6;
-          ctx.fillStyle = 'rgba(0,0,0,0.75)';
-          ctx.beginPath();
-          ctx.roundRect(128-metrics.width/2-pad, 10, metrics.width+pad*2, 28, 4);
-          ctx.fill();
-          // White text, no shadow needed with bg
-          ctx.fillStyle = '#ffffff';
-          ctx.fillText(node.name, 128, 30);
-          const texture = new THREE.CanvasTexture(canvas);
-          const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthWrite: false, transparent: true, opacity: 1.0 }));
-          const s = Math.max(node.val || 3, 3) * (node.id === 'henry' ? 4 : 2.5);
-          sprite.scale.set(s, s / 4, 1);
-          sprite.position.set(0, (node.val || 3) * (node.id === 'henry' ? 4 : 1.5) + 4, 0);
-          if (node.id === 'henry') {
-            const grp = new THREE.Group();
-            const geo = new THREE.SphereGeometry(16, 32, 32);
-            const mat = new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.95});
-            grp.add(new THREE.Mesh(geo, mat));
-            const halo = new THREE.Mesh(new THREE.SphereGeometry(22, 16, 16), new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.08, wireframe:true}));
-            grp.add(halo);
-            grp.add(sprite);
-            return grp;
-          }
-          return sprite;
-        } catch(e) { return null; }
+            .nodeCanvasObject((node, ctx, globalScale) => {
+        const r = Math.sqrt(node.val || 3) * 3;
+        ctx.beginPath(); ctx.arc(node.x, node.y, r, 0, 2*Math.PI);
+        ctx.fillStyle = node.id === 'henry' ? '#ffffff' : (GROUP_COLORS[node.group] || '#667eea');
+        ctx.fill();
+        if (node.id === 'henry') {
+          ctx.beginPath(); ctx.arc(node.x, node.y, r+4, 0, 2*Math.PI);
+          ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.lineWidth=2; ctx.stroke();
+        }
+        const label = node.name;
+        const fontSize = Math.max(6, 10/globalScale);
+        ctx.font = (node.id==='henry'?'bold ':'') + fontSize + 'px Outfit,Arial';
+        ctx.textAlign='center'; ctx.textBaseline='top';
+        ctx.fillStyle='rgba(255,255,255,0.9)';
+        ctx.fillText(label, node.x, node.y + r + 2);
       })
-      .nodeThreeObjectExtend(true)
+      .nodePointerAreaPaint((node, color, ctx) => {
+        ctx.fillStyle=color; ctx.beginPath();
+        ctx.arc(node.x, node.y, Math.sqrt(node.val||3)*4, 0, 2*Math.PI); ctx.fill();
+      })
       .nodeVal('val')
       .nodeLabel('name')
-      .nodeOpacity(0.9)
-      .nodeResolution(16)
+      
       .linkColor(l => {
         const g = typeof l.source === 'object' ? l.source.group : 'root';
         return GROUP_COLORS[g] || '#667eea';
@@ -699,28 +681,9 @@ function initBrainGraph() {
       } catch(e) {}
     }, 500);
     // Start camera further back
-    try { brainGraphInstance.cameraPosition({x:0,y:0,z:600}); } catch(e) {}
-    // Auto-rotate with retry
-    function enableAutoRotate(attempts) {
-      try {
-        const ctrl = brainGraphInstance.controls();
-        if (ctrl && ctrl.autoRotate !== undefined) {
-          ctrl.autoRotate = true; ctrl.autoRotateSpeed = 0.4;
-        } else if (attempts > 0) {
-          setTimeout(() => enableAutoRotate(attempts-1), 1000);
-        }
-      } catch(e) { if (attempts > 0) setTimeout(() => enableAutoRotate(attempts-1), 1000); }
-    }
-    setTimeout(() => enableAutoRotate(5), 2500);
-    // Add lighting (with safety check for THREE)
-    try {
-      if (window.THREE) {
-        brainGraphInstance.scene().add(new THREE.AmbientLight(0xffffff, 3));
-        const dLight = new THREE.DirectionalLight(0xffffff, 2);
-        dLight.position.set(100,100,100);
-        brainGraphInstance.scene().add(dLight);
-      }
-    } catch(e) { console.warn('Light add failed:', e); }
+    
+
+
   }
 }
 
