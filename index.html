@@ -3186,7 +3186,7 @@ document.addEventListener("keydown", (e) => {
 <!-- Chat Bar & File Drop -->
 <style>
 .chat-container { position: fixed; top: 0; bottom: 0; right: 0; width: 380px; max-width: 42vw; z-index: 200; padding: 12px 12px 12px 12px; display: flex; flex-direction: column; background: transparent; }
-.chat-messages { flex: 1; overflow-y: auto; margin-bottom: 1rem; display: none; padding: 0 0.5rem; scrollbar-width: thin; scrollbar-color: rgba(102,126,234,0.3) transparent; }
+.chat-messages { flex: 1; overflow-y: auto; margin-bottom: 1rem; display: flex; flex-direction: column; justify-content: flex-end; padding: 0 0.5rem; scrollbar-width: thin; scrollbar-color: rgba(102,126,234,0.3) transparent; }
 .chat-messages::-webkit-scrollbar { width: 4px; }
 .chat-messages::-webkit-scrollbar-track { background: transparent; }
 .chat-messages::-webkit-scrollbar-thumb { background: rgba(102,126,234,0.3); border-radius: 2px; }
