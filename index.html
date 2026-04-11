@@ -686,7 +686,7 @@ function initBrainGraph() {
       });
     // Set 2D canvas size
     // Set initial camera back
-    try { brainGraphInstance.cameraPosition({x:0,y:0,z:600}); } catch(e) {}
+    try { brainGraphInstance.cameraPosition({x:0,y:0,z:900}); } catch(e) {}
     // Auto-rotate
     function enableAutoRotate(attempts) {
       try {
@@ -712,8 +712,8 @@ function initBrainGraph() {
     setTimeout(() => {
       try {
         // Obsidian-style: tight clusters, strong attraction between linked nodes
-        brainGraphInstance.d3Force('charge').strength(-30);
-        brainGraphInstance.d3Force('link').distance(8).strength(2.0);
+        brainGraphInstance.d3Force('charge').strength(-120);
+        brainGraphInstance.d3Force('link').distance(40).strength(0.5);
         brainGraphInstance.d3ReheatSimulation();
       } catch(e) {}
     }, 500);
