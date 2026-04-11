@@ -1367,8 +1367,8 @@ function startWakeWordListening() {
     wakeWordRecog.onend = () => { setTimeout(startWakeWordListening, 1000); };
     try { wakeWordRecog.start(); } catch(e) {}
 }
-// Start wake word on page load
-setTimeout(startWakeWordListening, 3000);
+// Wake word disabled — mic is manual only
+// setTimeout(startWakeWordListening, 3000);
 
 if (window.voiceRecog) {
     window.voiceRecog.continuous = false;
