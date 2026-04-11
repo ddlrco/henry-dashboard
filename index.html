@@ -3360,10 +3360,11 @@ function highlightNodes(query) {
                     if (activeNodeIds.has(node.id)) return '#ffffff';
                     return node.color || (node.id==='henry' ? '#ffffff' : (GROUP_COLORS[node.group] || '#b084f0'));
                 })
-                .linkColor(link => activeLinkSet.has(link) ? '#ffffff' : 'rgba(255,255,255,0.15)')
-                .linkWidth(link => activeLinkSet.has(link) ? 2.5 : 0.8)
-                .linkDirectionalParticles(link => activeLinkSet.has(link) ? 6 : 1)
-                .linkDirectionalParticleColor(link => activeLinkSet.has(link) ? '#ffffff' : 'rgba(180,180,255,0.4)');
+                .linkColor(link => activeLinkSet.has(link) ? '#ffffff' : (GROUP_COLORS[typeof link.source==='object'?link.source.group:'root'] || '#667eea'))
+                .linkWidth(link => activeLinkSet.has(link) ? 3 : 1.5)
+                .linkDirectionalParticles(link => activeLinkSet.has(link) ? 6 : 2)
+                .linkDirectionalParticleColor(link => activeLinkSet.has(link) ? '#ffffff' : (GROUP_COLORS[typeof link.source==='object'?link.source.group:'root'] || '#a5b4fc'))
+                .refresh();
             // Reset after 4 seconds
             setTimeout(() => {
                 activeNodeIds.clear();
@@ -3373,7 +3374,8 @@ function highlightNodes(query) {
                     .linkColor(l => { const g = typeof l.source==='object'?l.source.group:'root'; return GROUP_COLORS[g] || '#667eea'; })
                     .linkWidth(1.5)
                     .linkDirectionalParticles(2)
-                    .linkDirectionalParticleColor(l => GROUP_COLORS[typeof l.source==='object'?l.source.group:'root'] || '#a5b4fc');
+                    .linkDirectionalParticleColor(l => GROUP_COLORS[typeof l.source==='object'?l.source.group:'root'] || '#a5b4fc')
+                    .refresh();
             }, 4000);
         }
     } catch(e) { console.warn('highlight error', e); }
