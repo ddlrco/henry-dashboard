@@ -3199,7 +3199,7 @@ document.addEventListener("keydown", (e) => {
 </script>
 <!-- Chat Bar & File Drop -->
 <style>
-.chat-container { position: fixed; top: 0; bottom: 0; right: 0; width: 380px; max-width: 42vw; z-index: 200; padding: 12px 12px 12px 12px; display: flex; flex-direction: column; background: transparent; }
+.chat-container { position: fixed; top: 0; bottom: 0; right: 0; width: 380px; max-width: 42vw; z-index: 200; padding: 12px 12px 20px 12px; display: flex; flex-direction: column; background: transparent; }
 .chat-messages { flex: 1; overflow-y: auto; margin-bottom: 1rem; display: flex; flex-direction: column; justify-content: flex-end; padding: 0 0.5rem; scrollbar-width: thin; scrollbar-color: rgba(102,126,234,0.3) transparent; }
 .chat-messages::-webkit-scrollbar { width: 4px; }
 .chat-messages::-webkit-scrollbar-track { background: transparent; }
@@ -3209,7 +3209,7 @@ document.addEventListener("keydown", (e) => {
 .chat-msg.user { background: rgba(102, 126, 234, 0.2); border: 1px solid rgba(102, 126, 234, 0.3); margin-left: 20%; }
 .chat-msg.ai { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); margin-right: 20%; color: rgba(255,255,255,0.8); }
 .chat-input-row { display: flex; gap: 0.75rem; align-items: center; }
-.chat-input { flex: 1; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 0.8rem 1.2rem; color: #fff; font-size: 0.9rem; font-family: 'Outfit', sans-serif; letter-spacing: 0.3px; transition: all 0.3s; outline: none; line-height: 1.5; max-height: 120px; overflow-y: auto; }
+.chat-input { flex: 1; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 0.8rem 1.2rem; color: #fff; font-size: 0.9rem; font-family: 'Outfit', sans-serif; letter-spacing: 0.3px; transition: all 0.3s; outline: none; line-height: 1.5; min-height: 56px; max-height: 120px; overflow-y: auto; resize: none; }
 .chat-input:focus { border-color: rgba(255, 255, 255, 0.25); background: rgba(255, 255, 255, 0.06); }
 .chat-input::placeholder { color: rgba(255, 255, 255, 0.2); letter-spacing: 1px; font-size: 0.85rem; }
 .chat-btn { width: 44px; height: 44px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(20px); background: rgba(255, 255, 255, 0.06); color: rgba(255,255,255,0.5); cursor: pointer; font-size: 0.9rem; transition: all 0.3s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: 'Outfit', sans-serif; letter-spacing: 1px; }
@@ -3237,7 +3237,7 @@ document.addEventListener("keydown", (e) => {
     <div class="chat-input-row">
         <button class="chat-btn" id="mic-toggle" title="Toggle microphone" style="font-size: 1rem;">MIC</button>
         <label class="file-label chat-btn" title="Upload file">📎<input type="file" id="file-input" multiple></label>
-        <textarea class="chat-input" id="chat-input" placeholder="Enter command..." autocomplete="off" rows="1" style="resize:none;overflow:hidden;"></textarea>
+        <textarea class="chat-input" id="chat-input" placeholder="Enter command..." autocomplete="off" rows="2" style="resize:none;overflow:hidden;"></textarea>
         <button class="chat-btn" id="chat-clear" title="Clear chat" style="font-size:0.7rem;letter-spacing:1px;">CLR</button>
         <button class="chat-btn" id="chat-send" title="Send" onclick="sendChat()">→</button>
     </div>
