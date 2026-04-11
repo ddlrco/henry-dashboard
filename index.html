@@ -698,13 +698,21 @@ function initBrainGraph() {
     }
     setTimeout(() => enableAutoRotate(5), 2500);
     window.brainGraphInstance = brainGraphInstance;
-    // Add lighting
+    // Add lighting + stars to 3D scene
     try {
       if (window.THREE) {
         brainGraphInstance.scene().add(new THREE.AmbientLight(0xffffff, 3));
         const dLight = new THREE.DirectionalLight(0xffffff, 2);
         dLight.position.set(100,100,100);
         brainGraphInstance.scene().add(dLight);
+        // Add starfield directly to scene
+        const starGeo = new THREE.BufferGeometry();
+        const starCount = 3000;
+        const starPos = new Float32Array(starCount * 3);
+        for (let i=0; i<starCount*3; i++) starPos[i] = (Math.random()-0.5)*4000;
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        const starMat = new THREE.PointsMaterial({color:0xffffff, size:1.5, transparent:true, opacity:0.8});
+        brainGraphInstance.scene().add(new THREE.Points(starGeo, starMat));
       }
     } catch(e) {}
     window.BRAIN_DATA_FULL = JSON.parse(JSON.stringify(BRAIN_DATA));
@@ -712,8 +720,8 @@ function initBrainGraph() {
     setTimeout(() => {
       try {
         // Obsidian-style: tight clusters, strong attraction between linked nodes
-        brainGraphInstance.d3Force('charge').strength(-120);
-        brainGraphInstance.d3Force('link').distance(40).strength(0.5);
+        brainGraphInstance.d3Force('charge').strength(-60);
+        brainGraphInstance.d3Force('link').distance(25).strength(1.2);
         brainGraphInstance.d3ReheatSimulation();
       } catch(e) {}
     }, 500);
