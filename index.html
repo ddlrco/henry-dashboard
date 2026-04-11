@@ -3232,10 +3232,27 @@ function addMsg(text, type) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+function highlightNodes(query) {
+    if (!window.brainGraphInstance || !query) return;
+    const q = query.toLowerCase();
+    try {
+        window.brainGraphInstance.nodeColor(node => {
+            const match = node.name && node.name.toLowerCase().includes(q);
+            if (node.id === 'henry') return '#ffffff';
+            return match ? '#ffdd00' : (GROUP_COLORS[node.group] || '#b084f0');
+        });
+        setTimeout(() => {
+            window.brainGraphInstance.nodeColor(node =>
+                node.id === 'henry' ? '#ffffff' : (GROUP_COLORS[node.group] || '#b084f0')
+            );
+        }, 4000);
+    } catch(e) {}
+}
+
 async function sendChat() {
     const msg = chatInput.value.trim();
     if (!msg && uploadedFiles.length === 0) return;
-    if (msg) addMsg(msg, 'user');
+    if (msg) { addMsg(msg, 'user'); highlightNodes(msg); }
     if (uploadedFiles.length > 0) {
         addMsg('📎 ' + uploadedFiles.map(f => f.name).join(', '), 'user');
         uploadedFiles = [];
