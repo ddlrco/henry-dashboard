@@ -1054,7 +1054,10 @@ window.addEventListener('load', () => {
         <div id="model-status" style="font-size:11px;color:#4ade80;margin-top:8px;">● Connected</div>
         <div id="token-count" style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px;letter-spacing:1px;">TOKENS: 0</div>
         <button id="invert-btn" onclick="toggleInvert()" style="margin-top:12px;background:none;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.4);padding:6px 14px;border-radius:4px;font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.3s;">SHIFT</button>
-        <button id="logout-btn" onclick="henryLogout()" style="margin-top:8px;background:none;border:1px solid rgba(248,113,113,0.3);color:rgba(248,113,113,0.6);padding:6px 14px;border-radius:4px;font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.3s;">KILL LINK</button>
+        <div style="display:flex;gap:6px;margin-top:8px;">
+        <button id="logout-btn" onclick="henryLogout()" style="flex:1;background:none;border:1px solid rgba(248,113,113,0.3);color:rgba(248,113,113,0.6);padding:6px 8px;border-radius:4px;font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.3s;">KILL LINK</button>
+        <button onclick="randomizeColors()" style="flex:1;background:none;border:1px solid rgba(102,126,234,0.3);color:rgba(102,126,234,0.7);padding:6px 8px;border-radius:4px;font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.3s;">COLOR</button>
+        </div>
     </div>
 
     <!-- Controls -->
@@ -1251,6 +1254,23 @@ function toggleInvert(){
     const btn = document.getElementById('invert-btn');
     btn.textContent = inverted ? 'SHIFT ◀' : 'SHIFT ▶';
 }
+function randomizeColors() {
+    const palette = [
+        ['#ff6b9d','#c084fc','#60a5fa','#34d399','#fbbf24','#f87171','#a78bfa','#38bdf8'],
+        ['#e879f9','#fb923c','#4ade80','#facc15','#f472b6','#22d3ee','#818cf8','#a3e635'],
+        ['#ff4e50','#fc913a','#f9d62e','#eae374','#e2f4c7','#a8edea','#7ce8ca','#b3a5f0'],
+        ['#667eea','#764ba2','#f093fb','#f5576c','#4facfe','#00f2fe','#43e97b','#38f9d7'],
+    ];
+    const seed = palette[Math.floor(Math.random() * palette.length)];
+    const groups = ['root','project','file','function','system','media','contacts','git'];
+    groups.forEach((g, i) => { GROUP_COLORS[g] = seed[i % seed.length]; });
+    if (window.brainGraphInstance) {
+        window.brainGraphInstance.nodeColor(node =>
+            node.color || (node.id==='henry' ? '#ffffff' : (GROUP_COLORS[node.group] || seed[0]))
+        );
+    }
+}
+
 function henryLogout(){
     sessionStorage.removeItem("henryAuth");
     // Kill mic if active
