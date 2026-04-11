@@ -666,8 +666,9 @@ function initBrainGraph() {
         } catch(e) { return null; }
       })
       .nodeThreeObjectExtend(true)
+      .nodeLabel(node => node.name)
       .nodeColor(node => node.color || (node.id==='henry' ? '#ffffff' : (GROUP_COLORS[node.group] || '#b084f0')))
-      .nodeVal('val')
+      .nodeVal(node => node.id==='henry' ? 20 : Math.max(1, Math.min(node.val||1, 6)))
       .nodeLabel('name')
       
       .linkColor(l => {
@@ -726,8 +727,8 @@ function initBrainGraph() {
     setTimeout(() => {
       try {
         // Obsidian-style: tight clusters, strong attraction between linked nodes
-        brainGraphInstance.d3Force('charge').strength(-25);
-        brainGraphInstance.d3Force('link').distance(15).strength(1.8);
+        brainGraphInstance.d3Force('charge').strength(-80);
+        brainGraphInstance.d3Force('link').distance(30).strength(0.8);
         // Gravity: pull all nodes toward center so clusters don't drift apart
         brainGraphInstance.d3Force('gravity', alpha => {
           brainGraphInstance.graphData().nodes.forEach(node => {
