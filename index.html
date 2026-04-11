@@ -608,7 +608,8 @@ function toggleQA() {
   </div>
   <div id="brain-graph" style="width:100vw;height:100vh;"></div>
 </div></div>
-<script src="https://cdn.jsdelivr.net/npm/3d-force-graph@1.73.3/dist/3d-force-graph.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.166.1/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/3d-force-graph@1.73.3/dist/3d-force-graph.min.js"></script>
 
 <script>
 let brainGraphActive = true;
@@ -665,6 +666,7 @@ function initBrainGraph() {
         } catch(e) { return null; }
       })
       .nodeThreeObjectExtend(true)
+      .nodeColor(node => node.id==='henry' ? '#ffffff' : (GROUP_COLORS[node.group] || '#b084f0'))
       .nodeVal('val')
       .nodeLabel('name')
       
