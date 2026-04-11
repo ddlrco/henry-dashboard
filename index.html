@@ -627,7 +627,7 @@ function initBrainGraph() {
   container.style.display = 'block';
   if (!brainGraphInstance) {
     brainGraphInstance = ForceGraph3D()(document.getElementById('brain-graph'))
-      .backgroundColor('rgba(5,5,10,0.88)')
+      .backgroundColor('rgba(0,0,0,0.55)')
       .nodeLabel('name')
       .nodeColor(n => GROUP_COLORS[n.group] || '#667eea')
       .nodeThreeObject(node => {
@@ -640,13 +640,22 @@ function initBrainGraph() {
           ctx.fillStyle = '#ffffff';
           ctx.textAlign = 'center';
           ctx.shadowColor = '#000000'; ctx.shadowBlur = 12;
-          ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
           ctx.fillText(node.name, 128, 30);
           const texture = new THREE.CanvasTexture(canvas);
           const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthWrite: false, transparent: true }));
-          const s = Math.max(node.val || 3, 3) * (node.id === 'henry' ? 6 : 5);
+          const s = Math.max(node.val || 3, 3) * (node.id === 'henry' ? 8 : 4);
           sprite.scale.set(s, s / 4, 1);
-          sprite.position.set(0, (node.val || 3) + 3, 0);
+          sprite.position.set(0, (node.val || 3) * (node.id === 'henry' ? 4 : 1.5) + 4, 0);
+          if (node.id === 'henry') {
+            const grp = new THREE.Group();
+            const geo = new THREE.SphereGeometry(28, 32, 32);
+            const mat = new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.95});
+            grp.add(new THREE.Mesh(geo, mat));
+            const halo = new THREE.Mesh(new THREE.SphereGeometry(38, 16, 16), new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.08, wireframe:true}));
+            grp.add(halo);
+            grp.add(sprite);
+            return grp;
+          }
           return sprite;
         } catch(e) { return null; }
       })
@@ -678,13 +687,18 @@ function initBrainGraph() {
       try { brainGraphInstance.d3Force('link').distance(20); } catch(e) {}
       try { brainGraphInstance.d3ReheatSimulation(); } catch(e) {}
     }, 500);
-    // Auto-rotate — delayed to ensure controls are ready
-    setTimeout(() => {
+    // Auto-rotate with retry
+    function enableAutoRotate(attempts) {
       try {
         const ctrl = brainGraphInstance.controls();
-        if (ctrl) { ctrl.autoRotate = true; ctrl.autoRotateSpeed = 0.4; }
-      } catch(e) { console.warn('autoRotate:', e); }
-    }, 2000);
+        if (ctrl && ctrl.autoRotate !== undefined) {
+          ctrl.autoRotate = true; ctrl.autoRotateSpeed = 0.4;
+        } else if (attempts > 0) {
+          setTimeout(() => enableAutoRotate(attempts-1), 1000);
+        }
+      } catch(e) { if (attempts > 0) setTimeout(() => enableAutoRotate(attempts-1), 1000); }
+    }
+    setTimeout(() => enableAutoRotate(5), 2500);
     // Add lighting (with safety check for THREE)
     try {
       if (window.THREE) {
@@ -801,7 +815,7 @@ function toggleBrainGraph() {
     const canvas = document.getElementById('cap-radar-main');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    const W = 200, H = 200, cx = 100, cy = 100;
+    const W = 160, H = 160, cx = 80, cy = 80;
     const n = RADAR_CAPS.length;
     const maxR = 72;
 
@@ -3447,7 +3461,7 @@ function initKG() {
 </script>
 
 <!-- Capabilities radar fixed overlay -->
-<canvas id="cap-radar-main" width="200" height="200" style="position:fixed;left:20px;top:390px;width:200px;height:200px;z-index:31;pointer-events:none;"></canvas>
+<canvas id="cap-radar-main" width="160" height="160" style="position:fixed;left:20px;top:390px;width:160px;height:160px;z-index:31;pointer-events:none;"></canvas>
 <script>
 // Position radar canvas under the cap-anchor div
 window.addEventListener('load', () => {
