@@ -2680,7 +2680,11 @@ document.addEventListener("keydown", (e) => {
             n.fy = ringR * Math.sin(lat);
             n.fz = ringR * Math.sin(goldenAng) * Math.cos(lat);
           });
-          bg.graphData(gd); bg.d3ReheatSimulation();
+          bg.graphData(gd);
+        // Always pin HENRY at center, large
+        const henryNode = gd.nodes.find(n => n.id === 'henry');
+        if (henryNode) { henryNode.fx=0; henryNode.fy=0; henryNode.fz=0; henryNode.val=18; }
+        bg.d3ReheatSimulation();
 
         } else if (morphMode === 2) {
           // DNA HELIX — two intertwining spirals
@@ -2693,7 +2697,11 @@ document.addEventListener("keydown", (e) => {
             n.fy = -400 + (i / N) * 800;
             n.fz = r * Math.sin(t + offset);
           });
-          bg.graphData(gd); bg.d3ReheatSimulation();
+          bg.graphData(gd);
+        // Always pin HENRY at center, large
+        const henryNode = gd.nodes.find(n => n.id === 'henry');
+        if (henryNode) { henryNode.fx=0; henryNode.fy=0; henryNode.fz=0; henryNode.val=18; }
+        bg.d3ReheatSimulation();
 
         } else if (morphMode === 3) {
           // SPHERE SURFACE — Fibonacci lattice on sphere
@@ -2706,7 +2714,11 @@ document.addEventListener("keydown", (e) => {
             n.fy = R * Math.cos(phi);
             n.fz = R * Math.sin(phi) * Math.sin(theta);
           });
-          bg.graphData(gd); bg.d3ReheatSimulation();
+          bg.graphData(gd);
+        // Always pin HENRY at center, large
+        const henryNode = gd.nodes.find(n => n.id === 'henry');
+        if (henryNode) { henryNode.fx=0; henryNode.fy=0; henryNode.fz=0; henryNode.val=18; }
+        bg.d3ReheatSimulation();
 
         } else if (morphMode === 4) {
           // VORTEX — nodes spiral inward toward center
@@ -2718,7 +2730,11 @@ document.addEventListener("keydown", (e) => {
             n.fy = height;
             n.fz = r * Math.sin(t);
           });
-          bg.graphData(gd); bg.d3ReheatSimulation();
+          bg.graphData(gd);
+        // Always pin HENRY at center, large
+        const henryNode = gd.nodes.find(n => n.id === 'henry');
+        if (henryNode) { henryNode.fx=0; henryNode.fy=0; henryNode.fz=0; henryNode.val=18; }
+        bg.d3ReheatSimulation();
         }
 
         const labels = ['Free','Solar','Helix','Sphere','Vortex'];
