@@ -631,24 +631,35 @@ function initBrainGraph() {
       .nodeLabel('name')
       .nodeColor(n => GROUP_COLORS[n.group] || '#667eea')
             .nodeCanvasObject((node, ctx, globalScale) => {
-        const r = Math.sqrt(node.val || 3) * 3;
-        ctx.beginPath(); ctx.arc(node.x, node.y, r, 0, 2*Math.PI);
-        ctx.fillStyle = node.id === 'henry' ? '#ffffff' : (GROUP_COLORS[node.group] || '#667eea');
+        const isHenry = node.id === 'henry';
+        const r = isHenry ? 12 : Math.max(2, Math.sqrt((node.val||2)) * 1.8);
+        const color = GROUP_COLORS[node.group] || '#667eea';
+        // Node circle
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, r, 0, 2*Math.PI);
+        ctx.fillStyle = isHenry ? '#ffffff' : color;
         ctx.fill();
-        if (node.id === 'henry') {
-          ctx.beginPath(); ctx.arc(node.x, node.y, r+4, 0, 2*Math.PI);
-          ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.lineWidth=2; ctx.stroke();
+        // Henry outer ring
+        if (isHenry) {
+          ctx.beginPath(); ctx.arc(node.x, node.y, r+3, 0, 2*Math.PI);
+          ctx.strokeStyle='rgba(255,255,255,0.35)'; ctx.lineWidth=1.5; ctx.stroke();
         }
-        const label = node.name;
-        const fontSize = Math.max(6, 10/globalScale);
-        ctx.font = (node.id==='henry'?'bold ':'') + fontSize + 'px Outfit,Arial';
-        ctx.textAlign='center'; ctx.textBaseline='top';
-        ctx.fillStyle='rgba(255,255,255,0.9)';
-        ctx.fillText(label, node.x, node.y + r + 2);
+        // Labels: show when zoomed in OR for hub nodes
+        const isHub = (node.val||2) >= 8;
+        const showLabel = globalScale >= 1.5 || isHub || isHenry;
+        if (showLabel) {
+          const fontSize = isHenry ? 13 : Math.min(11, 8 * globalScale);
+          ctx.font = (isHenry ? 'bold ' : '') + fontSize + 'px Outfit,Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          ctx.fillStyle = isHenry ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.75)';
+          ctx.fillText(node.name, node.x, node.y + r + 2);
+        }
       })
       .nodePointerAreaPaint((node, color, ctx) => {
+        const r = node.id==='henry' ? 14 : Math.max(4, Math.sqrt((node.val||2))*2.5);
         ctx.fillStyle=color; ctx.beginPath();
-        ctx.arc(node.x, node.y, Math.sqrt(node.val||3)*4, 0, 2*Math.PI); ctx.fill();
+        ctx.arc(node.x, node.y, r, 0, 2*Math.PI); ctx.fill();
       })
       .nodeVal('val')
       .nodeLabel('name')
