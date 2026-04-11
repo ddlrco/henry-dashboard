@@ -626,8 +626,8 @@ function initBrainGraph() {
   const container = document.getElementById('brain-graph-container');
   container.style.display = 'block';
   if (!brainGraphInstance) {
-    brainGraphInstance = ForceGraph3D()(document.getElementById('brain-graph'))
-      .backgroundColor('rgba(0,0,0,0.55)')
+    brainGraphInstance = ForceGraph3D({antialias:true, alpha:true})(document.getElementById('brain-graph'))
+      .backgroundColor('rgba(0,0,0,0)')
       .nodeLabel('name')
       .nodeColor(n => GROUP_COLORS[n.group] || '#667eea')
       .nodeThreeObject(node => {
