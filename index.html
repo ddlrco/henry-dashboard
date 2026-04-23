@@ -1083,10 +1083,20 @@ window.addEventListener('load', () => {
 
 <div id="instructions-container">
     <div id="instruction-title" style="font-size: 22px; font-weight: 600; letter-spacing: -0.02em; background: linear-gradient(135deg, #fff 30%, #a5b4fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px;">HENRY AI</div>
+
+    <!-- Henry / Polly agent toggle -->
+    <div style="margin-bottom:14px;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.4);margin-bottom:6px;">Agent</div>
+        <div id="agent-toggle" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+            <button id="agent-henry-btn" onclick="setActiveAgent('henry')" style="background:linear-gradient(135deg,rgba(102,126,234,0.25),rgba(165,180,252,0.15));border:1px solid rgba(165,180,252,0.55);border-radius:10px;padding:10px 8px;color:#fff;font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all 0.2s;box-shadow:0 0 12px rgba(102,126,234,0.25) inset;">🧠 HENRY</button>
+            <button id="agent-polly-btn" onclick="setActiveAgent('polly')" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:10px 8px;color:rgba(255,255,255,0.65);font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all 0.2s;">🎨 POLLY</button>
+        </div>
+        <div id="agent-caption" style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:6px;letter-spacing:0.5px;">Henry · OpenClaw · ops + research</div>
+    </div>
+
     <div style="margin-top: 0;">
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.4);margin-bottom:6px;">Active Model</div>
         <select id="model-select" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:8px 12px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22white%22><path d=%22M7 10l5 5 5-5z%22/></svg>');background-repeat:no-repeat;background-position:right 10px center;">
-            <option value="polly" style="background:#111;">🎨 Polly (Creative Ops)</option>
             <option value="claude-sonnet-4.5" style="background:#111;">Claude Sonnet 4.5</option>
             <option value="claude-opus-4.6" style="background:#111;">Claude Opus 4.6</option>
             <option value="gpt-4.1" style="background:#111;">GPT-4.1</option>
@@ -1370,6 +1380,47 @@ function randomizeColors() {
         window.brainGraphInstance.refresh();
     }
 }
+
+// Agent toggle: switch dashboard identity between Henry and Polly
+function setActiveAgent(agent) {
+    window._activeAgent = agent;
+    try { localStorage.setItem('agent', agent); } catch(e){}
+    const henryBtn = document.getElementById('agent-henry-btn');
+    const pollyBtn = document.getElementById('agent-polly-btn');
+    const title = document.getElementById('instruction-title');
+    const caption = document.getElementById('agent-caption');
+    const modelSelect = document.getElementById('model-select');
+    if (agent === 'polly') {
+        if (henryBtn) { henryBtn.style.background = 'rgba(255,255,255,0.04)'; henryBtn.style.border = '1px solid rgba(255,255,255,0.15)'; henryBtn.style.color = 'rgba(255,255,255,0.65)'; henryBtn.style.boxShadow = 'none'; }
+        if (pollyBtn) { pollyBtn.style.background = 'linear-gradient(135deg, rgba(244,114,182,0.25), rgba(232,121,249,0.15))'; pollyBtn.style.border = '1px solid rgba(244,114,182,0.55)'; pollyBtn.style.color = '#fff'; pollyBtn.style.boxShadow = '0 0 12px rgba(244,114,182,0.25) inset'; }
+        if (title) { title.textContent = 'POLLY AI'; title.style.background = 'linear-gradient(135deg, #fff 30%, #f472b6 100%)'; title.style.webkitBackgroundClip = 'text'; title.style.webkitTextFillColor = 'transparent'; }
+        if (caption) caption.textContent = 'Polly · Claude Sonnet 4.6 · creative ops + media';
+        if (modelSelect) { modelSelect.style.opacity = '0.35'; modelSelect.disabled = true; modelSelect.title = "Polly uses Claude Sonnet 4.6 natively — model picker disabled"; }
+    } else {
+        if (henryBtn) { henryBtn.style.background = 'linear-gradient(135deg, rgba(102,126,234,0.25), rgba(165,180,252,0.15))'; henryBtn.style.border = '1px solid rgba(165,180,252,0.55)'; henryBtn.style.color = '#fff'; henryBtn.style.boxShadow = '0 0 12px rgba(102,126,234,0.25) inset'; }
+        if (pollyBtn) { pollyBtn.style.background = 'rgba(255,255,255,0.04)'; pollyBtn.style.border = '1px solid rgba(255,255,255,0.15)'; pollyBtn.style.color = 'rgba(255,255,255,0.65)'; pollyBtn.style.boxShadow = 'none'; }
+        if (title) { title.textContent = 'HENRY AI'; title.style.background = 'linear-gradient(135deg, #fff 30%, #a5b4fc 100%)'; title.style.webkitBackgroundClip = 'text'; title.style.webkitTextFillColor = 'transparent'; }
+        if (caption) caption.textContent = 'Henry · OpenClaw · ops + research';
+        if (modelSelect) { modelSelect.style.opacity = '1'; modelSelect.disabled = false; modelSelect.title = ''; }
+    }
+}
+
+// Restore last-selected agent on page load
+(function restoreAgent(){
+    try {
+        const saved = localStorage.getItem('agent');
+        if (saved === 'polly' || saved === 'henry') {
+            // defer until DOM + buttons exist
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => setActiveAgent(saved));
+            } else {
+                setTimeout(() => setActiveAgent(saved), 0);
+            }
+        } else {
+            window._activeAgent = 'henry';
+        }
+    } catch(e){ window._activeAgent = 'henry'; }
+})();
 
 function henryLogout(){
     sessionStorage.removeItem("henryAuth");
@@ -3506,9 +3557,9 @@ async function sendChat() {
         row.style.setProperty('--freq-speed', speeds[i % speeds.length] + 's');
     });
     
-    // Route to Polly (Anthropic direct) if selected, else Henry (OpenClaw)
-    const selectedModel = document.getElementById('model-select')?.value || 'claude-sonnet-4.5';
-    const apiEndpoint = selectedModel === 'polly' ? '/api/chat-polly' : '/api/chat';
+    // Route to Polly (Anthropic direct) or Henry (OpenClaw) based on active agent toggle
+    const activeAgent = window._activeAgent || localStorage.getItem('agent') || 'henry';
+    const apiEndpoint = activeAgent === 'polly' ? '/api/chat-polly' : '/api/chat';
     try {
         const response = await fetch(apiEndpoint, {
             method: 'POST',
