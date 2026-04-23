@@ -540,6 +540,98 @@ body.inverted .chat-msg.ai { background: rgba(0,0,0,0.05); border-color: rgba(0,
 body.inverted #invert-btn { border-color: rgba(0,0,0,0.2); color: rgba(0,0,0,0.5); }
 body.inverted #logout-btn { border-color: rgba(220,38,38,0.3); color: rgba(220,38,38,0.6); }
 
+/* ====== Invert-mode fixes for elements with inline white text =============
+   The original invert rules only covered items with dedicated classes/IDs.
+   These cover all sidebar labels, buttons, dropdown text, and new agent-
+   toggle elements that previously stayed invisible in invert mode. */
+
+/* Sidebar section labels (ACTIVE MODEL / CAPABILITIES / SUB-AGENTS / AGENT / QUICK ACTIONS / MARKET / PRINTS) */
+body.inverted #instructions-container div,
+body.inverted #instructions-container > div > div[style*="text-transform"],
+body.inverted [style*="letter-spacing:2px"][style*="text-transform"] { color: rgba(0,0,0,0.55) !important; }
+
+/* Model dropdown text */
+body.inverted #model-select {
+    background: rgba(0,0,0,0.05) !important;
+    border-color: rgba(0,0,0,0.15) !important;
+    color: #1a1a2e !important;
+    background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22black%22><path d=%22M7 10l5 5 5-5z%22/></svg>') !important;
+}
+body.inverted #model-select option { background: #f5f5f7 !important; color: #1a1a2e !important; }
+
+/* SHIFT / KILL LINK / VISION / Free / FREEZE / RESET pill buttons in sidebar */
+body.inverted #instructions-container button {
+    color: rgba(0,0,0,0.6) !important;
+}
+body.inverted #instructions-container button#agent-henry-btn,
+body.inverted #instructions-container button#agent-polly-btn { color: inherit !important; }
+body.inverted #instructions-container button[onclick*="toggleInvert"] { border-color: rgba(0,0,0,0.2) !important; }
+
+/* Henry / Polly toggle — inverted variants */
+body.inverted #agent-henry-btn[data-active="true"],
+body.inverted #agent-henry-btn {
+    /* default (inactive) — keep text legible in light bg */
+    color: rgba(0,0,0,0.65) !important;
+}
+body.inverted #agent-polly-btn {
+    color: rgba(0,0,0,0.65) !important;
+}
+body.inverted #agent-caption { color: rgba(0,0,0,0.5) !important; }
+
+/* COMPLEXITY 100%, TOKENS, Connected dot text */
+body.inverted #instructions-container > div > div { color: inherit; }
+body.inverted div[style*="color:rgba(255,255,255,0.35)"],
+body.inverted div[style*="color:rgba(255,255,255,0.4)"],
+body.inverted div[style*="color:rgba(255,255,255,0.5)"],
+body.inverted div[style*="color:rgba(255,255,255,0.6)"],
+body.inverted div[style*="color:rgba(255,255,255,0.7)"],
+body.inverted div[style*="color:rgba(255,255,255,0.8)"] { color: rgba(0,0,0,0.6) !important; }
+
+/* Knowledge-graph title "HENRY — KNOWLEDGE GRAPH" */
+body.inverted #graph-title,
+body.inverted .graph-title { color: rgba(0,0,0,0.5) !important; }
+
+/* Quick Actions panel content */
+body.inverted #quick-actions,
+body.inverted #quick-actions * { color: rgba(0,0,0,0.65) !important; }
+body.inverted #quick-actions div[style*="letter-spacing"] { color: rgba(0,0,0,0.45) !important; }
+body.inverted #quick-actions button,
+body.inverted #quick-actions a,
+body.inverted .qa-btn,
+body.inverted .action-row {
+    background: rgba(0,0,0,0.04) !important;
+    border-color: rgba(0,0,0,0.08) !important;
+}
+
+/* Chat / command input area labels (MIC / ACTIONS / CLR / ENTER COMMAND) */
+body.inverted #command-bar,
+body.inverted #command-bar *,
+body.inverted .cmd-btn { color: rgba(0,0,0,0.6) !important; }
+body.inverted #command-input,
+body.inverted #cmd-input,
+body.inverted input[type="text"],
+body.inverted textarea {
+    background: rgba(0,0,0,0.04) !important;
+    border-color: rgba(0,0,0,0.15) !important;
+    color: #1a1a2e !important;
+}
+body.inverted input::placeholder,
+body.inverted textarea::placeholder { color: rgba(0,0,0,0.35) !important; }
+
+/* Radar chart (CAPABILITIES) labels — SVG text */
+body.inverted svg text { fill: rgba(0,0,0,0.7) !important; }
+body.inverted svg .radar-label { fill: rgba(0,0,0,0.7) !important; }
+
+/* Sub-agent list labels (CODEX / CLAUDE / BROWSER etc.) */
+body.inverted .agent-label,
+body.inverted .sub-agent-label { color: rgba(0,0,0,0.5) !important; }
+
+/* Generic safety net — any element with inline white-ish text */
+body.inverted [style*="color:#fff"],
+body.inverted [style*="color: #fff"],
+body.inverted [style*="color:#ffffff"],
+body.inverted [style*="color: #ffffff"] { color: #1a1a2e !important; }
+
 /* Iron Man HUD */
 #hud-overlay { display: none; }
 .hud-corner { position: absolute; width: 80px; height: 80px; border-color: rgba(102,126,234,0.25); border-style: solid; border-width: 0; }
