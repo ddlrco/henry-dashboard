@@ -1,4 +1,5 @@
 import { createHash } from 'crypto';
+import { signToken } from '../lib/auth.js';
 
 // In-memory rate limiting (resets on cold start, but effective during active use)
 const attempts = new Map(); // IP -> { count, firstAttempt, lockedUntil }
@@ -73,7 +74,13 @@ export default async function handler(req, res) {
 
   if (hash === correctHash) {
     clearRateLimit(ip); // Reset on success
-    const token = createHash('sha256').update(Date.now().toString() + Math.random().toString()).digest('hex').substring(0, 32);
+
+    // Issue an HS256 JWT the chat endpoints can verify statelessly.
+    // AUTH_SECRET must be set in Vercel env.
+    if (!process.env.AUTH_SECRET) {
+      return res.status(500).json({ success: false, error: 'AUTH_SECRET not configured' });
+    }
+    const token = signToken({ sub: 'nudii' }, process.env.AUTH_SECRET, 60 * 60 * 12); // 12h TTL
     return res.status(200).json({ success: true, token });
   }
 

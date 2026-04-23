@@ -3560,15 +3560,23 @@ async function sendChat() {
     // Route to Polly (Anthropic direct) or Henry (OpenClaw) based on active agent toggle
     const activeAgent = window._activeAgent || localStorage.getItem('agent') || 'henry';
     const apiEndpoint = activeAgent === 'polly' ? '/api/chat-polly' : '/api/chat';
+    const sessionToken = sessionStorage.getItem('henryAuth');
     try {
         const response = await fetch(apiEndpoint, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                ...(sessionToken ? { 'Authorization': `Bearer ${sessionToken}` } : {})
             },
             body: JSON.stringify({ message: msg, history: chatHistory.slice(-6), focusNode: window._focusNode || null })
         });
-        
+
+        if (response.status === 401) {
+            // Session expired — kick back to login screen
+            sessionStorage.removeItem('henryAuth');
+            document.getElementById('pw-screen')?.classList.remove('pw-hidden');
+            throw new Error('Session expired — please log in again');
+        }
         if (!response.ok) throw new Error('API request failed');
         
         const data = await response.json();

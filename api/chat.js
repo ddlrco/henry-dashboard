@@ -33,13 +33,19 @@ const SYSTEM_PROMPT = `You are Henry — a sharp, direct AI built for nudii (Nud
 ## Graph context
 If a "focusNode" is mentioned in the message, nudii is currently looking at that node in the brain graph. Be contextually aware — surface relevant info about whatever he's focused on without him needing to ask.`;
 
+import { requireAuth } from '../lib/auth.js';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // Session validation — reject if no valid JWT from /api/auth
+  const auth = requireAuth(req);
+  if (!auth.ok) return res.status(auth.status).json({ error: auth.error });
 
   try {
     const { message, history = [], focusNode } = req.body;
