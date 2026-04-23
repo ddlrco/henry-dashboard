@@ -546,8 +546,8 @@ body.inverted #logout-btn { border-color: rgba(220,38,38,0.3); color: rgba(220,3
    toggle elements that previously stayed invisible in invert mode. */
 
 /* Sidebar section labels (ACTIVE MODEL / CAPABILITIES / SUB-AGENTS / AGENT / QUICK ACTIONS / MARKET / PRINTS) */
-body.inverted #instructions-container div,
 body.inverted #instructions-container > div > div[style*="text-transform"],
+body.inverted #instructions-container [style*="letter-spacing:2px"],
 body.inverted [style*="letter-spacing:2px"][style*="text-transform"] { color: rgba(0,0,0,0.55) !important; }
 
 /* Model dropdown text */
@@ -1220,10 +1220,12 @@ window.addEventListener('load', () => {
       <input type="range" min="30" max="100" value="100" class="density-slider" id="density-slider-2" style="width:100%;" />
     </div>
 
-    <!-- Capabilities label only (canvas is fixed overlay) -->
+    <!-- Capabilities label + inline radar canvas (locked in sidebar flow) -->
     <div style="margin-top:20px;">
       <div id="cap-label-ref" style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.35);margin-bottom:4px;">Capabilities</div>
-      <div style="height:162px;"></div>
+      <div style="display:flex;justify-content:center;">
+        <canvas id="cap-radar-main" width="160" height="160" style="width:160px;height:160px;pointer-events:none;"></canvas>
+      </div>
     </div>
 
     <!-- Sub-Agents -->
@@ -3946,24 +3948,10 @@ function initKG() {
 }
 </script>
 
-<!-- Capabilities radar fixed overlay -->
-<canvas id="cap-radar-main" width="160" height="160" style="position:fixed;left:20px;top:390px;width:160px;height:160px;z-index:31;pointer-events:none;"></canvas>
-<script>
-// Position radar canvas under the cap-anchor div
-window.addEventListener('load', () => {
-  function positionCapRadar() {
-    const label = document.getElementById('cap-label-ref');
-    const canvas = document.getElementById('cap-radar-main');
-    if (label && canvas) {
-      const rect = label.getBoundingClientRect();
-      canvas.style.top = (rect.bottom + 4) + 'px';
-      canvas.style.left = '20px';
-    }
-  }
-  setTimeout(positionCapRadar, 900);
-  setTimeout(positionCapRadar, 1800); // retry
-});
-</script>
+<!-- Capabilities radar now lives inline inside #instructions-container (see cap-radar-main above) -->
+<!-- Removed: fixed-position overlay canvas + scroll-sensitive positioning script. -->
+<!-- The inline canvas scrolls naturally with the sidebar; no more drift-over-dropdown artifacts. -->
+
 
 <script>
 document.addEventListener('mousemove', (e) => {
