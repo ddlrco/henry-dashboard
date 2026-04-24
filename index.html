@@ -787,25 +787,28 @@ function initBrainGraph() {
             .nodeThreeObject(node => {
         try {
           if (!window.THREE) return null;
-          // --- Text label sprite ---
-          const canvas = document.createElement('canvas');
-          canvas.width = 256; canvas.height = 48;
-          const ctx = canvas.getContext('2d');
-          ctx.font = node.id === 'henry' ? 'bold 28px Arial' : 'bold 18px Arial';
-          ctx.textAlign = 'center';
-          const metrics = ctx.measureText(node.name);
-          const pad = 6;
-          ctx.fillStyle = 'rgba(0,0,0,0.7)';
-          ctx.beginPath();
-          ctx.roundRect(128-metrics.width/2-pad, 10, metrics.width+pad*2, 28, 4);
-          ctx.fill();
-          ctx.fillStyle = '#ffffff';
-          ctx.fillText(node.name, 128, 30);
-          const texture = new THREE.CanvasTexture(canvas);
-          const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthWrite: false, transparent: true, opacity: 1.0 }));
-          const s = Math.max(node.val || 3, 3) * (node.id === 'henry' ? 3 : 2);
-          sprite.scale.set(s, s / 4, 1);
-          sprite.position.set(0, (node.val || 3) * (node.id === 'henry' ? 3 : 1.2) + 4, 0);
+          // --- Text label sprite (skipped for synthetic satellites — pure visual density) ---
+          let sprite = null;
+          if (!node.__synthetic && node.name) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 48;
+            const ctx = canvas.getContext('2d');
+            ctx.font = node.id === 'henry' ? 'bold 28px Arial' : 'bold 18px Arial';
+            ctx.textAlign = 'center';
+            const metrics = ctx.measureText(node.name);
+            const pad = 6;
+            ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            ctx.beginPath();
+            ctx.roundRect(128-metrics.width/2-pad, 10, metrics.width+pad*2, 28, 4);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(node.name, 128, 30);
+            const texture = new THREE.CanvasTexture(canvas);
+            sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthWrite: false, transparent: true, opacity: 1.0 }));
+            const s = Math.max(node.val || 3, 3) * (node.id === 'henry' ? 3 : 2);
+            sprite.scale.set(s, s / 4, 1);
+            sprite.position.set(0, (node.val || 3) * (node.id === 'henry' ? 3 : 1.2) + 4, 0);
+          }
 
           // --- Glow halo (additive billboard, gives neural-network bloom look) ---
           const glowColor = node.id === 'henry'
@@ -817,10 +820,10 @@ function initBrainGraph() {
             blending: THREE.AdditiveBlending,
             depthWrite: false,
             transparent: true,
-            opacity: node.id === 'henry' ? 1.0 : 0.7,
+            opacity: node.id === 'henry' ? 1.0 : (node.__synthetic ? 0.35 : 0.7),
           });
           const glow = new THREE.Sprite(glowMat);
-          const glowSize = (node.val || 2) * (node.id === 'henry' ? 14 : 5);
+          const glowSize = (node.val || 2) * (node.id === 'henry' ? 14 : (node.__synthetic ? 3 : 5));
           glow.scale.set(glowSize, glowSize, 1);
           node.__glow = glow;
           node.__glowBase = glowSize;
@@ -842,7 +845,7 @@ function initBrainGraph() {
             node.__halo = halo;
           }
 
-          grp.add(sprite);
+          if (sprite) grp.add(sprite);
           return grp;
         } catch(e) { return null; }
       })
@@ -858,9 +861,9 @@ function initBrainGraph() {
         return GROUP_COLORS[g] || '#667eea';
       })
       
-      .linkWidth(1.2)
+      .linkWidth(l => l.__synthetic ? 0.3 : 1.2)
       .linkOpacity(0.35)
-      .linkDirectionalParticles(3)
+      .linkDirectionalParticles(l => l.__synthetic ? 0 : 3)
       .linkDirectionalParticleWidth(2.2)
       .linkDirectionalParticleSpeed(0.006)
       .linkDirectionalParticleColor(l => GROUP_COLORS[typeof l.source === 'object' ? l.source.group : 'root'] || '#a5b4fc')
@@ -955,6 +958,37 @@ function initBrainGraph() {
         requestAnimationFrame(pulse);
       }
     } catch(e) {}
+    // --- Procedural density: spawn "thought" satellite nodes around each real node.
+    // Small val, real parent link, no fake names. Adds visual depth without inventing content.
+    try {
+      const SYN_PER_PARENT = 3; // avg 3 satellites per parent → ~3x density
+      const parents = BRAIN_DATA.nodes.filter(n => n.id !== 'henry' && (n.val || 2) >= 2);
+      const newNodes = [];
+      const newLinks = [];
+      parents.forEach((p, idx) => {
+        const count = 2 + Math.floor(Math.random() * 3); // 2-4
+        for (let i = 0; i < count; i++) {
+          const id = `__syn_${p.id}_${i}`;
+          newNodes.push({
+            id,
+            name: '', // no label — pure visual density
+            group: p.group,
+            val: 1, // tiny — filtered out at low complexity
+            __synthetic: true,
+          });
+          newLinks.push({ source: p.id, target: id, __synthetic: true });
+          // Occasional cross-sibling link for mesh feel
+          if (i > 0 && Math.random() < 0.4) {
+            newLinks.push({ source: `__syn_${p.id}_${i-1}`, target: id, __synthetic: true });
+          }
+        }
+      });
+      BRAIN_DATA.nodes.push(...newNodes);
+      BRAIN_DATA.links.push(...newLinks);
+      // Push the enriched dataset into the live graph
+      brainGraphInstance.graphData(BRAIN_DATA);
+    } catch(e) { console.warn('synth density failed', e); }
+
     window.BRAIN_DATA_FULL = JSON.parse(JSON.stringify(BRAIN_DATA));
     // Post-init config with safety
     setTimeout(() => {
@@ -1292,7 +1326,7 @@ window.addEventListener('load', () => {
 
     <!-- Controls -->
     <div style="margin-top:20px;display:flex;gap:6px;flex-wrap:wrap;">
-      <button onclick="document.getElementById('change-formation-btn').click()" id="morph-label" style="font-size:8px;letter-spacing:2px;padding:5px 10px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);cursor:pointer;font-family:Outfit,sans-serif;border-radius:4px;">FREE</button>
+      <button onclick="document.getElementById('change-formation-btn').click()" id="morph-label" style="font-size:8px;letter-spacing:2px;padding:5px 10px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);cursor:pointer;font-family:Outfit,sans-serif;border-radius:4px;">REFLOW</button>
       <button onclick="document.getElementById('pause-play-btn').click()" style="font-size:8px;letter-spacing:2px;padding:5px 10px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);cursor:pointer;font-family:Outfit,sans-serif;border-radius:4px;">FREEZE</button>
       <button onclick="document.getElementById('reset-camera-btn').click()" style="font-size:8px;letter-spacing:2px;padding:5px 10px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);cursor:pointer;font-family:Outfit,sans-serif;border-radius:4px;">RESET</button>
     </div>
@@ -3149,102 +3183,25 @@ document.addEventListener("keydown", (e) => {
     const changeFormationBtn = document.getElementById('change-formation-btn');
     const pausePlayBtn = document.getElementById('pause-play-btn');
     const resetCameraBtn = document.getElementById('reset-camera-btn');
-    let morphMode = 0;
     const CLUSTER_ORDER = ['root','Frontend','Backend','Brain','Projects','System','Media'];
+    // Formations removed — geometric layouts (solar/helix/sphere/vortex) fight the
+    // neural-brain concept. Button now just reheats physics so clusters settle fresh.
     changeFormationBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (!window.brainGraphInstance) return;
-        morphMode = (morphMode + 1) % 5;
-        const gd = window.brainGraphInstance.graphData();
-        const N = gd.nodes.length;
-
         const bg = window.brainGraphInstance;
-
-        if (morphMode === 0) {
-          // Free — unfix, default charge
-          gd.nodes.forEach(n => { delete n.fx; delete n.fy; delete n.fz; });
-          bg.graphData(gd);
-          bg.d3Force('charge').strength(-120);
-          bg.d3Force('link').distance(40);
-          bg.d3AlphaDecay(0.02);
-          bg.d3ReheatSimulation();
-
-        } else if (morphMode === 1) {
-          // SOLAR SYSTEM — HENRY center, rings by node importance (val)
-          gd.nodes.forEach((n,i) => {
-            if (n.id === 'henry') { n.fx=0; n.fy=0; n.fz=0; return; }
-            // Ring based on val (importance)
-            const ring = Math.max(1, Math.min(5, Math.floor((10-n.val)/2)));
-            const ringR = ring * 120;
-            // Spread evenly within ring using golden angle
-            const goldenAng = i * 2.399963;
-            const lat = Math.asin(-1 + (2*i)/N);
-            n.fx = ringR * Math.cos(goldenAng) * Math.cos(lat);
-            n.fy = ringR * Math.sin(lat);
-            n.fz = ringR * Math.sin(goldenAng) * Math.cos(lat);
-          });
-          bg.graphData(gd);
-        // Always pin HENRY at center, large
-        const henryNode = gd.nodes.find(n => n.id === 'henry');
-        if (henryNode) { henryNode.fx=0; henryNode.fy=0; henryNode.fz=0; henryNode.val=18; }
+        const gd = bg.graphData();
+        gd.nodes.forEach(n => { delete n.fx; delete n.fy; delete n.fz; });
+        bg.graphData(gd);
+        bg.d3Force('charge').strength(-120);
+        bg.d3Force('link').distance(40);
+        bg.d3AlphaDecay(0.02);
         bg.d3ReheatSimulation();
-
-        } else if (morphMode === 2) {
-          // DNA HELIX — two intertwining spirals
-          gd.nodes.forEach((n,i) => {
-            const strand = i % 2;
-            const t = (i / N) * Math.PI * 16;
-            const r = 200;
-            const offset = strand * Math.PI;
-            n.fx = r * Math.cos(t + offset);
-            n.fy = -400 + (i / N) * 800;
-            n.fz = r * Math.sin(t + offset);
-          });
-          bg.graphData(gd);
-        // Always pin HENRY at center, large
-        const henryNode = gd.nodes.find(n => n.id === 'henry');
-        if (henryNode) { henryNode.fx=0; henryNode.fy=0; henryNode.fz=0; henryNode.val=18; }
-        bg.d3ReheatSimulation();
-
-        } else if (morphMode === 3) {
-          // SPHERE SURFACE — Fibonacci lattice on sphere
-          const R = 350;
-          gd.nodes.forEach((n,i) => {
-            if (n.id === 'henry') { n.fx=0; n.fy=0; n.fz=0; return; }
-            const phi = Math.acos(1 - 2*(i+0.5)/N);
-            const theta = Math.PI * (1 + Math.sqrt(5)) * i;
-            n.fx = R * Math.sin(phi) * Math.cos(theta);
-            n.fy = R * Math.cos(phi);
-            n.fz = R * Math.sin(phi) * Math.sin(theta);
-          });
-          bg.graphData(gd);
-        // Always pin HENRY at center, large
-        const henryNode = gd.nodes.find(n => n.id === 'henry');
-        if (henryNode) { henryNode.fx=0; henryNode.fy=0; henryNode.fz=0; henryNode.val=18; }
-        bg.d3ReheatSimulation();
-
-        } else if (morphMode === 4) {
-          // VORTEX — nodes spiral inward toward center
-          gd.nodes.forEach((n,i) => {
-            const t = (i/N) * Math.PI * 20;
-            const r = 30 + (1 - i/N) * 500;
-            const height = (i/N - 0.5) * 600;
-            n.fx = r * Math.cos(t);
-            n.fy = height;
-            n.fz = r * Math.sin(t);
-          });
-          bg.graphData(gd);
-        // Always pin HENRY at center, large
-        const henryNode = gd.nodes.find(n => n.id === 'henry');
-        if (henryNode) { henryNode.fx=0; henryNode.fy=0; henryNode.fz=0; henryNode.val=18; }
-        bg.d3ReheatSimulation();
-        }
-
-        const labels = ['Free','Solar','Helix','Sphere','Vortex'];
-        changeFormationBtn.querySelector('span').textContent = labels[morphMode];
-        // Also update the visible morph button in left panel
         const morphLabel = document.getElementById('morph-label');
-        if (morphLabel) morphLabel.textContent = labels[morphMode];
+        if (morphLabel) morphLabel.textContent = 'REFLOW';
+        const spanTxt = changeFormationBtn.querySelector('span');
+        if (spanTxt) spanTxt.textContent = 'Reflow';
+        return;
     });
     pausePlayBtn.addEventListener('click', (e) => {
         e.stopPropagation();
