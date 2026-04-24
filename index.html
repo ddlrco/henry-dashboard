@@ -732,7 +732,7 @@ function toggleQA() {
 <!-- 3D Brain Graph -->
 <div id="brain-graph-container" style="display:block;position:fixed;inset:0;z-index:2;background:transparent;pointer-events:none;"><div style="position:absolute;inset:0;pointer-events:auto;background:transparent;">
   <div style="position:absolute;top:20px;left:50%;transform:translateX(-50%);text-align:center;z-index:10;pointer-events:none;">
-    <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:4px;color:rgba(165,180,252,0.6);text-transform:uppercase;">HENRY — KNOWLEDGE GRAPH</div>
+    <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:4px;color:rgba(165,180,252,0.6);text-transform:uppercase;">NEURAL BRAIN</div>
   </div>
   <div id="node-tooltip"></div>
 <div id="brain-graph" style="width:100vw;height:100vh;"></div>
@@ -756,7 +756,7 @@ function initBrainGraph() {
   const container = document.getElementById('brain-graph-container');
   container.style.display = 'block';
   if (!brainGraphInstance) {
-    brainGraphInstance = ForceGraph3D({antialias:true, alpha:true})(document.getElementById('brain-graph'))
+    brainGraphInstance = ForceGraph3D({antialias:true, alpha:true, controlType:'orbit'})(document.getElementById('brain-graph'))
       .backgroundColor('#050508')
       .nodeLabel(node => '')
       .nodeColor(n => GROUP_COLORS[n.group] || '#667eea')
@@ -842,7 +842,7 @@ function initBrainGraph() {
       try {
         const ctrl = brainGraphInstance.controls();
         if (ctrl && ctrl.autoRotate !== undefined) {
-          ctrl.autoRotate = true; ctrl.autoRotateSpeed = 0.4;
+          ctrl.autoRotate = true; ctrl.autoRotateSpeed = 0.8;
           // Resume rotation after 3s of inactivity
           let rotateTimer;
           ctrl.addEventListener('start', () => { ctrl.autoRotate = false; clearTimeout(rotateTimer); });
