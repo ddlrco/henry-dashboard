@@ -734,6 +734,8 @@ function toggleQA() {
   <div style="position:absolute;top:20px;left:50%;transform:translateX(-50%);text-align:center;z-index:10;pointer-events:none;">
     <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:4px;color:rgba(165,180,252,0.6);text-transform:uppercase;">NEURAL BRAIN</div>
   </div>
+  <!-- Growth feed: shows newly added nodes (fades in from right) -->
+  <div id="growth-feed" style="position:absolute;top:60px;right:20px;z-index:10;pointer-events:none;display:flex;flex-direction:column;gap:4px;align-items:flex-end;max-width:260px;"></div>
   <div id="node-tooltip"></div>
 <div id="brain-graph" style="width:100vw;height:100vh;"></div>
 </div></div>
@@ -844,6 +846,20 @@ function initBrainGraph() {
             grp.add(halo);
             node.__halo = halo;
           }
+          if (node.id === 'polly') {
+            // Polly's core: warm pink tinted sphere, slightly smaller than HENRY
+            const core = new THREE.Mesh(
+              new THREE.SphereGeometry(11, 32, 32),
+              new THREE.MeshBasicMaterial({color:0xf472b6, transparent:true, opacity:0.95})
+            );
+            grp.add(core);
+            const halo = new THREE.Mesh(
+              new THREE.SphereGeometry(15, 16, 16),
+              new THREE.MeshBasicMaterial({color:0xf472b6, transparent:true, opacity:0.18, wireframe:true})
+            );
+            grp.add(halo);
+            node.__halo = halo;
+          }
 
           if (sprite) grp.add(sprite);
           return grp;
@@ -936,10 +952,11 @@ function initBrainGraph() {
         });
         scene.add(new THREE.Points(dustGeo, dustMat));
 
-        // HENRY pulse + glow breathing animation
+        // HENRY + POLLY pulse + fresh-node pulse loop
         const pulse = () => {
           try {
             const t = performance.now() * 0.001;
+            const now = Date.now();
             const gd = brainGraphInstance.graphData();
             const henry = gd.nodes.find(n => n.id === 'henry');
             if (henry && henry.__halo) {
@@ -952,12 +969,58 @@ function initBrainGraph() {
               henry.__glow.scale.set(s, s, 1);
               henry.__glow.material.opacity = 0.9 + Math.sin(t * 0.9) * 0.1;
             }
+            // Polly — different frequency + phase so they don't pulse in sync
+            const polly = gd.nodes.find(n => n.id === 'polly');
+            if (polly && polly.__halo) {
+              const s = 1 + Math.sin(t * 1.2 + 1.5) * 0.14;
+              polly.__halo.scale.set(s, s, s);
+              polly.__halo.material.opacity = 0.18 + Math.sin(t * 1.2 + 1.5) * 0.1;
+            }
+            if (polly && polly.__glow) {
+              const s = polly.__glowBase * (1 + Math.sin(t * 0.7 + 2) * 0.18);
+              polly.__glow.scale.set(s, s, 1);
+              polly.__glow.material.opacity = 0.85 + Math.sin(t * 0.7 + 2) * 0.1;
+            }
+            // Pulse any freshly added nodes (first 30s after birth)
+            gd.nodes.forEach(n => {
+              if (!n.__fresh || !n.__glow) return;
+              const age = (now - n.__fresh) / 1000; // seconds
+              if (age > 30) return;
+              const pulseSpeed = 3.5;
+              const fade = Math.max(0, 1 - age / 30); // 1 → 0 over 30s
+              const s = n.__glowBase * (2.0 + Math.sin(t * pulseSpeed) * 0.6) * (1 + fade);
+              n.__glow.scale.set(s, s, 1);
+              n.__glow.material.opacity = Math.min(1, 0.8 + Math.sin(t * pulseSpeed) * 0.2);
+            });
           } catch(e) {}
           requestAnimationFrame(pulse);
         };
         requestAnimationFrame(pulse);
       }
     } catch(e) {}
+    // --- Inject POLLY first so she also gets orbiting satellites ---
+    try {
+      if (!BRAIN_DATA.nodes.find(n => n.id === 'polly')) {
+        BRAIN_DATA.nodes.push({
+          id: 'polly',
+          name: 'POLLY',
+          group: 'Media',
+          val: 12,
+          color: '#f472b6',
+        });
+        BRAIN_DATA.links.push({ source: 'henry', target: 'polly' });
+        ['media','projects','ddlr','Media','Projects','DDLR'].forEach(t => {
+          if (BRAIN_DATA.nodes.find(n => n.id === t)) {
+            BRAIN_DATA.links.push({ source: 'polly', target: t });
+          }
+        });
+        BRAIN_DATA.nodes
+          .filter(n => ['Projects','Media','DDLR','DDLRCluster'].includes(n.group) && (n.val||0) >= 4 && n.id !== 'polly')
+          .slice(0, 6)
+          .forEach(n => BRAIN_DATA.links.push({ source: 'polly', target: n.id }));
+      }
+    } catch(e) { console.warn('polly inject failed', e); }
+
     // --- Procedural density: spawn "thought" satellite nodes around each real node.
     // Small val, real parent link, no fake names. Adds visual depth without inventing content.
     try {
@@ -985,6 +1048,7 @@ function initBrainGraph() {
       });
       BRAIN_DATA.nodes.push(...newNodes);
       BRAIN_DATA.links.push(...newLinks);
+
       // Push the enriched dataset into the live graph
       brainGraphInstance.graphData(BRAIN_DATA);
     } catch(e) { console.warn('synth density failed', e); }
@@ -993,9 +1057,21 @@ function initBrainGraph() {
     // Post-init config with safety
     setTimeout(() => {
       try {
-        // Obsidian-style: tight clusters, strong attraction between linked nodes
-        brainGraphInstance.d3Force('charge').strength(-20);
-        brainGraphInstance.d3Force('link').distance(link => 20 + Math.random() * 20).strength(0.6);
+        // Obsidian-style: tight clusters, strong attraction between linked nodes.
+        // HENRY + POLLY get a much stronger negative charge so they carve out breathing
+        // room and satellites don't crowd into them.
+        brainGraphInstance.d3Force('charge').strength(node =>
+          node.id === 'henry' ? -450 :
+          node.id === 'polly' ? -320 :
+          -20
+        );
+        brainGraphInstance.d3Force('link').distance(link => {
+          const sId = (link.source && link.source.id) || link.source;
+          const tId = (link.target && link.target.id) || link.target;
+          if (sId === 'henry' || tId === 'henry') return 110;
+          if (sId === 'polly' || tId === 'polly') return 85;
+          return 20 + Math.random() * 20;
+        }).strength(0.6);
         // Gravity: pull all nodes toward center so clusters don't drift apart
         brainGraphInstance.d3Force('gravity', alpha => {
           brainGraphInstance.graphData().nodes.forEach(node => {
@@ -1244,20 +1320,79 @@ function toggleBrainGraph() {
 
   window.addEventListener('load',()=>setTimeout(()=>{initCapRadar();initSubAgents2();},700));
 
-  // Live knowledge graph growth
+  // Live knowledge graph growth — new nodes spawn bright, pulse, and log to feed
+  window.__recentGrowth = [];
   window.addBrainNode = function(name, group){
     if (!window.brainGraphInstance || !window.BRAIN_DATA_FULL) return;
-    const id = 'dynamic_'+Date.now();
-    const color = {Frontend:'#818cf8',Backend:'#34d399',Brain:'#a78bfa',Projects:'#f59e0b',System:'#60a5fa',Media:'#f472b6'}[group]||'#667eea';
-    window.BRAIN_DATA_FULL.nodes.push({id,name,group,val:4});
-    window.BRAIN_DATA_FULL.links.push({source:group.toLowerCase(),target:id});
+    const id = 'dynamic_'+Date.now()+'_'+Math.floor(Math.random()*999);
+    const grp = group || 'Brain';
+    // Dedupe: skip if a node with this exact name+group already exists
+    const existing = window.BRAIN_DATA_FULL.nodes.find(n => n.name === name && n.group === grp);
+    if (existing) return;
+
+    const newNode = { id, name, group: grp, val: 6, __fresh: Date.now() };
+    window.BRAIN_DATA_FULL.nodes.push(newNode);
+
+    // Find a real hub to attach to (prefer high-val nodes in same group)
+    const samesGroup = window.BRAIN_DATA_FULL.nodes
+      .filter(n => n.group === grp && n.id !== id && !n.__synthetic);
+    const hub = samesGroup.sort((a,b) => (b.val||0)-(a.val||0))[0]
+      || window.BRAIN_DATA_FULL.nodes.find(n => n.id === 'henry');
+    if (hub) window.BRAIN_DATA_FULL.links.push({ source: hub.id, target: id });
+
+    // Push into the live graph
     const gd = window.brainGraphInstance.graphData();
-    gd.nodes.push({id,name,group,val:4});
-    const hubNode = gd.nodes.find(n=>n.group===group&&n.id!==id);
-    if (hubNode) gd.links.push({source:hubNode.id,target:id});
-    window.brainGraphInstance.graphData(gd);
-    console.log('[Brain] New node added:', name, group);
+    gd.nodes.push(newNode);
+    if (hub) gd.links.push({ source: hub.id, target: id });
+    window.brainGraphInstance.graphData({nodes:[...gd.nodes], links:[...gd.links]});
+    window.brainGraphInstance.d3ReheatSimulation();
+
+    // Growth feed (keep last 8)
+    window.__recentGrowth.unshift({ name, group: grp, time: Date.now() });
+    if (window.__recentGrowth.length > 8) window.__recentGrowth.length = 8;
+    if (window.__renderGrowthFeed) window.__renderGrowthFeed();
+
+    console.log('[Brain] New node added:', name, grp);
+    // Clear "fresh" flag after 30s so pulse stops
+    setTimeout(() => { delete newNode.__fresh; }, 30000);
   };
+
+  // Growth feed renderer — paints recent additions in the top-right overlay
+  window.__renderGrowthFeed = function() {
+    const feed = document.getElementById('growth-feed');
+    if (!feed) return;
+    const GROUP_TINT = {
+      Frontend:'#818cf8', Backend:'#34d399', Brain:'#a78bfa',
+      Projects:'#f59e0b', System:'#60a5fa', Media:'#f472b6',
+      DDLR:'#e879f9', Code:'#667eea', contacts:'#4ade80',
+    };
+    const now = Date.now();
+    feed.innerHTML = '';
+    (window.__recentGrowth || []).forEach(entry => {
+      const age = (now - entry.time) / 1000;
+      if (age > 45) return; // auto-fade after 45s
+      const fade = Math.max(0, 1 - age / 45);
+      const tint = GROUP_TINT[entry.group] || '#a5b4fc';
+      const row = document.createElement('div');
+      row.style.cssText = `
+        display:flex;align-items:center;gap:6px;padding:5px 10px;
+        background:rgba(10,10,20,${0.5*fade});
+        border:1px solid ${tint}${Math.floor(fade*80).toString(16).padStart(2,'0')};
+        border-radius:12px;
+        font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:1.5px;
+        color:rgba(255,255,255,${fade});text-transform:uppercase;
+        backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+        box-shadow:0 0 12px ${tint}${Math.floor(fade*40).toString(16).padStart(2,'0')};
+        transition:opacity 0.3s;`;
+      row.innerHTML = `<span style="width:6px;height:6px;border-radius:50%;background:${tint};box-shadow:0 0 6px ${tint};flex-shrink:0;"></span>
+        <span style="color:${tint};font-weight:600;">+</span>
+        <span>${entry.name}</span>
+        <span style="font-size:8px;opacity:0.5;letter-spacing:1px;">${entry.group}</span>`;
+      feed.appendChild(row);
+    });
+  };
+  // Drive feed fade-out with a slow tick so old entries gradually vanish
+  setInterval(() => { if (window.__renderGrowthFeed) window.__renderGrowthFeed(); }, 1500);
 
   // Real sub-agent trigger
   window.triggerAgent = function(name){
@@ -3169,12 +3304,25 @@ document.addEventListener("keydown", (e) => {
                     .linkDirectionalParticleSpeed(0.003 + nodeF * 0.006)
                     .linkWidth(l => l.__synthetic ? 0.3 : (0.6 + nodeF * 1.5))
                     .linkOpacity(Math.max(0.2, 0.4 - overdrive * 0.15));
-                // Physics: spread out when sparse, pack tight when full
+                // Physics: spread out when sparse, pack tight when full.
+                // Henry + Polly always keep their personal space regardless of slider.
                 try {
                     const charge = window.brainGraphInstance.d3Force('charge');
-                    if (charge) charge.strength(-10 - nodeF * 40 - overdrive * 15);
+                    const baseCharge = -10 - nodeF * 40 - overdrive * 15;
+                    if (charge) charge.strength(n =>
+                        n.id === 'henry' ? -450 :
+                        n.id === 'polly' ? -320 :
+                        baseCharge
+                    );
                     const linkF = window.brainGraphInstance.d3Force('link');
-                    if (linkF) linkF.distance(() => 20 + (1 - nodeF) * 40).strength(0.4 + nodeF * 0.3);
+                    const baseDist = 20 + (1 - nodeF) * 40;
+                    if (linkF) linkF.distance(link => {
+                        const sId = (link.source && link.source.id) || link.source;
+                        const tId = (link.target && link.target.id) || link.target;
+                        if (sId === 'henry' || tId === 'henry') return 110;
+                        if (sId === 'polly' || tId === 'polly') return 85;
+                        return baseDist;
+                    }).strength(0.4 + nodeF * 0.3);
                     window.brainGraphInstance.d3ReheatSimulation();
                 } catch(e) {}
             }
@@ -3193,8 +3341,19 @@ document.addEventListener("keydown", (e) => {
         const gd = bg.graphData();
         gd.nodes.forEach(n => { delete n.fx; delete n.fy; delete n.fz; });
         bg.graphData(gd);
-        bg.d3Force('charge').strength(-120);
-        bg.d3Force('link').distance(40);
+        // Keep Henry/Polly's breathing room even on reflow
+        bg.d3Force('charge').strength(n =>
+          n.id === 'henry' ? -450 :
+          n.id === 'polly' ? -320 :
+          -120
+        );
+        bg.d3Force('link').distance(link => {
+          const sId = (link.source && link.source.id) || link.source;
+          const tId = (link.target && link.target.id) || link.target;
+          if (sId === 'henry' || tId === 'henry') return 110;
+          if (sId === 'polly' || tId === 'polly') return 85;
+          return 40;
+        });
         bg.d3AlphaDecay(0.02);
         bg.d3ReheatSimulation();
         const morphLabel = document.getElementById('morph-label');
