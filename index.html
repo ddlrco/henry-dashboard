@@ -977,9 +977,8 @@ function initBrainGraph() {
               (adj[tId] = adj[tId] || []).push(sId);
             });
 
-            // BFS with per-depth delay so the wave visibly travels
-            const HOP_DELAY = 110;     // ms between hops
-            const MAX_DEPTH = 6;       // wave dies after 6 hops
+            // BFS — wave reaches EVERY connected node, no depth cap
+            const HOP_DELAY = 75;      // ms between hops (faster so full propagation takes ~1-2s)
             const visited = new Set([nodeId]);
             let queue = [{ id: nodeId, depth: 0 }];
 
@@ -988,11 +987,10 @@ function initBrainGraph() {
               const node = gd.nodes.find(n => n.id === id);
               if (!node) continue;
 
-              // Fade intensity with distance from source
-              const intensity = Math.max(0.15, 1 - depth * 0.14);
+              // Slow intensity decay, floor at 0.22 so even distant nodes still visibly flash
+              const intensity = Math.max(0.22, 1 - depth * 0.07);
               setTimeout(() => window.__flashNode(node, intensity, depth === 0), depth * HOP_DELAY);
 
-              if (depth >= MAX_DEPTH) continue;
               (adj[id] || []).forEach(neighborId => {
                 if (visited.has(neighborId)) return;
                 visited.add(neighborId);
@@ -1036,21 +1034,22 @@ function initBrainGraph() {
           } catch(e) {}
         };
 
-        // Schedule pings: ~60s interval ± 15s jitter, Polly follows Henry after 2-5s
-        function schedulePings() {
-          const delay = 45000 + Math.random() * 30000; // 45-75s
+        // Schedule pings: fire every ~60s (55-65s jitter for organic feel).
+        // setInterval guarantees the loop never dies even if a ping throws.
+        setInterval(() => {
+          try { window.__sonarPing('henry', 0xa5b4fc); } catch(e) {}
           setTimeout(() => {
-            window.__sonarPing('henry', 0xa5b4fc);
-            setTimeout(() => window.__sonarPing('polly', 0xf472b6), 2000 + Math.random() * 3000);
-            schedulePings();
-          }, delay);
-        }
-        // Initial ping after 15s so user sees it early, then settle into the loop
+            try { window.__sonarPing('polly', 0xf472b6); } catch(e) {}
+          }, 3000);
+        }, 55000 + Math.random() * 10000); // 55-65s, locked in at page load
+
+        // First ping 12s after load so user sees it early
         setTimeout(() => {
-          window.__sonarPing('henry', 0xa5b4fc);
-          setTimeout(() => window.__sonarPing('polly', 0xf472b6), 2500);
-          schedulePings();
-        }, 15000);
+          try { window.__sonarPing('henry', 0xa5b4fc); } catch(e) {}
+          setTimeout(() => {
+            try { window.__sonarPing('polly', 0xf472b6); } catch(e) {}
+          }, 3000);
+        }, 12000);
 
         // HENRY + POLLY pulse + fresh-node pulse loop
         const pulse = () => {
