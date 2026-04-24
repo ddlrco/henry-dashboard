@@ -1462,15 +1462,21 @@ function randomizeColors() {
         ['#667eea','#764ba2','#f093fb','#f5576c','#4facfe','#00f2fe','#43e97b','#38f9d7'],
     ];
     const seed = palette[Math.floor(Math.random() * palette.length)];
-    const groups = ['root','project','file','function','system','media','contacts','git'];
+    // Actual groups present in BRAIN_DATA. Keep 'root' white so HENRY stays the sun.
+    const groups = ['Frontend','Backend','Brain','Projects','System','Media','Code','contacts',
+                    'DDLR','DDLRCluster','DDLRComp','DDLRData','DDLRPage','DDLRHook','DDLRFn','DDLRApp'];
     groups.forEach((g, i) => { GROUP_COLORS[g] = seed[i % seed.length]; });
+    GROUP_COLORS.root = '#ffffff';
     if (window.brainGraphInstance && window.BRAIN_DATA_FULL) {
-        // Force full re-render by refreshing node objects
+        // Rebind the accessors so the library re-reads GROUP_COLORS on next render
         window.brainGraphInstance
             .nodeColor(node => node.color || (node.id==='henry' ? '#ffffff' : (GROUP_COLORS[node.group] || seed[0])))
             .linkColor(l => { const g = typeof l.source==='object'?l.source.group:'root'; return GROUP_COLORS[g] || seed[0]; })
             .linkDirectionalParticleColor(l => GROUP_COLORS[typeof l.source==='object'?l.source.group:'root'] || seed[0]);
-        // Refresh just the node color — no simulation reset
+        // Force a full node-object rebuild (custom nodeThreeObject sprites cache colors,
+        // so just .refresh() won't recolor them — we have to poke the graph data)
+        const gd = window.brainGraphInstance.graphData();
+        window.brainGraphInstance.graphData({ nodes: [...gd.nodes], links: [...gd.links] });
         window.brainGraphInstance.refresh();
     }
 }
