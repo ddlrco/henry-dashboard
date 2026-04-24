@@ -842,7 +842,7 @@ function initBrainGraph() {
       try {
         const ctrl = brainGraphInstance.controls();
         if (ctrl && ctrl.autoRotate !== undefined) {
-          ctrl.autoRotate = true; ctrl.autoRotateSpeed = 0.8;
+          ctrl.autoRotate = true; ctrl.autoRotateSpeed = 0.25;
           // Resume rotation after 3s of inactivity
           let rotateTimer;
           ctrl.addEventListener('start', () => { ctrl.autoRotate = false; clearTimeout(rotateTimer); });
