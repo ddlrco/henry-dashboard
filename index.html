@@ -958,41 +958,78 @@ function initBrainGraph() {
         });
         scene.add(new THREE.Points(dustGeo, dustMat));
 
-        // Sonar ping — expanding wireframe sphere emanating from a main node.
-        // Ambient "I'm alive" signal from HENRY and POLLY.
-        window.__sonarPing = function(nodeId, colorHex) {
+        // Neural pulse — wave propagates outward through the graph, flashing each
+        // node white as the signal arrives. BFS traversal from the source.
+        window.__sonarPing = function(nodeId, tintHex) {
           try {
             const gd = brainGraphInstance.graphData();
-            const node = gd.nodes.find(n => n.id === nodeId);
-            if (!node || !node.__threeObj) return;
-            const ring = new THREE.Mesh(
-              new THREE.SphereGeometry(1, 24, 16),
-              new THREE.MeshBasicMaterial({
-                color: colorHex,
-                transparent: true,
-                opacity: 0.75,
-                wireframe: true,
-                depthWrite: false,
-              })
-            );
-            node.__threeObj.add(ring);
+            const sourceNode = gd.nodes.find(n => n.id === nodeId);
+            if (!sourceNode) return;
+
+            // Build adjacency map. Skip overdrive bonus links (random visual mesh)
+            // so the pulse travels on the real structure, not random spaghetti.
+            const adj = {};
+            gd.links.forEach(l => {
+              if (l.__bonus) return;
+              const sId = (l.source && l.source.id) || l.source;
+              const tId = (l.target && l.target.id) || l.target;
+              (adj[sId] = adj[sId] || []).push(tId);
+              (adj[tId] = adj[tId] || []).push(sId);
+            });
+
+            // BFS with per-depth delay so the wave visibly travels
+            const HOP_DELAY = 110;     // ms between hops
+            const MAX_DEPTH = 6;       // wave dies after 6 hops
+            const visited = new Set([nodeId]);
+            let queue = [{ id: nodeId, depth: 0 }];
+
+            while (queue.length) {
+              const { id, depth } = queue.shift();
+              const node = gd.nodes.find(n => n.id === id);
+              if (!node) continue;
+
+              // Fade intensity with distance from source
+              const intensity = Math.max(0.15, 1 - depth * 0.14);
+              setTimeout(() => window.__flashNode(node, intensity, depth === 0), depth * HOP_DELAY);
+
+              if (depth >= MAX_DEPTH) continue;
+              (adj[id] || []).forEach(neighborId => {
+                if (visited.has(neighborId)) return;
+                visited.add(neighborId);
+                queue.push({ id: neighborId, depth: depth + 1 });
+              });
+            }
+          } catch(e) {}
+        };
+
+        // Flash a single node white for ~600ms by layering an additive sprite on it
+        window.__flashNode = function(node, intensity, isSource) {
+          try {
+            if (!node.__threeObj) return;
+            const flashTex = window.__makeGlowTexture('#ffffff');
+            const flashMat = new THREE.SpriteMaterial({
+              map: flashTex,
+              blending: THREE.AdditiveBlending,
+              depthWrite: false,
+              transparent: true,
+              opacity: intensity,
+            });
+            const flash = new THREE.Sprite(flashMat);
+            const base = node.__glowBase || (node.val || 2) * 5;
+            const size = base * (isSource ? 3.0 : 1.8);
+            flash.scale.set(size, size, 1);
+            node.__threeObj.add(flash);
             const start = performance.now();
-            const duration = 2400;
-            const maxScale = 180;
+            const dur = isSource ? 900 : 600;
             const tick = () => {
-              const elapsed = performance.now() - start;
-              const t = elapsed / duration;
+              const t = (performance.now() - start) / dur;
               if (t >= 1) {
-                node.__threeObj.remove(ring);
-                ring.geometry.dispose();
-                ring.material.dispose();
+                node.__threeObj.remove(flash);
+                flashMat.dispose();
                 return;
               }
-              // Ease-out expansion, opacity fades with square curve
-              const ease = 1 - Math.pow(1 - t, 2);
-              const scale = 1 + ease * maxScale;
-              ring.scale.set(scale, scale, scale);
-              ring.material.opacity = 0.75 * Math.pow(1 - t, 1.6);
+              flashMat.opacity = intensity * Math.pow(1 - t, 1.4);
+              flash.scale.setScalar(size * (1 + t * 0.5));
               requestAnimationFrame(tick);
             };
             requestAnimationFrame(tick);
