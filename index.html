@@ -937,8 +937,8 @@ function initBrainGraph() {
         const dLight = new THREE.DirectionalLight(0xffffff, 2);
         dLight.position.set(100,100,100);
         scene.add(dLight);
-        // Depth fog — distant nodes fade into background, creates sense of volume
-        scene.fog = new THREE.Fog(0x050510, 600, 2200);
+        // No fog — was fading the brain into oblivion when zoomed out. Depth already
+        // reads fine from perspective scaling + glow intensity, don't need atmospheric fade.
         // Starfield — two passes: tiny distant + slightly larger foreground with color tint
         const starGeo = new THREE.BufferGeometry();
         const starCount = 3000;
