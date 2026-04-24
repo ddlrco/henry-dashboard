@@ -888,9 +888,15 @@ function initBrainGraph() {
         const tip = document.getElementById('node-tooltip');
         if (!tip) return;
         if (node) {
-            tip.textContent = node.name;
+            if (node.__synthetic) {
+                // Subtle label for synaptic density nodes — no fake name, no AI context
+                tip.innerHTML = `<span style="opacity:0.5;font-style:italic;">· synaptic node</span>`;
+                window._focusNode = null; // don't pass these to chat context
+            } else {
+                tip.textContent = node.name || '';
+                window._focusNode = { name: node.name, group: node.group, id: node.id };
+            }
             tip.style.display = 'block';
-            window._focusNode = { name: node.name, group: node.group, id: node.id };
         } else {
             tip.style.display = 'none';
             window._focusNode = null;
