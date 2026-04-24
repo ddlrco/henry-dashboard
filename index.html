@@ -3283,16 +3283,24 @@ document.addEventListener("keydown", (e) => {
                       && visibleIds.has(typeof l.target==='object'?l.target.id:l.target)
                 );
 
-                // Procedural bonus links — connect random high-val pairs across clusters
+                // Procedural bonus links — intra-cluster mesh (same-group pairs),
+                // not random cross-cluster spaghetti. Adds visible density where it
+                // makes sense (within existing brain regions).
                 const bonusLinks = [];
                 if (overdrive > 0) {
-                    const bonusCount = Math.round(baseLinks.length * overdrive * 0.8);
-                    const pool = visibleNodes.filter(n => n.id !== 'henry');
-                    for (let i = 0; i < bonusCount; i++) {
+                    const bonusCount = Math.round(baseLinks.length * overdrive * 0.25);
+                    const byGroup = {};
+                    visibleNodes.filter(n => n.id !== 'henry' && n.id !== 'polly' && !n.__synthetic)
+                        .forEach(n => {
+                            (byGroup[n.group] = byGroup[n.group] || []).push(n);
+                        });
+                    const groupPools = Object.values(byGroup).filter(arr => arr.length >= 2);
+                    for (let i = 0; i < bonusCount && groupPools.length; i++) {
+                        const pool = groupPools[Math.floor(Math.random() * groupPools.length)];
                         const a = pool[Math.floor(Math.random() * pool.length)];
                         const b = pool[Math.floor(Math.random() * pool.length)];
                         if (a && b && a.id !== b.id) {
-                            bonusLinks.push({ source: a.id, target: b.id, __synthetic: true });
+                            bonusLinks.push({ source: a.id, target: b.id, __synthetic: true, __bonus: true });
                         }
                     }
                 }
@@ -3305,24 +3313,33 @@ document.addEventListener("keydown", (e) => {
                     .linkWidth(l => l.__synthetic ? 0.3 : (0.6 + nodeF * 1.5))
                     .linkOpacity(Math.max(0.2, 0.4 - overdrive * 0.15));
                 // Physics: spread out when sparse, pack tight when full.
-                // Henry + Polly always keep their personal space regardless of slider.
+                // At overdrive, we have 3x the links — compensate with stronger repulsion
+                // AND weaker synthetic-link attraction so the graph doesn't collapse.
                 try {
                     const charge = window.brainGraphInstance.d3Force('charge');
-                    const baseCharge = -10 - nodeF * 40 - overdrive * 15;
+                    // Repulsion scales UP with overdrive, not down — more links = more push
+                    const baseCharge = -20 - nodeF * 40 - overdrive * 180;
                     if (charge) charge.strength(n =>
-                        n.id === 'henry' ? -450 :
-                        n.id === 'polly' ? -320 :
+                        n.id === 'henry' ? -450 - overdrive * 200 :
+                        n.id === 'polly' ? -320 - overdrive * 150 :
                         baseCharge
                     );
                     const linkF = window.brainGraphInstance.d3Force('link');
-                    const baseDist = 20 + (1 - nodeF) * 40;
-                    if (linkF) linkF.distance(link => {
+                    const baseDist = 25 + (1 - nodeF) * 40 + overdrive * 15;
+                    if (linkF) linkF
+                      .distance(link => {
                         const sId = (link.source && link.source.id) || link.source;
                         const tId = (link.target && link.target.id) || link.target;
                         if (sId === 'henry' || tId === 'henry') return 110;
                         if (sId === 'polly' || tId === 'polly') return 85;
+                        if (link.__bonus) return baseDist + 20; // bonus cross-links longer
                         return baseDist;
-                    }).strength(0.4 + nodeF * 0.3);
+                      })
+                      .strength(link =>
+                        link.__bonus ? 0.04 :      // overdrive mesh: near-zero pull (visual only)
+                        link.__synthetic ? 0.25 :   // satellite-to-parent: moderate
+                        0.55 + nodeF * 0.15         // real links: strong
+                      );
                     window.brainGraphInstance.d3ReheatSimulation();
                 } catch(e) {}
             }
