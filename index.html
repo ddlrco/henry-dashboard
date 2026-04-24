@@ -958,6 +958,63 @@ function initBrainGraph() {
         });
         scene.add(new THREE.Points(dustGeo, dustMat));
 
+        // Sonar ping — expanding wireframe sphere emanating from a main node.
+        // Ambient "I'm alive" signal from HENRY and POLLY.
+        window.__sonarPing = function(nodeId, colorHex) {
+          try {
+            const gd = brainGraphInstance.graphData();
+            const node = gd.nodes.find(n => n.id === nodeId);
+            if (!node || !node.__threeObj) return;
+            const ring = new THREE.Mesh(
+              new THREE.SphereGeometry(1, 24, 16),
+              new THREE.MeshBasicMaterial({
+                color: colorHex,
+                transparent: true,
+                opacity: 0.75,
+                wireframe: true,
+                depthWrite: false,
+              })
+            );
+            node.__threeObj.add(ring);
+            const start = performance.now();
+            const duration = 2400;
+            const maxScale = 180;
+            const tick = () => {
+              const elapsed = performance.now() - start;
+              const t = elapsed / duration;
+              if (t >= 1) {
+                node.__threeObj.remove(ring);
+                ring.geometry.dispose();
+                ring.material.dispose();
+                return;
+              }
+              // Ease-out expansion, opacity fades with square curve
+              const ease = 1 - Math.pow(1 - t, 2);
+              const scale = 1 + ease * maxScale;
+              ring.scale.set(scale, scale, scale);
+              ring.material.opacity = 0.75 * Math.pow(1 - t, 1.6);
+              requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+          } catch(e) {}
+        };
+
+        // Schedule pings: ~60s interval ± 15s jitter, Polly follows Henry after 2-5s
+        function schedulePings() {
+          const delay = 45000 + Math.random() * 30000; // 45-75s
+          setTimeout(() => {
+            window.__sonarPing('henry', 0xa5b4fc);
+            setTimeout(() => window.__sonarPing('polly', 0xf472b6), 2000 + Math.random() * 3000);
+            schedulePings();
+          }, delay);
+        }
+        // Initial ping after 15s so user sees it early, then settle into the loop
+        setTimeout(() => {
+          window.__sonarPing('henry', 0xa5b4fc);
+          setTimeout(() => window.__sonarPing('polly', 0xf472b6), 2500);
+          schedulePings();
+        }, 15000);
+
         // HENRY + POLLY pulse + fresh-node pulse loop
         const pulse = () => {
           try {
