@@ -1217,7 +1217,7 @@ window.addEventListener('load', () => {
         <span style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.4);">Complexity</span>
         <span id="density-value" style="font-size:9px;color:rgba(255,255,255,0.6);">100%</span>
       </div>
-      <input type="range" min="30" max="100" value="100" class="density-slider" id="density-slider-2" style="width:100%;" />
+      <input type="range" min="10" max="100" value="100" class="density-slider" id="density-slider-2" style="width:100%;" />
     </div>
 
     <!-- Capabilities label + inline radar canvas (locked in sidebar flow) -->
@@ -3011,9 +3011,14 @@ document.addEventListener("keydown", (e) => {
         densityTimeout = setTimeout(() => {
             if (window.brainGraphInstance && window.BRAIN_DATA_FULL) {
                 const f = val / 100;
-                // Filter nodes by importance (val)
-                const minVal = f < 0.5 ? 8 : f < 0.75 ? 4 : f < 0.9 ? 3 : 2;
-                const visibleNodes = window.BRAIN_DATA_FULL.nodes.filter(n => (n.val||2) >= minVal);
+                // Smooth percentile filter: keep top f% of nodes by importance (val).
+                // HENRY root node is always pinned visible.
+                const all = window.BRAIN_DATA_FULL.nodes;
+                const root = all.filter(n => n.id === 'henry' || n.group === 'root');
+                const rest = all.filter(n => n.id !== 'henry' && n.group !== 'root');
+                const sorted = [...rest].sort((a,b) => (b.val||2) - (a.val||2));
+                const keepCount = Math.max(1, Math.round(sorted.length * f));
+                const visibleNodes = [...root, ...sorted.slice(0, keepCount)];
                 const visibleIds = new Set(visibleNodes.map(n => n.id));
                 const visibleLinks = window.BRAIN_DATA_FULL.links.filter(
                     l => visibleIds.has(typeof l.source==='object'?l.source.id:l.source)
@@ -3022,9 +3027,18 @@ document.addEventListener("keydown", (e) => {
                 window.brainGraphInstance.graphData({nodes:[...visibleNodes],links:[...visibleLinks]});
                 window.brainGraphInstance
                     .linkDirectionalParticles(Math.round(f * 4))
+                    .linkDirectionalParticleSpeed(0.003 + f * 0.006)
                     .linkWidth(0.3 + f * 2);
+                // Physics: spread out when sparse, pack tight when full
+                try {
+                    const charge = window.brainGraphInstance.d3Force('charge');
+                    if (charge) charge.strength(-10 - f * 40);
+                    const linkF = window.brainGraphInstance.d3Force('link');
+                    if (linkF) linkF.distance(() => 20 + (1 - f) * 40).strength(0.4 + f * 0.3);
+                    window.brainGraphInstance.d3ReheatSimulation();
+                } catch(e) {}
             }
-        }, 300);
+        }, 150);
     });
     const changeFormationBtn = document.getElementById('change-formation-btn');
     const pausePlayBtn = document.getElementById('pause-play-btn');
