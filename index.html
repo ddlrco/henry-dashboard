@@ -1620,7 +1620,7 @@ window.addEventListener('load', () => {
         </div>
     </div>
     
-    <!-- metals removed --><div style="display:none" id="metals-node">
+    <div class="data-node" id="metals-node">
         <div class="data-node-title">METALS</div>
         <div class="data-node-row">
             <span>GOLD</span>
@@ -3749,16 +3749,28 @@ document.addEventListener("keydown", (e) => {
                 })
                 .catch(() => {});
             
-            // Metals
-            fetch('https://api.metals.live/v1/spot')
-                .then(r => r.json())
-                .then(d => {
-                    document.getElementById('gold-price').textContent = '$' + d.gold.toFixed(0);
-                    document.getElementById('silver-price').textContent = '$' + d.silver.toFixed(2);
+            // Metals — gold-api.com (USD/oz) -> CAD (metals.live is dead)
+            Promise.all([
+                fetch('https://api.gold-api.com/price/XAU').then(r => r.json()),
+                fetch('https://api.gold-api.com/price/XAG').then(r => r.json()),
+                fetch('https://api.coingecko.com/api/v3/simple/price?ids=usd-coin&vs_currencies=cad').then(r => r.json())
+            ])
+                .then(([g, s, fx]) => {
+                    const cad = (fx['usd-coin'] && fx['usd-coin'].cad) || 1.38;
+                    const goldCad = g.price * cad, silverCad = s.price * cad;
+                    document.getElementById('gold-price').textContent = '$' + Math.round(goldCad).toLocaleString();
+                    document.getElementById('silver-price').textContent = '$' + silverCad.toFixed(2);
+                    if (window._lastGold) {
+                        const gc = document.getElementById('gold-change'), sc = document.getElementById('silver-change');
+                        const gd = goldCad - window._lastGold, sd = silverCad - window._lastSilver;
+                        if (gc) { gc.textContent = (gd >= 0 ? '▲ ' : '▼ ') + Math.abs(gd).toFixed(0); gc.style.color = gd >= 0 ? '#3fb950' : '#f85149'; }
+                        if (sc) { sc.textContent = (sd >= 0 ? '▲ ' : '▼ ') + Math.abs(sd).toFixed(2); sc.style.color = sd >= 0 ? '#3fb950' : '#f85149'; }
+                    }
+                    window._lastGold = goldCad; window._lastSilver = silverCad;
                 })
                 .catch(() => {
-                    document.getElementById('gold-price').textContent = '$2650';
-                    document.getElementById('silver-price').textContent = '$30.50';
+                    document.getElementById('gold-price').textContent = '—';
+                    document.getElementById('silver-price').textContent = '—';
                 });
         } catch (e) {
             console.log('Data update error:', e);
